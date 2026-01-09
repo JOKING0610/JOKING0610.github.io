@@ -186,33 +186,45 @@
         /* 响应式设计 - 超小屏幕 (手机竖屏) */
         @media (max-width: 480px) {
             .container {
-                padding: 0 15px;
+                padding: 0 12px;
             }
             
             .avatar-section {
-                padding: 60px 0 40px;
+                padding: 40px 0 30px;
             }
             
             .avatar-image {
-                width: 150px;
-                height: 150px;
-                margin-bottom: 20px;
+                width: 120px;
+                height: 120px;
+                margin-bottom: 15px;
+                border-width: 3px;
             }
             
             .avatar-name {
-                font-size: 28px;
+                font-size: 24px;
+                line-height: 1.2;
             }
             
             .nav-container {
-                padding: 15px 0;
+                padding: 12px 0;
             }
             
             .logo {
-                font-size: 20px;
+                font-size: 18px;
             }
             
             .footer {
-                padding: 30px 0 15px;
+                padding: 25px 0 12px;
+                margin-top: 40px;
+            }
+            
+            .footer-content {
+                margin-bottom: 15px;
+            }
+            
+            .mobile-nav {
+                width: 100%;
+                max-width: 280px;
             }
         }
         
@@ -227,21 +239,33 @@
             }
             
             .avatar-name {
-                font-size: 32px;
+                font-size: 30px;
+                line-height: 1.2;
             }
             
             .avatar-section {
-                padding: 70px 0 50px;
+                padding: 60px 0 40px;
+            }
+            
+            .avatar-image {
+                width: 160px;
+                height: 160px;
+                margin-bottom: 25px;
             }
             
             .footer-content {
                 flex-direction: column;
-                gap: 15px;
+                gap: 16px;
                 text-align: center;
             }
             
             .mobile-nav {
                 width: 100%;
+                max-width: 320px;
+            }
+            
+            .container {
+                padding: 0 16px;
             }
         }
         
@@ -304,6 +328,77 @@
             
             .footer-links a:active {
                 color: white;
+            }
+            
+            .mobile-menu-btn:active {
+                transform: scale(0.95);
+            }
+            
+            .mobile-nav-close:active {
+                transform: scale(0.95);
+            }
+        }
+        
+        /* 折叠屏设备支持 */
+        @media (min-width: 600px) and (max-width: 900px) and (orientation: landscape) {
+            .avatar-section {
+                padding: 60px 0 40px;
+            }
+            
+            .avatar-image {
+                width: 180px;
+                height: 180px;
+            }
+            
+            .avatar-name {
+                font-size: 34px;
+            }
+        }
+        
+        /* 超宽屏设备支持 */
+        @media (min-width: 2000px) {
+            .container {
+                max-width: 1600px;
+            }
+            
+            .avatar-section {
+                padding: 120px 0 80px;
+            }
+            
+            .avatar-image {
+                width: 280px;
+                height: 280px;
+            }
+            
+            .avatar-name {
+                font-size: 48px;
+            }
+        }
+        
+        /* 高对比度模式支持 */
+        @media (prefers-contrast: high) {
+            :root {
+                --primary-color: #000000;
+                --secondary-color: #333333;
+                --accent-color: #0066cc;
+                --border-color: #000000;
+            }
+            
+            .avatar-image {
+                border: 3px solid var(--border-color);
+            }
+        }
+        
+        /* 减少动画模式支持 */
+        @media (prefers-reduced-motion: reduce) {
+            * {
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
+            }
+            
+            .avatar-image:hover {
+                transform: none;
             }
         }
         
