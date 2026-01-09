@@ -292,43 +292,73 @@
         /* 响应式设计 - 超小屏幕 (手机竖屏) */
         @media (max-width: 480px) {
             .container {
-                padding: 0 15px;
+                padding: 0 12px;
             }
             
             .title {
-                font-size: 28px;
-                margin-bottom: 10px;
+                font-size: 26px;
+                margin-bottom: 8px;
+                line-height: 1.2;
             }
             
             .subtitle {
-                font-size: 16px;
-                margin-bottom: 20px;
+                font-size: 14px;
+                margin-bottom: 15px;
+                line-height: 1.4;
             }
             
             .header {
-                padding: 40px 0 30px;
+                padding: 30px 0 25px;
             }
             
             .website-card {
-                padding: 20px;
+                padding: 16px;
+                border-radius: 10px;
             }
             
             .website-icon {
-                width: 50px;
-                height: 50px;
-                font-size: 24px;
+                width: 45px;
+                height: 45px;
+                font-size: 22px;
+                border-radius: 10px;
+                margin-bottom: 15px;
             }
             
             .website-name {
-                font-size: 18px;
+                font-size: 16px;
+                margin-bottom: 8px;
+            }
+            
+            .website-desc {
+                font-size: 13px;
+                margin-bottom: 15px;
+            }
+            
+            .website-link {
+                padding: 8px 16px;
+                font-size: 14px;
             }
             
             .nav-container {
-                padding: 15px 0;
+                padding: 12px 0;
             }
             
             .logo {
+                font-size: 18px;
+            }
+            
+            .section-title {
                 font-size: 20px;
+                margin-bottom: 20px;
+            }
+            
+            .footer {
+                padding: 30px 0 15px;
+                margin-top: 40px;
+            }
+            
+            .footer-content {
+                margin-bottom: 15px;
             }
         }
         
@@ -343,21 +373,43 @@
             }
             
             .title {
-                font-size: 32px;
+                font-size: 30px;
+                line-height: 1.2;
             }
             
             .subtitle {
-                font-size: 17px;
+                font-size: 16px;
+                line-height: 1.4;
             }
             
             .websites-grid {
                 grid-template-columns: 1fr;
-                gap: 15px;
+                gap: 16px;
+            }
+            
+            .website-card {
+                padding: 20px;
+                border-radius: 12px;
+            }
+            
+            .website-icon {
+                width: 55px;
+                height: 55px;
+                font-size: 26px;
+                margin-bottom: 18px;
+            }
+            
+            .website-name {
+                font-size: 18px;
+            }
+            
+            .website-desc {
+                font-size: 14px;
             }
             
             .footer-content {
                 flex-direction: column;
-                gap: 15px;
+                gap: 16px;
                 text-align: center;
             }
             
@@ -367,6 +419,15 @@
             
             .mobile-nav {
                 width: 100%;
+                max-width: 320px;
+            }
+            
+            .header {
+                padding: 50px 0 35px;
+            }
+            
+            .container {
+                padding: 0 16px;
             }
         }
         
@@ -439,10 +500,88 @@
             .website-link:active {
                 background-color: var(--accent-color);
                 color: white;
+                transform: scale(0.98);
             }
             
             .nav-links a:active {
                 color: var(--accent-color);
+            }
+            
+            .website-card:active {
+                transform: scale(0.98);
+                box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            }
+            
+            .mobile-menu-btn:active {
+                transform: scale(0.95);
+            }
+        }
+        
+        /* 折叠屏设备支持 */
+        @media (min-width: 600px) and (max-width: 900px) and (orientation: landscape) {
+            .websites-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 18px;
+            }
+            
+            .title {
+                font-size: 36px;
+            }
+            
+            .subtitle {
+                font-size: 18px;
+            }
+            
+            .header {
+                padding: 40px 0 30px;
+            }
+        }
+        
+        /* 超宽屏设备支持 */
+        @media (min-width: 2000px) {
+            .container {
+                max-width: 1600px;
+            }
+            
+            .websites-grid {
+                grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+                gap: 30px;
+            }
+            
+            .title {
+                font-size: 64px;
+            }
+            
+            .subtitle {
+                font-size: 24px;
+                max-width: 900px;
+            }
+        }
+        
+        /* 高对比度模式支持 */
+        @media (prefers-contrast: high) {
+            :root {
+                --primary-color: #000000;
+                --secondary-color: #333333;
+                --accent-color: #0066cc;
+                --border-color: #000000;
+            }
+            
+            .website-card {
+                border: 2px solid var(--border-color);
+            }
+        }
+        
+        /* 减少动画模式支持 */
+        @media (prefers-reduced-motion: reduce) {
+            * {
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
+            }
+            
+            .website-card:hover {
+                transform: none;
             }
         }
         
@@ -727,30 +866,30 @@
         
         // 导航链接激活状态和跳转功能
         const navLinks = document.querySelectorAll('.nav-links a, .mobile-nav-links a');
-        navLink.forEach(link => {
-            link.addEventLitener('click', function(e) {
+        navLinks.forEach(link => {
+            link.addEventListener('click', function(e) {
                 // 如果是锚点链接，阻止默认行为并平滑滚动
-                if (thi.getAttribute('href').tartWith('#')) {
+                if (this.getAttribute('href').startsWith('#')) {
                     e.preventDefault();
                     
-                    cont targetId = this.getAttribute('href').substring(1);
-                    cont targetElement = document.getElementById(targetId);
+                    const targetId = this.getAttribute('href').substring(1);
+                    const targetElement = document.getElementById(targetId);
                     
                     if (targetElement) {
                         // 更新导航激活状态
-                        navLink.forEach(item => item.classList.remove('active'));
-                        thi.claLit.add('active');
+                        navLinks.forEach(item => item.classList.remove('active'));
+                        this.classList.add('active');
                         
                         // 平滑滚动到目标位置
-                        window.crollTo({
+                        window.scrollTo({
                             top: targetElement.offsetTop - 80, // 减去导航栏高度
                             behavior: 'smooth'
                         });
                         
                         // 如果是移动端，点击后关闭菜单
                         if (window.innerWidth <= 768) {
-                            mobileNav.claLit.remove('active');
-                            mobileNavOverlay.claLit.remove('active');
+                            mobileNav.classList.remove('active');
+                            mobileNavOverlay.classList.remove('active');
                         }
                     }
                 }
@@ -758,13 +897,13 @@
         });
         
         // 页面加载时检查URL中的锚点
-        window.addEventLitener('load', function() {
-            cont hah = window.location.hash;
-            if (hah) {
-                cont targetElement = document.getElementById(hash.substring(1));
+        window.addEventListener('load', function() {
+            const hash = window.location.hash;
+            if (hash) {
+                const targetElement = document.getElementById(hash.substring(1));
                 if (targetElement) {
-etTimeout(() => {
-                        window.crollTo({
+                    setTimeout(() => {
+                        window.scrollTo({
                             top: targetElement.offsetTop - 80,
                             behavior: 'smooth'
                         });
@@ -772,6 +911,6 @@ etTimeout(() => {
                 }
             }
         });
-    </cript>
+    </script>
 </body>
 </html>
