@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
-    <title>JOKING的个人导航</title>
+    <title>JOKING的个人导航-关于</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         * {
@@ -21,57 +21,33 @@
             --primary-color: #2d3436;
             --secondary-color: #636e72;
             --accent-color: #0984e3;
-            --accent-color-2: #e84393;
-            --accent-color-3: #00b894;
             --light-bg: #f9f9f9;
             --card-bg: #ffffff;
             --border-color: #dfe6e9;
             --text-color: #2d3436;
             --text-light: #636e72;
             --shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
-            --cloud-gaming-color: #5e17eb;
         }
         
         body {
             background-color: #f8f9fa;
-            background-image: url('https://t.alcy.cc/fj');
-            background-size: cover;
-            background-position: center;
-            background-attachment: fixed;
-            background-repeat: no-repeat;
             color: var(--text-color);
             line-height: 1.6;
-            scroll-behavior: smooth;
-            position: relative;
-        }
-        
-        body::before {
-            content: '';
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(255, 255, 255, 0.35);
-            z-index: -1;
         }
         
         .container {
-            max-width: 1200px;
+            max-width: 1000px;
             margin: 0 auto;
             padding: 0 20px;
         }
         
         /* 导航栏样式 */
         .navbar {
-            background-color: rgba(255, 255, 255, 0.7);
+            background-color: var(--card-bg);
             box-shadow: var(--shadow);
             position: sticky;
             top: 0;
             z-index: 1000;
-            backdrop-filter: blur(20px) saturate(180%);
-            -webkit-backdrop-filter: blur(20px) saturate(180%);
-            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
         }
         
         .nav-container {
@@ -104,7 +80,6 @@
             font-weight: 500;
             transition: color 0.3s;
             position: relative;
-            cursor: pointer;
         }
         
         .nav-links a:hover {
@@ -134,129 +109,52 @@
             cursor: pointer;
         }
         
-        /* 头部横幅样式 */
-        .header {
-            padding: 60px 0 40px;
+        /* 头像区域样式 */
+        .avatar-section {
+            padding: 80px 0 60px;
             text-align: center;
+            background: #ffffff;
         }
         
-        .title {
-            font-size: 48px;
+        .avatar-container {
+            max-width: 400px;
+            margin: 0 auto;
+        }
+        
+        .avatar-image {
+            width: 200px;
+            height: 200px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 5px solid white;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            margin-bottom: 30px;
+            transition: all 0.3s ease;
+        }
+        
+        .avatar-image:hover {
+            transform: scale(1.05);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.15);
+        }
+        
+        .avatar-name {
+            font-size: 36px;
             font-weight: 800;
             color: var(--primary-color);
-            margin-bottom: 15px;
-        }
-        
-        .subtitle {
-            font-size: 20px;
-            color: var(--text-light);
-            max-width: 700px;
-            margin: 0 auto 30px;
-        }
-        
-        /* 主要内容区域 */
-        .main-content {
-            margin-bottom: 60px;
-        }
-        
-        /* 网址分类样式 */
-        .websites-section {
-            margin-bottom: 40px;
-            scroll-margin-top: 100px;
-        }
-        
-        .section-title {
-            font-size: 24px;
-            font-weight: 700;
-            margin-bottom: 25px;
-            padding-bottom: 10px;
-            border-bottom: 2px solid var(--accent-color);
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        
-        .section-title i {
-            color: var(--accent-color);
-        }
-        
-        /* 网址网格样式 */
-        .websites-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-            gap: 20px;
-        }
-        
-        .website-card {
-            background-color: var(--card-bg);
-            border-radius: 12px;
-            padding: 25px;
-            box-shadow: var(--shadow);
-            transition: all 0.3s;
-            display: flex;
-            flex-direction: column;
-            height: 100%;
-        }
-        
-        .website-card:hover {
-            transform: translateY(-8px);
-            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
-        }
-        
-        .website-icon {
-            width: 60px;
-            height: 60px;
-            border-radius: 12px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 28px;
-            color: white;
-            margin-bottom: 20px;
-        }
-        
-        .website-icon.music {
-            background: linear-gradient(135deg, #0984e3, #74b9ff);
-        }
-        
-        .website-name {
-            font-size: 20px;
-            font-weight: 700;
-            margin-bottom: 10px;
-        }
-        
-        .website-desc {
-            color: var(--text-light);
-            margin-bottom: 20px;
-            flex-grow: 1;
-        }
-        
-        .website-link {
-            display: inline-block;
-            background-color: rgba(9, 132, 227, 0.1);
-            color: var(--accent-color);
-            padding: 10px 20px;
-            border-radius: 8px;
-            text-decoration: none;
-            font-weight: 500;
-            transition: all 0.3s;
-            text-align: center;
-        }
-        
-        .website-link:hover {
-            background-color: var(--accent-color);
-            color: white;
+            margin: 0;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         }
         
         /* 页脚样式 */
         .footer {
-            background-color: rgba(45, 52, 54, 0.7);
+            background-color: var(--primary-color);
             color: #fff;
             padding: 40px 0 20px;
-            margin-top: 60px;
-            backdrop-filter: blur(20px) saturate(180%);
-            -webkit-backdrop-filter: blur(20px) saturate(180%);
-            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            z-index: 999;
         }
         
         .footer-content {
@@ -295,48 +193,20 @@
                 padding: 0 12px;
             }
             
-            .title {
-                font-size: 26px;
-                margin-bottom: 8px;
+            .avatar-section {
+                padding: 40px 0 30px;
+            }
+            
+            .avatar-image {
+                width: 120px;
+                height: 120px;
+                margin-bottom: 15px;
+                border-width: 3px;
+            }
+            
+            .avatar-name {
+                font-size: 24px;
                 line-height: 1.2;
-            }
-            
-            .subtitle {
-                font-size: 14px;
-                margin-bottom: 15px;
-                line-height: 1.4;
-            }
-            
-            .header {
-                padding: 30px 0 25px;
-            }
-            
-            .website-card {
-                padding: 16px;
-                border-radius: 10px;
-            }
-            
-            .website-icon {
-                width: 45px;
-                height: 45px;
-                font-size: 22px;
-                border-radius: 10px;
-                margin-bottom: 15px;
-            }
-            
-            .website-name {
-                font-size: 16px;
-                margin-bottom: 8px;
-            }
-            
-            .website-desc {
-                font-size: 13px;
-                margin-bottom: 15px;
-            }
-            
-            .website-link {
-                padding: 8px 16px;
-                font-size: 14px;
             }
             
             .nav-container {
@@ -347,18 +217,18 @@
                 font-size: 18px;
             }
             
-            .section-title {
-                font-size: 20px;
-                margin-bottom: 20px;
-            }
-            
             .footer {
-                padding: 30px 0 15px;
+                padding: 25px 0 12px;
                 margin-top: 40px;
             }
             
             .footer-content {
                 margin-bottom: 15px;
+            }
+            
+            .mobile-nav {
+                width: 100%;
+                max-width: 280px;
             }
         }
         
@@ -372,39 +242,19 @@
                 display: block;
             }
             
-            .title {
+            .avatar-name {
                 font-size: 30px;
                 line-height: 1.2;
             }
             
-            .subtitle {
-                font-size: 16px;
-                line-height: 1.4;
+            .avatar-section {
+                padding: 60px 0 40px;
             }
             
-            .websites-grid {
-                grid-template-columns: 1fr;
-                gap: 16px;
-            }
-            
-            .website-card {
-                padding: 20px;
-                border-radius: 12px;
-            }
-            
-            .website-icon {
-                width: 55px;
-                height: 55px;
-                font-size: 26px;
-                margin-bottom: 18px;
-            }
-            
-            .website-name {
-                font-size: 18px;
-            }
-            
-            .website-desc {
-                font-size: 14px;
+            .avatar-image {
+                width: 160px;
+                height: 160px;
+                margin-bottom: 25px;
             }
             
             .footer-content {
@@ -413,17 +263,9 @@
                 text-align: center;
             }
             
-            .section-title {
-                font-size: 22px;
-            }
-            
             .mobile-nav {
                 width: 100%;
                 max-width: 320px;
-            }
-            
-            .header {
-                padding: 50px 0 35px;
             }
             
             .container {
@@ -433,17 +275,13 @@
         
         /* 响应式设计 - 中等屏幕 (平板) */
         @media (min-width: 769px) and (max-width: 1024px) {
-            .websites-grid {
-                grid-template-columns: repeat(2, 1fr);
-                gap: 20px;
-            }
-            
             .container {
                 max-width: 900px;
             }
             
-            .title {
-                font-size: 40px;
+            .avatar-image {
+                width: 180px;
+                height: 180px;
             }
             
             .mobile-menu-btn {
@@ -453,87 +291,71 @@
         
         /* 响应式设计 - 大屏幕 (桌面) */
         @media (min-width: 1025px) and (max-width: 1440px) {
-            .websites-grid {
-                grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-            }
-            
             .container {
-                max-width: 1200px;
+                max-width: 1000px;
             }
         }
         
         /* 响应式设计 - 超大屏幕 (4K+) */
         @media (min-width: 1441px) {
             .container {
-                max-width: 1400px;
+                max-width: 1200px;
             }
             
-            .title {
-                font-size: 56px;
+            .avatar-section {
+                padding: 100px 0 80px;
             }
             
-            .subtitle {
-                font-size: 22px;
+            .avatar-image {
+                width: 250px;
+                height: 250px;
             }
             
-            .websites-grid {
-                grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-                gap: 25px;
-            }
-            
-            .website-card {
-                padding: 30px;
+            .avatar-name {
+                font-size: 42px;
             }
         }
         
         /* 触摸设备优化 */
         @media (hover: none) and (pointer: coarse) {
-            .website-card:hover {
+            .avatar-image:hover {
                 transform: none;
             }
             
-            .website-link:hover {
-                background-color: rgba(9, 132, 227, 0.1);
-                color: var(--accent-color);
-            }
-            
-            .website-link:active {
-                background-color: var(--accent-color);
-                color: white;
-                transform: scale(0.98);
+            .avatar-image:active {
+                transform: scale(1.05);
             }
             
             .nav-links a:active {
                 color: var(--accent-color);
             }
             
-            .website-card:active {
-                transform: scale(0.98);
-                box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            .footer-links a:active {
+                color: white;
             }
             
             .mobile-menu-btn:active {
+                transform: scale(0.95);
+            }
+            
+            .mobile-nav-close:active {
                 transform: scale(0.95);
             }
         }
         
         /* 折叠屏设备支持 */
         @media (min-width: 600px) and (max-width: 900px) and (orientation: landscape) {
-            .websites-grid {
-                grid-template-columns: repeat(2, 1fr);
-                gap: 18px;
+            .avatar-section {
+                padding: 60px 0 40px;
             }
             
-            .title {
-                font-size: 36px;
+            .avatar-image {
+                width: 180px;
+                height: 180px;
             }
             
-            .subtitle {
-                font-size: 18px;
-            }
-            
-            .header {
-                padding: 40px 0 30px;
+            .avatar-name {
+                font-size: 34px;
             }
         }
         
@@ -543,18 +365,17 @@
                 max-width: 1600px;
             }
             
-            .websites-grid {
-                grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
-                gap: 30px;
+            .avatar-section {
+                padding: 120px 0 80px;
             }
             
-            .title {
-                font-size: 64px;
+            .avatar-image {
+                width: 280px;
+                height: 280px;
             }
             
-            .subtitle {
-                font-size: 24px;
-                max-width: 900px;
+            .avatar-name {
+                font-size: 48px;
             }
         }
         
@@ -567,8 +388,8 @@
                 --border-color: #000000;
             }
             
-            .website-card {
-                border: 2px solid var(--border-color);
+            .avatar-image {
+                border: 3px solid var(--border-color);
             }
         }
         
@@ -580,7 +401,7 @@
                 transition-duration: 0.01ms !important;
             }
             
-            .website-card:hover {
+            .avatar-image:hover {
                 transform: none;
             }
         }
@@ -589,10 +410,6 @@
         @media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
             .avatar-image {
                 border-width: 3px;
-            }
-            
-            .website-icon {
-                border-radius: 14px;
             }
         }
         
@@ -607,10 +424,14 @@
                 color: black !important;
             }
             
-            .website-card {
-                break-inside: avoid;
+            .avatar-section {
+                background: none !important;
+                padding: 40px 0 !important;
+            }
+            
+            .avatar-image {
+                border: 2px solid #000 !important;
                 box-shadow: none !important;
-                border: 1px solid #ddd;
             }
         }
         
@@ -680,69 +501,17 @@
         .mobile-nav-overlay.active {
             display: block;
         }
-        
-        /* 锚点跳转样式 */
-        .section-anchor {
-            display: block;
-            position: relative;
-            top: -100px;
-            visibility: hidden;
-        }
-        
-        /* 音乐特色样式 */
-        .music-featured-badge {
-            background: linear-gradient(135deg, #0984e3, #74b9ff);
-            color: white;
-            padding: 2px 8px;
-            border-radius: 4px;
-            font-size: 12px;
-            font-weight: bold;
-            margin-left: 8px;
-            vertical-align: middle;
-            border: 1px solid rgba(255, 255, 255, 0.3);
-            box-shadow: 0 4px 12px rgba(9, 132, 227, 0.4);
-            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
-        }
-        
-        /* Beta图标样式 */
-        .beta-badge {
-            background-image: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            font-size: 12px;
-            font-weight: 600;
-            padding: 2px 8px;
-            border-radius: 12px;
-            margin-left: 10px;
-            vertical-align: middle;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
-            animation: pulse 2s infinite;
-        }
-        
-        @keyframes pulse {
-            0% {
-                box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
-            }
-            50% {
-                box-shadow: 0 2px 12px rgba(102, 126, 234, 0.6);
-            }
-            100% {
-                box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
-            }
-        }
     </style>
 </head>
 <body>
     <!-- 导航栏 -->
     <nav class="navbar">
         <div class="container nav-container">
-            <a href="#" class="logo">JOKING<span>导航</span></a>
+            <a href="index.html" class="logo">JOKING<span>导航</span></a>
             
             <ul class="nav-links">
-                <li><a href="#" class="active">首页</a></li>
-                <li><a href="#music-app">音乐应用</a></li>
-                <li><a href="about.html">关于</a></li>
+                <li><a href="index.html">首页</a></li>
+                <li><a href="about.html" class="active">关于</a></li>
             </ul>
             
             <button class="mobile-menu-btn" id="mobileMenuBtn">
@@ -755,45 +524,26 @@
     <div class="mobile-nav-overlay" id="mobileNavOverlay"></div>
     <div class="mobile-nav" id="mobileNav">
         <div class="mobile-nav-header">
-            <h3>JOKING的导航</h3>
+            <h3>JOKING导航</h3>
             <button class="mobile-nav-close" id="mobileNavClose">
                 <i class="fas fa-times"></i>
             </button>
         </div>
         <ul class="mobile-nav-links">
-            <li><a href="#" class="active">首页</a></li>
-            <li><a href="#music-app">音乐应用</a></li>
-            <li><a href="about.html">关于</a></li>
+            <li><a href="index.html">首页</a></li>
+            <li><a href="about.html" class="active">关于</a></li>
         </ul>
     </div>
     
-    <!-- 头部 -->
-    <header class="header">
+    <!-- 头像和名称区域 -->
+    <div class="avatar-section">
         <div class="container">
-            <h1 class="title">JOKING的个人导航</h1>
-            <p class="subtitle">专注于我的Web应用</p>
-        </div>
-    </header>
-    
-    <!-- 主要内容区域 -->
-    <main class="container main-content">
-        <!-- 音乐应用区域 -->
-        <div class="websites-section" id="music-app">
-            <span class="section-anchor" id="music-app-anchor"></span>
-            <h2 class="section-title"><i class="fas fa-music"></i> 音乐应用</h2>
-            <div class="websites-grid">
-                <!-- JOKING音乐 -->
-                <div class="website-card">
-                    <div class="website-icon music">
-                        <i class="fas fa-music"></i>
-                    </div>
-                    <h3 class="website-name">JokingMusic 0.2 <span class="beta-badge">beta</span><span class="music-featured-badge">推荐</span></h3>
-                    <p class="website-desc">个人音乐网站，支持在线播放和下载功能。</p>
-                    <a href="music.html" class="website-link">立即访问</a>
-                </div>
+            <div class="avatar-container">
+                <img src="https://cdn.jsdu.cn/opdav/20251122/f849aef8a4d6a832e434ce664319b511.png" alt="JOKING0610" class="avatar-image">
+                <h2 class="avatar-name">JOKING0610</h2>
             </div>
         </div>
-    </main>
+    </div>
     
     <!-- 页脚 -->
     <footer class="footer">
@@ -801,12 +551,12 @@
             <div class="footer-content">
                 <div class="logo" style="color: white;">JOKING<span style="color: #b2bec3;">导航</span></div>
                 <div class="footer-links">
-                    <a href="#">首页</a>
+                    <a href="index.html">首页</a>
                     <a href="about.html">关于</a>
                 </div>
             </div>
             <div class="footer-bottom">
-                <p>© 2026 JOKING的个人导航. 本页面仅用于个人收藏与分享。</p>
+                <p>© 2026 JOKING0610 的个人导航. 本页面仅用于个人收藏与分享。</p>
             </div>
         </div>
     </footer>
@@ -833,18 +583,6 @@
             mobileNavOverlay.classList.remove('active');
         });
         
-        // 网站卡片悬停效果
-        const websiteCards = document.querySelectorAll('.website-card');
-        websiteCards.forEach(card => {
-            card.addEventListener('mouseenter', function() {
-                this.style.transform = 'translateY(-10px)';
-            });
-            
-            card.addEventListener('mouseleave', function() {
-                this.style.transform = 'translateY(0)';
-            });
-        });
-        
         // 导航栏滚动效果
         window.addEventListener('scroll', function() {
             const navbar = document.querySelector('.navbar');
@@ -855,61 +593,19 @@
             }
         });
         
-        // 网站访问统计
-        const websiteLinks = document.querySelectorAll('.website-link');
-        websiteLinks.forEach(link => {
-            link.addEventListener('click', function() {
-                const websiteName = this.parentElement.querySelector('.website-name').textContent;
-                console.log(`访问了: ${websiteName}`);
-            });
-        });
-        
-        // 导航链接激活状态和跳转功能
+        // 导航链接激活状态
         const navLinks = document.querySelectorAll('.nav-links a, .mobile-nav-links a');
         navLinks.forEach(link => {
-            link.addEventListener('click', function(e) {
-                // 如果是锚点链接，阻止默认行为并平滑滚动
-                if (this.getAttribute('href').startsWith('#')) {
-                    e.preventDefault();
-                    
-                    const targetId = this.getAttribute('href').substring(1);
-                    const targetElement = document.getElementById(targetId);
-                    
-                    if (targetElement) {
-                        // 更新导航激活状态
-                        navLinks.forEach(item => item.classList.remove('active'));
-                        this.classList.add('active');
-                        
-                        // 平滑滚动到目标位置
-                        window.scrollTo({
-                            top: targetElement.offsetTop - 80, // 减去导航栏高度
-                            behavior: 'smooth'
-                        });
-                        
-                        // 如果是移动端，点击后关闭菜单
-                        if (window.innerWidth <= 768) {
-                            mobileNav.classList.remove('active');
-                            mobileNavOverlay.classList.remove('active');
-                        }
-                    }
+            link.addEventListener('click', function() {
+                navLinks.forEach(item => item.classList.remove('active'));
+                this.classList.add('active');
+                
+                // 如果是移动端，点击后关闭菜单
+                if (window.innerWidth <= 768) {
+                    mobileNav.classList.remove('active');
+                    mobileNavOverlay.classList.remove('active');
                 }
             });
-        });
-        
-        // 页面加载时检查URL中的锚点
-        window.addEventListener('load', function() {
-            const hash = window.location.hash;
-            if (hash) {
-                const targetElement = document.getElementById(hash.substring(1));
-                if (targetElement) {
-                    setTimeout(() => {
-                        window.scrollTo({
-                            top: targetElement.offsetTop - 80,
-                            behavior: 'smooth'
-                        });
-                    }, 100);
-                }
-            }
         });
     </script>
 </body>
