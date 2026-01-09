@@ -5432,6 +5432,16 @@
             }
         }
         
+        // 获取当前播放的歌曲信息
+        function getCurrentPlayingSong() {
+            if (!currentSongId || !currentSearchResults || currentSearchResults.length === 0) {
+                return null;
+            }
+            
+            const song = currentSearchResults.find(s => s.id == currentSongId);
+            return song || null;
+        }
+        
         function playPrevSong() {
             if (!currentSearchResults || currentSearchResults.length === 0) return;
             
@@ -5527,8 +5537,48 @@
                 return;
             }
             
-            // 在当前页面跳转到歌曲直链
-            window.open(songUrl, '_self');
+            // 获取当前播放的歌曲信息
+            const currentSong = getCurrentPlayingSong();
+            if (!currentSong) {
+                showStatusMessage('无法获取歌曲信息', 'error');
+                return;
+            }
+            
+            try {
+                // 清理文件名中的非法字符
+                const cleanFileName = (str) => {
+                    return str.replace(/[<>:"/\\|?*]/g, '').replace(/\s+/g, ' ').trim();
+                };
+                
+                const songName = cleanFileName(currentSong.name || '未知歌曲');
+                const artist = cleanFileName(currentSong.artist || '未知艺术家');
+                
+                // 设置下载文件名
+                const fileName = `${songName} - ${artist}.mp3`;
+                
+                // 创建下载链接
+                const link = document.createElement('a');
+                link.href = songUrl;
+                link.download = fileName;
+                link.style.display = 'none';
+                
+                // 触发下载
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                
+                showStatusMessage(`开始下载: ${songName} - ${artist}`, 'success');
+                
+                // 添加下载统计（可选）
+                console.log(`下载歌曲: ${fileName}`, songUrl);
+                
+            } catch (error) {
+                console.error('下载失败:', error);
+                showStatusMessage('下载失败，请重试', 'error');
+                
+                // 备用方案：在新标签页打开音频文件
+                window.open(songUrl, '_blank');
+            }
         }
         
         // 播放器展开/收起
