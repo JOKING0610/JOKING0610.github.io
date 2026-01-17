@@ -30,6 +30,7 @@
             --text-light: #636e72;
             --shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
             --cloud-gaming-color: #5e17eb;
+            --constellation-color: #667eea;
         }
         
         body {
@@ -219,7 +220,23 @@
         .website-icon.music {
             background: linear-gradient(135deg, #0984e3, #74b9ff);
         }
-        
+
+        .website-icon.constellation {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            animation: starPulse 2s ease-in-out infinite;
+        }
+
+        @keyframes starPulse {
+            0%, 100% {
+                transform: scale(1);
+                box-shadow: 0 0 20px rgba(102, 126, 234, 0.5);
+            }
+            50% {
+                transform: scale(1.05);
+                box-shadow: 0 0 30px rgba(102, 126, 234, 0.8);
+            }
+        }
+
         .website-name {
             font-size: 20px;
             font-weight: 700;
@@ -251,16 +268,13 @@
         
         /* 页脚样式 */
         .footer {
-            background-color: rgba(45, 52, 54, 0.9);
-            color: #fff;
-            padding: 20px 0 10px;
-            position: fixed;
-            bottom: 0;
-            left: 0;
+            background: linear-gradient(135deg, #2d3436, #636e72);
+            color: white;
+            padding: 30px 0;
+            margin-top: 60px;
+            position: relative;
             width: 100%;
-            z-index: 999;
-            backdrop-filter: blur(15px) saturate(160%);
-            -webkit-backdrop-filter: blur(15px) saturate(160%);
+            z-index: 10;
             border-top: 1px solid rgba(255, 255, 255, 0.15);
         }
         
@@ -844,6 +858,7 @@
             <ul class="nav-links">
                 <li><a href="#" class="active">首页</a></li>
                 <li><a href="#music-app">音乐应用</a></li>
+                <li><a href="#other-tools">其他工具</a></li>
                 <li><a href="about.html">关于</a></li>
             </ul>
             
@@ -865,6 +880,7 @@
         <ul class="mobile-nav-links">
             <li><a href="#" class="active">首页</a></li>
             <li><a href="#music-app">音乐应用</a></li>
+            <li><a href="#other-tools">其他工具</a></li>
             <li><a href="about.html">关于</a></li>
         </ul>
     </div>
@@ -878,7 +894,7 @@
     </header>
     
     <!-- 主要内容区域 -->
-    <main class="container main-content" style="padding-bottom: 120px;">
+    <main class="container main-content">
         <!-- 音乐应用区域 -->
         <div class="websites-section" id="music-app">
             <span class="section-anchor" id="music-app-anchor"></span>
@@ -892,6 +908,23 @@
                     <h3 class="website-name">JokingMusic 0.2 <span class="beta-badge">beta</span><span class="music-featured-badge">推荐</span></h3>
                     <p class="website-desc">个人音乐网站，支持在线播放和下载功能。</p>
                     <a href="music.html" class="website-link">立即访问</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- 其他工具区域 -->
+        <div class="websites-section" id="other-tools">
+            <span class="section-anchor" id="other-tools-anchor"></span>
+            <h2 class="section-title"><i class="fas fa-wrench"></i> 其他工具</h2>
+            <div class="websites-grid">
+                <!-- 星座运势卡片 -->
+                <div class="website-card">
+                    <div class="website-icon constellation">
+                        <i class="fas fa-star"></i>
+                    </div>
+                    <h3 class="website-name">星座运势配对</h3>
+                    <p class="website-desc">获取今日星座运势，查看星座配对指数。</p>
+                    <a href="constellation.html" class="website-link">立即访问</a>
                 </div>
             </div>
         </div>
