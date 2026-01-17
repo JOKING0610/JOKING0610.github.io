@@ -1,0 +1,1445 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="format-detection" content="telephone=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="translucent">
+    <title>星座运势配对工具</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', 'Microsoft YaHei', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+            min-height: 100vh;
+            padding: 20px;
+            background-attachment: fixed;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 24px;
+            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.8);
+            overflow: hidden;
+            animation: fadeInUp 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 50px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .header::before {
+            content: '✨';
+            position: absolute;
+            font-size: 100px;
+            opacity: 0.1;
+            top: -20px;
+            left: -20px;
+        }
+
+        .header::after {
+            content: '🌟';
+            position: absolute;
+            font-size: 80px;
+            opacity: 0.1;
+            bottom: -10px;
+            right: -10px;
+        }
+
+        .header h1 {
+            font-size: 3em;
+            margin-bottom: 15px;
+            font-weight: 700;
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+            letter-spacing: 2px;
+        }
+
+        .header p {
+            font-size: 1.2em;
+            opacity: 0.95;
+            font-weight: 300;
+        }
+
+        .content {
+            padding: 50px;
+        }
+
+        .form-group {
+            margin-bottom: 40px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 12px;
+            font-weight: 600;
+            color: #2c3e50;
+            font-size: 1.2em;
+            letter-spacing: 1px;
+        }
+
+
+
+        /* 自定义下拉菜单容器 */
+        .custom-select {
+            position: relative;
+            width: 100%;
+            margin-top: 10px;
+        }
+
+        .custom-select select {
+            width: 100%;
+            padding: 22px 60px 22px 24px;
+            border: 2px solid rgba(102, 126, 234, 0.2);
+            border-radius: 18px;
+            font-size: 1.15em;
+            background: linear-gradient(135deg, #ffffff 0%, #f8f9ff 100%);
+            cursor: pointer;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            appearance: none;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            font-weight: 600;
+            color: #2c3e50;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+        }
+
+        .custom-select::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            right: 25px;
+            transform: translateY(-50%);
+            width: 0;
+            height: 0;
+            border-left: 10px solid transparent;
+            border-right: 10px solid transparent;
+            border-top: 12px solid #667eea;
+            pointer-events: none;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 1;
+        }
+
+        .custom-select:hover::after {
+            border-top-color: #764ba2;
+            transform: translateY(-50%) scale(1.1);
+        }
+
+        .custom-select select:focus + ::after {
+            border-top-color: #764ba2;
+            transform: translateY(-50%) rotate(180deg);
+        }
+
+        .custom-select select:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.2), 0 15px 35px rgba(102, 126, 234, 0.25);
+            transform: translateY(-4px);
+            background: white;
+        }
+
+        .custom-select select:hover {
+            border-color: #667eea;
+            background: white;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.15);
+        }
+
+        .custom-select select option {
+            padding: 18px 20px;
+            font-size: 1.1em;
+            background: white;
+            color: #2c3e50;
+            border: none;
+            transition: all 0.2s ease;
+        }
+
+        .custom-select select option:hover {
+            background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+            color: #1976d2;
+        }
+
+        .custom-select select option:checked {
+            background: linear-gradient(135deg, #2196f3 0%, #1976d2 100%);
+            color: white;
+            font-weight: 700;
+        }
+
+        .custom-select select option:first-child {
+            color: #95a5a6;
+            font-style: italic;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 24px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 16px;
+            font-size: 1.3em;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            margin-bottom: 25px;
+            position: relative;
+            overflow: hidden;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+            transition: left 0.8s;
+        }
+
+        .btn::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, transparent 50%);
+            pointer-events: none;
+        }
+
+        .btn:hover::before {
+            left: 100%;
+        }
+
+        .btn:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 20px 40px rgba(102, 126, 234, 0.5), 0 0 0 2px rgba(255, 255, 255, 0.3);
+        }
+
+        .btn:active {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .result {
+            display: none;
+            margin-top: 40px;
+            animation: fadeInUp 0.6s ease;
+        }
+
+        .result-header {
+            text-align: center;
+            padding: 40px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 24px 24px 0 0;
+            color: white;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .result-header::before {
+            content: '✨';
+            position: absolute;
+            font-size: 80px;
+            opacity: 0.2;
+            top: -10px;
+            left: -10px;
+        }
+
+        .result-header::after {
+            content: '🌟';
+            position: absolute;
+            font-size: 60px;
+            opacity: 0.2;
+            bottom: -10px;
+            right: -10px;
+        }
+
+        .result-header h2 {
+            font-size: 2.5em;
+            font-weight: 700;
+            letter-spacing: 2px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .result-content {
+            background: white;
+            border-radius: 0 0 20px 20px;
+            padding: 40px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+        }
+
+        .result-section {
+            margin-bottom: 40px;
+            padding: 30px;
+            background: linear-gradient(135deg, #ffffff 0%, #f8f9ff 100%);
+            border-radius: 20px;
+            border: 2px solid rgba(102, 126, 234, 0.15);
+            position: relative;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
+        }
+
+        .result-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #667eea, #764ba2, #667eea);
+            border-radius: 20px 20px 0 0;
+        }
+
+        .result-section-title {
+            color: #667eea;
+            font-size: 1.6em;
+            font-weight: 700;
+            margin-bottom: 25px;
+            padding-left: 12px;
+            border-left: 4px solid #667eea;
+            letter-spacing: 1px;
+        }
+
+        .result-card {
+            display: flex;
+            align-items: center;
+            padding: 22px;
+            margin-bottom: 15px;
+            background: linear-gradient(135deg, #ffffff 0%, #f8f9ff 100%);
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            border-left: 4px solid transparent;
+        }
+
+        .result-card:hover {
+            transform: translateX(8px);
+            box-shadow: 0 10px 35px rgba(102, 126, 234, 0.15);
+            border-left-color: #667eea;
+        }
+
+        .result-card-icon {
+            font-size: 1.8em;
+            margin-right: 15px;
+            min-width: 40px;
+            text-align: center;
+        }
+
+        .result-card-label {
+            color: #1976d2;
+            font-weight: 700;
+            font-size: 1.1em;
+            min-width: 120px;
+            margin-right: 10px;
+        }
+
+        .result-card-value {
+            color: #34495e;
+            font-size: 1.05em;
+            line-height: 1.6;
+            flex: 1;
+        }
+
+        .result-card-value.highlight {
+            color: #2196f3;
+            font-weight: 600;
+        }
+
+        .result-card-value.best {
+            color: #e91e63;
+            font-weight: 700;
+        }
+
+        .result-card-value.good {
+            color: #4caf50;
+            font-weight: 600;
+        }
+
+        .result-card-value.fair {
+            color: #ff9800;
+            font-weight: 600;
+        }
+
+        .result-card-value.poor {
+            color: #f44336;
+            font-weight: 600;
+        }
+
+        .result-card-value.italic {
+            font-style: italic;
+            color: #757575;
+        }
+
+        .result-footer {
+            text-align: center;
+            padding: 25px;
+            background: linear-gradient(135deg, #f8f9ff 0%, #e8eaf6 100%);
+            border-radius: 16px;
+            margin-top: 30px;
+            color: #667eea;
+            font-weight: 600;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+        }
+
+        /* 新增：结果卡片网格布局 */
+        .result-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .result-card-lg {
+            grid-column: 1 / -1;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: 0 15px 40px rgba(102, 126, 234, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .result-card-lg::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+            animation: float 6s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translate(0, 0) rotate(0deg); }
+            50% { transform: translate(-10px, -10px) rotate(10deg); }
+        }
+
+        .result-card-lg .result-card-icon {
+            font-size: 3em;
+            margin-bottom: 15px;
+            opacity: 0.9;
+        }
+
+        .result-card-lg .result-card-label {
+            color: rgba(255,255,255,0.9);
+            font-size: 1.2em;
+            margin-bottom: 10px;
+        }
+
+        .result-card-lg .result-card-value {
+            color: white;
+            font-size: 1.4em;
+            font-weight: 700;
+            line-height: 1.6;
+        }
+
+        .result-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, #ffffff 0%, #f8f9ff 100%);
+            padding: 20px;
+            border-radius: 16px;
+            text-align: center;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            border: 2px solid rgba(102, 126, 234, 0.1);
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 35px rgba(102, 126, 234, 0.15);
+            border-color: rgba(102, 126, 234, 0.3);
+        }
+
+        .stat-icon {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .stat-label {
+            color: #667eea;
+            font-weight: 600;
+            font-size: 0.95em;
+            margin-bottom: 5px;
+        }
+
+        .stat-value {
+            color: #2c3e50;
+            font-weight: 700;
+            font-size: 1.3em;
+        }
+
+        /* 配对卡片 */
+        .match-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .match-card {
+            background: linear-gradient(135deg, #ffffff 0%, #f8f9ff 100%);
+            padding: 20px;
+            border-radius: 16px;
+            text-align: center;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            border-left: 4px solid #667eea;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .match-card.best {
+            border-left-color: #e91e63;
+            background: linear-gradient(135deg, #fce4ec 0%, #f8bbd0 100%);
+        }
+
+        .match-card.good {
+            border-left-color: #4caf50;
+            background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%);
+        }
+
+        .match-card.fair {
+            border-left-color: #ff9800;
+            background: linear-gradient(135deg, #fff3e0 0%, #ffe0b2 100%);
+        }
+
+        .match-card.poor {
+            border-left-color: #f44336;
+            background: linear-gradient(135deg, #ffebee 0%, #ffcdd2 100%);
+        }
+
+        .match-card:hover {
+            transform: scale(1.05);
+            box-shadow: 0 10px 35px rgba(0, 0, 0, 0.15);
+        }
+
+        .match-title {
+            font-weight: 700;
+            color: #2c3e50;
+            margin-bottom: 8px;
+            font-size: 1.1em;
+        }
+
+        .match-desc {
+            color: #666;
+            font-size: 0.9em;
+        }
+
+        /* 幸运转盘效果 */
+        .lucky-wheel {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+
+        .lucky-item {
+            background: #ffffff;
+            padding: 15px 20px;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            transition: all 0.3s ease;
+            border: 1px solid #e0e0e0;
+            min-width: 200px;
+        }
+
+        .lucky-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+        }
+
+        .lucky-item .result-card-icon {
+            font-size: 1.8em;
+            min-width: 40px;
+            text-align: center;
+        }
+
+        .lucky-info {
+            flex: 1;
+        }
+
+        .lucky-label {
+            font-size: 0.9em;
+            color: #999;
+            margin-bottom: 3px;
+        }
+
+        .lucky-value {
+            font-size: 1.1em;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 60px;
+            color: #2196f3;
+            font-size: 1.3em;
+            font-weight: 600;
+        }
+
+        .loading::after {
+            content: '';
+            display: inline-block;
+            width: 25px;
+            height: 25px;
+            border: 4px solid #2196f3;
+            border-top-color: transparent;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-left: 15px;
+            vertical-align: middle;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        .error {
+            display: none;
+            margin-top: 25px;
+            padding: 20px;
+            background: linear-gradient(135deg, #ffebee 0%, #ffcdd2 100%);
+            border-left: 6px solid #f44336;
+            color: #c62828;
+            border-radius: 12px;
+            font-size: 1.1em;
+            font-weight: 500;
+            animation: shake 0.5s ease;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-10px); }
+            75% { transform: translateX(10px); }
+        }
+
+        /* ============ 响应式设计 ============ */
+        
+        /* 平板设备 (768px - 1023px) */
+        @media (max-width: 1023px) {
+            body {
+                padding: 15px;
+            }
+            
+            .container {
+                max-width: 700px;
+                border-radius: 20px;
+            }
+            
+            .header {
+                padding: 35px 25px;
+            }
+            
+            .header h1 {
+                font-size: 2.5em;
+            }
+            
+            .header p {
+                font-size: 1.1em;
+            }
+            
+            .content {
+                padding: 35px 25px;
+            }
+            
+            .form-group {
+                margin-bottom: 30px;
+            }
+            
+            label {
+                font-size: 1.1em;
+            }
+            
+            .custom-select select {
+                padding: 18px 50px 18px 20px;
+                font-size: 1.1em;
+            }
+            
+            .btn {
+                padding: 20px;
+                font-size: 1.2em;
+            }
+            
+            .result-header {
+                padding: 30px 20px;
+            }
+            
+            .result-header h2 {
+                font-size: 2.2em;
+            }
+            
+            .result-content {
+                padding: 30px 20px;
+            }
+            
+            .result-section {
+                padding: 25px;
+                margin-bottom: 30px;
+            }
+            
+            .result-section-title {
+                font-size: 1.4em;
+            }
+            
+            .result-card {
+                padding: 18px;
+                margin-bottom: 12px;
+            }
+            
+            .result-card-lg {
+                padding: 25px;
+            }
+            
+            .result-card-lg .result-card-icon {
+                font-size: 2.5em;
+            }
+            
+            .result-card-lg .result-card-value {
+                font-size: 1.2em;
+            }
+            
+            .result-stats {
+                grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+                gap: 12px;
+            }
+            
+            .stat-card {
+                padding: 16px;
+            }
+            
+            .stat-icon {
+                font-size: 2.2em;
+            }
+            
+            .stat-value {
+                font-size: 1.2em;
+            }
+            
+            .match-cards {
+                grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+                gap: 12px;
+            }
+            
+            .match-card {
+                padding: 16px;
+            }
+            
+            .lucky-wheel {
+                gap: 12px;
+            }
+            
+            .lucky-item {
+                padding: 14px 18px;
+                min-width: 180px;
+            }
+            
+            .lucky-item .result-card-icon {
+                font-size: 1.6em;
+            }
+            
+            .lucky-label {
+                font-size: 0.85em;
+            }
+            
+            .lucky-value {
+                font-size: 1em;
+            }
+        }
+        
+        /* 手机设备 (480px - 767px) */
+        @media (max-width: 767px) {
+            body {
+                padding: 10px;
+            }
+            
+            .container {
+                border-radius: 16px;
+            }
+            
+            .header {
+                padding: 25px 15px;
+            }
+            
+            .header h1 {
+                font-size: 2.2em;
+                letter-spacing: 1px;
+            }
+            
+            .header p {
+                font-size: 1em;
+            }
+            
+            .content {
+                padding: 25px 15px;
+            }
+            
+            .form-group {
+                margin-bottom: 25px;
+            }
+            
+            label {
+                font-size: 1em;
+            }
+            
+            .custom-select select {
+                padding: 16px 45px 16px 18px;
+                font-size: 1em;
+                border-radius: 14px;
+            }
+            
+            .custom-select::after {
+                right: 20px;
+                border-left-width: 8px;
+                border-right-width: 8px;
+                border-top-width: 10px;
+            }
+            
+            .btn {
+                padding: 18px;
+                font-size: 1.1em;
+                letter-spacing: 1px;
+            }
+            
+            .loading {
+                padding: 40px 20px;
+                font-size: 1.1em;
+            }
+            
+            .error {
+                padding: 16px;
+                font-size: 1em;
+            }
+            
+            .result-header {
+                padding: 25px 15px;
+            }
+            
+            .result-header h2 {
+                font-size: 1.9em;
+            }
+            
+            .result-content {
+                padding: 25px 15px;
+            }
+            
+            .result-section {
+                padding: 20px;
+                margin-bottom: 25px;
+            }
+            
+            .result-section-title {
+                font-size: 1.3em;
+                margin-bottom: 20px;
+            }
+            
+            .result-card {
+                padding: 16px;
+                margin-bottom: 10px;
+            }
+            
+            .result-card-icon {
+                font-size: 1.5em;
+                margin-right: 12px;
+            }
+            
+            .result-card-label {
+                font-size: 1em;
+                min-width: 100px;
+            }
+            
+            .result-card-value {
+                font-size: 1em;
+            }
+            
+            .result-card-lg {
+                padding: 20px;
+            }
+            
+            .result-card-lg .result-card-icon {
+                font-size: 2.2em;
+            }
+            
+            .result-card-lg .result-card-label {
+                font-size: 1.1em;
+            }
+            
+            .result-card-lg .result-card-value {
+                font-size: 1.1em;
+            }
+            
+            .result-stats {
+                grid-template-columns: 1fr;
+                gap: 10px;
+            }
+            
+            .stat-card {
+                padding: 18px;
+                display: flex;
+                align-items: center;
+                text-align: left;
+            }
+            
+            .stat-icon {
+                font-size: 2em;
+                margin-right: 15px;
+                margin-bottom: 0;
+            }
+            
+            .stat-info {
+                flex: 1;
+            }
+            
+            .stat-label {
+                font-size: 0.9em;
+                margin-bottom: 3px;
+            }
+            
+            .stat-value {
+                font-size: 1.1em;
+            }
+            
+            .match-cards {
+                grid-template-columns: 1fr;
+                gap: 10px;
+            }
+            
+            .match-card {
+                padding: 18px;
+                text-align: left;
+            }
+            
+            .lucky-wheel {
+                gap: 10px;
+            }
+            
+            .lucky-item {
+                padding: 12px 16px;
+                min-width: 100%;
+            }
+            
+            .lucky-item .result-card-icon {
+                font-size: 1.6em;
+            }
+            
+            .lucky-label {
+                font-size: 0.85em;
+            }
+            
+            .lucky-value {
+                font-size: 1em;
+            }
+            
+            .result-footer {
+                padding: 20px;
+                font-size: 0.95em;
+            }
+        }
+        
+        /* 小屏手机 (max-width: 479px) */
+        @media (max-width: 479px) {
+            body {
+                padding: 8px;
+            }
+            
+            .header h1 {
+                font-size: 2em;
+            }
+            
+            .header p {
+                font-size: 0.95em;
+            }
+            
+            .content {
+                padding: 20px 12px;
+            }
+            
+            label {
+                font-size: 0.95em;
+            }
+            
+            .custom-select select {
+                padding: 16px 45px 16px 16px;
+                font-size: 0.95em;
+            }
+            
+            .btn {
+                padding: 16px;
+                font-size: 1.1em;
+            }
+            
+            .result-header h2 {
+                font-size: 1.7em;
+            }
+            
+            .result-section {
+                padding: 16px;
+            }
+            
+            .result-section-title {
+                font-size: 1.2em;
+            }
+            
+            .result-card {
+                padding: 14px;
+            }
+            
+            .result-card-icon {
+                font-size: 1.4em;
+                margin-right: 10px;
+            }
+            
+            .result-card-label {
+                font-size: 0.95em;
+                min-width: 90px;
+            }
+            
+            .result-card-value {
+                font-size: 0.95em;
+            }
+            
+            .result-card-lg .result-card-icon {
+                font-size: 2em;
+            }
+            
+            .result-card-lg .result-card-value {
+                font-size: 1em;
+            }
+            
+            .stat-card {
+                padding: 15px;
+            }
+            
+            .stat-icon {
+                font-size: 1.8em;
+            }
+            
+            .match-card {
+                padding: 15px;
+            }
+            
+            .lucky-item {
+                padding: 10px 14px;
+            }
+            
+            .lucky-item .result-card-icon {
+                font-size: 1.5em;
+            }
+            
+            .lucky-label {
+                font-size: 0.8em;
+            }
+            
+            .lucky-value {
+                font-size: 0.95em;
+            }
+        }
+        
+        /* 大屏幕优化 (min-width: 1200px) */
+        @media (min-width: 1200px) {
+            .container {
+                max-width: 1000px;
+            }
+            
+            .header {
+                padding: 60px;
+            }
+            
+            .header h1 {
+                font-size: 3.5em;
+            }
+            
+            .content {
+                padding: 60px;
+            }
+            
+            .result-content {
+                padding: 50px;
+            }
+            
+            .result-stats {
+                grid-template-columns: repeat(3, 1fr);
+            }
+            
+            .match-cards {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+        
+        /* 超大屏幕 (min-width: 1600px) */
+        @media (min-width: 1600px) {
+            .container {
+                max-width: 1200px;
+            }
+            
+            .header h1 {
+                font-size: 4em;
+            }
+            
+            .content {
+                padding: 80px;
+            }
+            
+            .result-content {
+                padding: 60px;
+            }
+        }
+        
+        /* 触摸设备优化 */
+        @media (hover: none) and (pointer: coarse) {
+            .custom-select select:hover,
+            .btn:hover,
+            .result-card:hover,
+            .stat-card:hover,
+            .match-card:hover,
+            .lucky-item:hover {
+                transform: none;
+            }
+            
+            .btn:active {
+                transform: scale(0.98);
+            }
+            
+            .custom-select select:active {
+                transform: scale(0.99);
+            }
+        }
+        
+        /* 高对比度模式 */
+        @media (prefers-contrast: high) {
+            .container {
+                border: 2px solid #667eea;
+            }
+            
+            .custom-select select {
+                border-width: 3px;
+            }
+        }
+        
+        /* 减少动画模式 */
+        @media (prefers-reduced-motion: reduce) {
+            *,
+            *::before,
+            *::after {
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
+            }
+            
+            @keyframes float {
+                0%, 100% { transform: none; }
+            }
+        }
+        
+
+
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>✨ 星座运势配对</h1>
+            <p>输入星座名称，获取详细运势和配对信息</p>
+        </div>
+        
+        <div class="content">
+            <div class="form-group">
+                <label for="constellation">星座名称</label>
+                <div class="custom-select">
+                    <select id="constellation">
+                        <option value="">-- 请选择星座 --</option>
+                        <option value="白羊座">白羊座 (Aries)</option>
+                        <option value="金牛座">金牛座 (Taurus)</option>
+                        <option value="双子座">双子座 (Gemini)</option>
+                        <option value="巨蟹座">巨蟹座 (Cancer)</option>
+                        <option value="狮子座">狮子座 (Leo)</option>
+                        <option value="处女座">处女座 (Virgo)</option>
+                        <option value="天秤座">天秤座 (Libra)</option>
+                        <option value="天蝎座">天蝎座 (Scorpio)</option>
+                        <option value="射手座">射手座 (Sagittarius)</option>
+                        <option value="摩羯座">摩羯座 (Capricorn)</option>
+                        <option value="水瓶座">水瓶座 (Aquarius)</option>
+                        <option value="双鱼座">双鱼座 (Pisces)</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="time">查询时间</label>
+                <div class="custom-select">
+                    <select id="time">
+                        <option value="today">今天</option>
+                        <option value="week">本周</option>
+                        <option value="month">本月</option>
+                        <option value="year">今年</option>
+                    </select>
+                </div>
+            </div>
+
+            <button class="btn" onclick="getFortune()">获取运势</button>
+
+            <div class="loading" id="loading">正在查询中</div>
+            <div class="error" id="error"></div>
+
+            <div class="result" id="result">
+                <div class="result-header">
+                    <h2 id="result-title"></h2>
+                </div>
+                <div class="result-content" id="result-content"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        async function getFortune() {
+            const constellation = document.getElementById('constellation').value;
+            const time = document.getElementById('time').value;
+            
+            if (!constellation) {
+                showError('请选择星座');
+                return;
+            }
+
+            const loading = document.getElementById('loading');
+            const result = document.getElementById('result');
+            const error = document.getElementById('error');
+            
+            // 显示加载状态
+            loading.style.display = 'block';
+            result.style.display = 'none';
+            error.style.display = 'none';
+
+            try {
+                const url = `https://yunzhiapi.cn/API/xzyspd.php?msg=${encodeURIComponent(constellation)}&time=${time}&type=json`;
+                const response = await fetch(url);
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const data = await response.json();
+                
+                // 隐藏加载状态
+                loading.style.display = 'none';
+                
+                // 显示结果
+                displayResult(data);
+                
+            } catch (err) {
+                loading.style.display = 'none';
+                showError('查询失败：' + err.message);
+            }
+        }
+
+        function showError(message) {
+            const error = document.getElementById('error');
+            error.textContent = message;
+            error.style.display = 'block';
+        }
+
+        function displayResult(data) {
+            const result = document.getElementById('result');
+            const resultTitle = document.getElementById('result-title');
+            const resultContent = document.getElementById('result-content');
+            
+            resultTitle.innerHTML = `${data.constellation_name} (${data.constellation_en}) - ${getPeriodText(data.time_period)}运势`;
+            
+            let html = '';
+            
+            // 基本信息部分 - 使用新的网格布局
+            if (data.date_range || data.element || data.ruling_planet) {
+                html += `
+                    <div class="result-section">
+                        <div class="result-section-title">🔮 星座档案</div>
+                        <div class="result-stats">
+                `;
+                if (data.date_range) html += createStatCard('📅', '日期范围', data.date_range);
+                if (data.element) html += createStatCard('⚡', '元素属性', data.element);
+                if (data.ruling_planet) html += createStatCard('🌙', '守护行星', data.ruling_planet);
+                html += `</div></div>`;
+            }
+            
+            // 运势信息部分 - 使用大卡片展示综合运势
+            if (data.general_fortune || data.love_fortune || data.work_fortune || data.wealth_fortune || data.health_fortune) {
+                html += `
+                    <div class="result-section">
+                        <div class="result-section-title">🌟 运势解析</div>
+                `;
+                
+                // 综合运势使用大卡片
+                if (data.general_fortune) {
+                    html += `
+                        <div class="result-card-lg">
+                            <div class="result-card-icon">✨</div>
+                            <div class="result-card-label">综合运势</div>
+                            <div class="result-card-value">${data.general_fortune}</div>
+                        </div>
+                    `;
+                }
+                
+                // 其他运势使用网格布局
+                html += '<div class="result-grid">';
+                if (data.love_fortune) html += createResultCard('💕', '爱情运势', data.love_fortune);
+                if (data.work_fortune) html += createResultCard('💼', '事业运势', data.work_fortune);
+                if (data.wealth_fortune) html += createResultCard('💰', '财富运势', data.wealth_fortune);
+                if (data.health_fortune) html += createResultCard('💪', '健康运势', data.health_fortune);
+                html += '</div></div>';
+            }
+            
+            // 配对信息部分 - 使用新的配对卡片布局
+            if (data.best_match || data.good_matches || data.fair_matches || data.poor_matches) {
+                html += `
+                    <div class="result-section">
+                        <div class="result-section-title">💘 星座配对</div>
+                        <div class="match-cards">
+                `;
+                if (data.best_match) html += createMatchCard('best', '🏆 最佳配对', data.best_match + (data.best_match_en ? ` (${data.best_match_en})` : ''));
+                if (data.good_matches) html += createMatchCard('good', '👍 较好配对', data.good_matches);
+                if (data.fair_matches) html += createMatchCard('fair', '🤝 一般配对', data.fair_matches);
+                if (data.poor_matches) html += createMatchCard('poor', '👎 较差配对', data.poor_matches);
+                html += `</div></div>`;
+            }
+            
+            // 幸运信息部分 - 使用幸运转盘布局
+            if (data.lucky_colors || data.lucky_numbers || data.lucky_direction || data.lucky_time) {
+                html += `
+                    <div class="result-section">
+                        <div class="result-section-title">🍀 幸运指南</div>
+                        <div class="lucky-wheel">
+                `;
+                if (data.lucky_colors) html += createLuckyItem('🎨', '幸运颜色', data.lucky_colors);
+                if (data.lucky_numbers) html += createLuckyItem('🔢', '幸运数字', data.lucky_numbers);
+                if (data.lucky_direction) html += createLuckyItem('🧭', '幸运方向', data.lucky_direction);
+                if (data.lucky_time) html += createLuckyItem('⏰', '幸运时间', data.lucky_time);
+                html += `</div></div>`;
+            }
+            
+            // 建议和分析部分
+            if (data.love_advice || data.desire_analysis || data.strengths || data.weaknesses) {
+                html += `
+                    <div class="result-section">
+                        <div class="result-section-title">💡 性格分析</div>
+                        <div class="result-grid">
+                `;
+                if (data.love_advice) html += createResultCard('💌', '爱情建议', data.love_advice, 'italic');
+                if (data.desire_analysis) html += createResultCard('🔥', '欲望分析', data.desire_analysis);
+                if (data.strengths) html += createResultCard('🌟', '优点', data.strengths, 'good');
+                if (data.weaknesses) html += createResultCard('🌑', '缺点', data.weaknesses, 'poor');
+                html += `</div></div>`;
+            }
+            
+            // 生成时间
+            if (data.generated_at) {
+                html += `<div class="result-footer">📊 数据生成时间：${data.generated_at}</div>`;
+            }
+            
+            resultContent.innerHTML = html;
+            result.style.display = 'block';
+        }
+
+        // 新增：创建统计卡片
+        function createStatCard(icon, label, value) {
+            return `
+                <div class="stat-card">
+                    <div class="stat-icon">${icon}</div>
+                    <div class="stat-label">${label}</div>
+                    <div class="stat-value">${value}</div>
+                </div>
+            `;
+        }
+
+        // 新增：创建配对卡片
+        function createMatchCard(type, title, description) {
+            return `
+                <div class="match-card ${type}">
+                    <div class="match-title">${title}</div>
+                    <div class="match-desc">${description}</div>
+                </div>
+            `;
+        }
+
+        // 新增：创建幸运项目
+        function createLuckyItem(icon, label, value) {
+            return `
+                <div class="lucky-item">
+                    <div class="result-card-icon">${icon}</div>
+                    <div class="lucky-info">
+                        <div class="lucky-label">${label}</div>
+                        <div class="lucky-value">${value}</div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function createResultCard(icon, label, value, className = '') {
+            return `
+                <div class="result-card">
+                    <div class="result-card-icon">${icon}</div>
+                    <div class="result-card-label">${label}</div>
+                    <div class="result-card-value ${className}">${value}</div>
+                </div>
+            `;
+        }
+
+        function getPeriodText(period) {
+            const periodMap = {
+                'today': '今日',
+                'week': '本周',
+                'month': '本月',
+                'year': '今年'
+            };
+            return periodMap[period] || period;
+        }
+
+
+    </script>
+</body>
+</html>
