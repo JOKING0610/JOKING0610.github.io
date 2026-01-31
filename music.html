@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>JokingMusic0.2beta</title>
+    <title>JokingMusic0.2.1beta</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root {
@@ -1240,6 +1240,268 @@
             background: rgba(255, 255, 255, 0.1);
         }
         
+        /* 下载进度面板样式 */
+        .download-panel {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 400px;
+            max-width: 90vw;
+            background: rgba(15, 23, 42, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 16px;
+            padding: 24px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+            border: 1px solid var(--border-color);
+            z-index: 1000;
+            display: none;
+            flex-direction: column;
+            gap: 20px;
+        }
+        
+        .download-panel-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+        
+        .download-panel-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+        
+        .close-download-panel {
+            background: transparent;
+            border: none;
+            color: var(--text-secondary);
+            font-size: 14px;
+            cursor: pointer;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+        
+        .close-download-panel:hover {
+            color: var(--text-primary);
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        /* 公告面板样式 */
+        .announcement-panel {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 500px;
+            max-width: 90vw;
+            max-height: 80vh;
+            background: rgba(15, 23, 42, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 16px;
+            padding: 24px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+            border: 1px solid var(--border-color);
+            z-index: 1000;
+            display: none;
+            flex-direction: column;
+            gap: 20px;
+        }
+        
+        .announcement-panel-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+        
+        .announcement-panel-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+        
+        .close-announcement-panel {
+            background: transparent;
+            border: none;
+            color: var(--text-secondary);
+            font-size: 14px;
+            cursor: pointer;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+        
+        .close-announcement-panel:hover {
+            color: var(--text-primary);
+            background: rgba(255, 255, 255, 0.1);
+        }
+        
+        .announcement-content {
+            flex: 1;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+        }
+        
+        .announcement-item {
+            padding: 16px;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 12px;
+            border-left: 4px solid var(--primary-color);
+        }
+        
+        .announcement-date {
+            font-size: 12px;
+            color: var(--text-secondary);
+            margin-bottom: 8px;
+        }
+        
+        .announcement-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 12px;
+        }
+        
+        .announcement-text {
+            font-size: 14px;
+            color: var(--text-secondary);
+            line-height: 1.6;
+        }
+        
+        .announcement-text ul {
+            margin: 12px 0;
+            padding-left: 20px;
+        }
+        
+        .announcement-text li {
+            margin-bottom: 6px;
+        }
+        
+        .announcement-content::-webkit-scrollbar {
+            width: 6px;
+        }
+        
+        .announcement-content::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+        }
+        
+        .announcement-content::-webkit-scrollbar-thumb {
+            background: var(--primary-color);
+            border-radius: 10px;
+        }
+        
+        .announcement-content::-webkit-scrollbar-thumb:hover {
+            background: var(--primary-light);
+        }
+        
+        .download-content {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+        
+        .download-info {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        
+        .download-file-name {
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--text-primary);
+            word-break: break-all;
+        }
+        
+        .download-status {
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+        
+        .download-progress-container {
+            position: relative;
+            height: 8px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        
+        .download-progress-bar {
+            position: absolute;
+            height: 100%;
+            background: linear-gradient(90deg, var(--primary-light), var(--primary-color));
+            border-radius: 4px;
+            width: 0%;
+            transition: width 0.3s ease;
+            box-shadow: 0 0 8px rgba(76, 201, 240, 0.4);
+        }
+        
+        .download-stats {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+        
+        .download-percentage {
+            font-weight: 500;
+            color: var(--primary-light);
+        }
+        
+        .download-controls {
+            display: flex;
+            justify-content: flex-end;
+            gap: 12px;
+            margin-top: 8px;
+        }
+        
+        .download-btn {
+            padding: 10px 20px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .download-btn.cancel {
+            background: rgba(239, 68, 68, 0.1);
+            border-color: var(--error-color);
+            color: var(--error-color);
+        }
+        
+        .download-btn.cancel:hover {
+            background: var(--error-color);
+            color: white;
+        }
+        
+        .download-btn.primary {
+            background: linear-gradient(135deg, var(--primary-color), var(--primary-light));
+            border: none;
+            color: white;
+        }
+        
+        .download-btn.primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(67, 97, 238, 0.4);
+        }
+        
         .player-placeholder {
             text-align: center;
             padding: 20px;
@@ -2147,10 +2409,20 @@
                 gap: 15px;
             }
             
+            .player-cover {
+                order: 1;
+            }
+            
+            .player-info {
+                order: 2;
+                flex: 1;
+            }
+            
             .player-controls {
-                width: 100%;
+                order: 3;
+                width: auto;
                 justify-content: center;
-                margin-top: 10px;
+                margin-top: 0;
             }
             
             /* 平板端播放器展开区域优化 */
@@ -2813,10 +3085,173 @@
             /* 优化滚动体验 */
             .results-container {
                 -webkit-overflow-scrolling: touch;
+                overflow-y: auto;
             }
             
             .lyrics-content {
                 -webkit-overflow-scrolling: touch;
+            }
+        }
+
+        /* 竖屏设备特定优化 */
+        @media (orientation: portrait) {
+            /* 调整容器内边距 */
+            .container {
+                padding: 10px;
+                gap: 15px;
+            }
+            
+            /* 调整搜索区域 */
+            .search-section {
+                padding: 15px;
+            }
+            
+            /* 调整结果区域 */
+            .results-section {
+                padding: 15px;
+                min-height: 50vh;
+            }
+            
+            /* 调整悬浮播放器 */
+            .floating-player {
+                width: calc(100% - 20px);
+                padding: 15px;
+                bottom: 10px;
+                max-height: 40vh;
+                overflow-y: auto;
+            }
+            
+            /* 调整播放器头部 */
+            .player-header {
+                flex-direction: column;
+                align-items: center;
+                gap: 10px;
+            }
+            
+            /* 调整播放器信息 */
+            .player-info {
+                text-align: center;
+                width: 100%;
+            }
+            
+            /* 调整播放器控制器 */
+            .player-controls {
+                width: 100%;
+                justify-content: center;
+            }
+            
+            /* 调整歌词面板位置 */
+            .lyrics-panel {
+                width: calc(100% - 30px);
+                max-height: 30vh;
+                top: 10px;
+                left: 50%;
+                transform: translateX(-50%);
+                bottom: auto;
+                right: auto;
+            }
+            
+            /* 调整显示歌词按钮位置 */
+            .show-lyrics-btn {
+                bottom: 170px;
+                right: 20px;
+            }
+            
+            /* 调整网格视图 */
+            .grid-view .song-list {
+                grid-template-columns: 1fr;
+                gap: 15px;
+            }
+            
+            /* 调整歌曲项 */
+            .song-item {
+                padding: 15px;
+                flex-direction: column;
+                align-items: center;
+                text-align: center;
+            }
+            
+            /* 调整歌曲封面 */
+            .song-cover {
+                width: 100px;
+                height: 100px;
+                margin-bottom: 10px;
+            }
+            
+            /* 调整歌曲信息 */
+            .song-info {
+                width: 100%;
+            }
+            
+            /* 调整歌曲操作按钮 */
+            .song-actions {
+                width: 100%;
+                justify-content: center;
+                margin-top: 10px;
+            }
+            
+            /* 调整搜索表单 */
+            .search-form {
+                grid-template-columns: 1fr;
+                gap: 15px;
+            }
+            
+            /* 调整搜索按钮 */
+            .search-btn {
+                width: 100%;
+                justify-content: center;
+            }
+            
+            /* 调整分页控件 */
+            .pagination-controls {
+                flex-direction: column;
+                gap: 10px;
+            }
+            
+            /* 调整分页按钮 */
+            .pagination-buttons {
+                width: 100%;
+                justify-content: space-between;
+            }
+            
+            /* 调整头部 */
+            .header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 10px;
+                padding: 10px 0;
+            }
+            
+            /* 调整头部控制按钮 */
+            .header-controls {
+                width: 100%;
+                justify-content: flex-end;
+            }
+            
+            /* 调整结果头部 */
+            .results-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 10px;
+            }
+            
+            /* 调整视图切换按钮 */
+            .view-toggle {
+                margin-left: 0;
+            }
+            
+            /* 调整下载面板 */
+            .download-panel {
+                width: calc(100% - 30px);
+                max-width: 90vw;
+                padding: 15px;
+            }
+            
+            /* 调整公告面板 */
+            .announcement-panel {
+                width: calc(100% - 30px);
+                max-width: 90vw;
+                padding: 15px;
             }
         }
 
@@ -2991,11 +3426,14 @@
                     <i class="fas fa-music"></i>
                 </div>
                 <div class="logo-text">
-                    <h1>JokingMusic 0.2<span class="beta-badge">Beta</span></h1>
+                    <h1>JokingMusic 0.2.1<span class="beta-badge">Beta</span></h1>
                     <p>更好的音乐搜索与播放体验</p>
                 </div>
             </div>
             <div class="header-controls">
+                <button class="header-btn" id="announcementBtn" title="公告">
+                    <i class="fas fa-bullhorn"></i>
+                </button>
                 <button class="header-btn" id="settingsBtn" title="设置">
                     <i class="fas fa-cog"></i>
                 </button>
@@ -3250,6 +3688,73 @@
             </div>
         </div>
     </div>
+
+    <!-- 下载进度面板 -->
+    <div class="download-panel" id="downloadPanel">
+        <div class="download-panel-header">
+            <div class="download-panel-title">下载进度</div>
+            <button class="close-download-panel" id="closeDownloadPanel">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="download-content">
+            <div class="download-info">
+                <div class="download-file-name" id="downloadFileName">准备下载...</div>
+                <div class="download-status" id="downloadStatus">等待中</div>
+            </div>
+            <div class="download-progress-container">
+                <div class="download-progress-bar" id="downloadProgressBar"></div>
+            </div>
+            <div class="download-stats">
+                <span class="download-percentage" id="downloadPercentage">0%</span>
+                <span class="download-speed" id="downloadSpeed">0 KB/s</span>
+                <span class="download-size" id="downloadSize">0 MB / 0 MB</span>
+            </div>
+            <div class="download-controls">
+                <button class="download-btn cancel" id="cancelDownloadBtn">取消下载</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 公告面板 -->
+    <div class="announcement-panel" id="announcementPanel">
+        <div class="announcement-panel-header">
+            <div class="announcement-panel-title">最新公告</div>
+            <button class="close-announcement-panel" id="closeAnnouncementPanel">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="announcement-content">
+            <div class="announcement-item">
+                <div class="announcement-date">2026-01-31</div>
+                <div class="announcement-title">JokingMusic 0.2.1 Beta 版本更新</div>
+                <div class="announcement-text">
+                    本次更新内容：
+                    <ul>
+                        <li>优化下载功能</li>
+                        <li>提高了搜索速度和稳定性</li>
+                        <li>增加了公告功能</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="announcement-item">
+                <div class="announcement-date">2026-01-09</div>
+                <div class="announcement-title">JokingMusic 0.2 Beta 版本发布</div>
+                <div class="announcement-text">
+                    欢迎使用 JokingMusic 0.2 Beta 版本！
+                    <br><br>
+                    <strong>本次更新亮点：</strong>
+                    <ul>
+                        <li>全新播放器 UI：更现代、更沉浸手</li>
+                        <li>API 调用深度优化：搜索更快、结果更准</li>
+                    </ul>
+                    <br>
+                    感谢一路有你，继续听歌，继续快乐！🎧
+                </div>
+            </div>
+            
+        </div>
+    </div>
     
     <!-- 歌词面板 - 修改：支持拖动 -->
     <div class="lyrics-panel" id="lyricsPanel" style="display: none;">
@@ -3315,7 +3820,8 @@
             isTouchDevice: 'ontouchstart' in window || navigator.maxTouchPoints > 0,
             screenWidth: window.innerWidth,
             screenHeight: window.innerHeight,
-            pixelRatio: window.devicePixelRatio || 1
+            pixelRatio: window.devicePixelRatio || 1,
+            isPortrait: window.innerHeight > window.innerWidth
         };
         
         // 应用设备特定的优化
@@ -3364,6 +3870,7 @@
         function handleResize() {
             deviceInfo.screenWidth = window.innerWidth;
             deviceInfo.screenHeight = window.innerHeight;
+            deviceInfo.isPortrait = window.innerHeight > window.innerWidth;
             
             // 根据屏幕尺寸调整布局
             if (deviceInfo.screenWidth <= 768) {
@@ -3375,6 +3882,47 @@
             } else {
                 document.body.classList.add('desktop-layout');
                 document.body.classList.remove('mobile-layout', 'tablet-layout');
+            }
+            
+            // 根据屏幕方向调整布局
+            if (deviceInfo.isPortrait) {
+                document.body.classList.add('portrait-device');
+                document.body.classList.remove('landscape-device');
+                
+                // 调整歌词面板位置
+                if (lyricsPanel) {
+                    lyricsPanel.style.top = '10px';
+                    lyricsPanel.style.left = '50%';
+                    lyricsPanel.style.transform = 'translateX(-50%)';
+                    lyricsPanel.style.bottom = 'auto';
+                    lyricsPanel.style.right = 'auto';
+                    lyricsPanel.style.width = 'calc(100% - 30px)';
+                    lyricsPanel.style.maxHeight = '30vh';
+                }
+                
+                // 调整显示歌词按钮位置
+                if (showLyricsBtn) {
+                    showLyricsBtn.style.bottom = '170px';
+                    showLyricsBtn.style.right = '20px';
+                }
+            } else {
+                document.body.classList.add('landscape-device');
+                document.body.classList.remove('portrait-device');
+                
+                // 恢复歌词面板默认位置
+                if (lyricsPanel) {
+                    lyricsPanel.style.top = '50%';
+                    lyricsPanel.style.left = '50%';
+                    lyricsPanel.style.transform = 'translate(-50%, -50%)';
+                    lyricsPanel.style.width = '300px';
+                    lyricsPanel.style.maxHeight = '400px';
+                }
+                
+                // 恢复显示歌词按钮默认位置
+                if (showLyricsBtn) {
+                    showLyricsBtn.style.bottom = '180px';
+                    showLyricsBtn.style.right = '20px';
+                }
             }
         }
         
@@ -3637,6 +4185,8 @@
             
             // 初始化播放速度菜单
             initPlaybackRateMenu();
+            initDownloadPanel();
+            initAnnouncementPanel();
             
             // 播放速度触发器点击事件
             playbackRateBtn.addEventListener('click', function(e) {
@@ -5578,6 +6128,351 @@
                 
                 // 备用方案：在新标签页打开音频文件
                 window.open(songUrl, '_blank');
+            }
+        }
+        
+        // 增强版下载功能
+        let downloadController = null;
+        
+        // 显示下载进度面板
+        function showDownloadPanel() {
+            const panel = document.getElementById('downloadPanel');
+            if (panel) {
+                panel.style.display = 'flex';
+            }
+        }
+        
+        // 隐藏下载进度面板
+        function hideDownloadPanel() {
+            const panel = document.getElementById('downloadPanel');
+            if (panel) {
+                panel.style.display = 'none';
+            }
+        }
+        
+        // 使用Fetch API实现带进度监控的下载
+        function startDownloadWithProgress(url, fileName) {
+            // 创建AbortController用于取消下载
+            downloadController = new AbortController();
+            const signal = downloadController.signal;
+            
+            // 下载统计变量
+            let startTime = Date.now();
+            let downloadedBytes = 0;
+            let totalBytes = 0;
+            let lastUpdateTime = 0;
+            let lastDownloadedBytes = 0;
+            let updatedFileName = fileName;
+            
+            // 存储已下载的数据块
+            const chunks = [];
+            
+            // 更新下载进度的函数
+            function updateProgress(bytesRead, totalBytesLength) {
+                downloadedBytes = bytesRead;
+                totalBytes = totalBytesLength;
+                
+                const now = Date.now();
+                const elapsedTime = now - startTime;
+                const downloadSpeed = ((downloadedBytes - lastDownloadedBytes) / (now - lastUpdateTime)) * 1000;
+                
+                // 每秒更新一次速度
+                if (now - lastUpdateTime > 1000) {
+                    lastUpdateTime = now;
+                    lastDownloadedBytes = downloadedBytes;
+                }
+                
+                // 计算百分比
+                const percentage = totalBytes > 0 ? Math.round((downloadedBytes / totalBytes) * 100) : 0;
+                
+                // 格式化大小
+                const formatSize = (bytes) => {
+                    if (bytes < 1024) return bytes + ' B';
+                    if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(2) + ' KB';
+                    return (bytes / (1024 * 1024)).toFixed(2) + ' MB';
+                };
+                
+                // 格式化速度
+                const formatSpeed = (bytesPerSecond) => {
+                    if (bytesPerSecond < 1024) return bytesPerSecond.toFixed(2) + ' B/s';
+                    if (bytesPerSecond < 1024 * 1024) return (bytesPerSecond / 1024).toFixed(2) + ' KB/s';
+                    return (bytesPerSecond / (1024 * 1024)).toFixed(2) + ' MB/s';
+                };
+                
+                // 更新UI
+                document.getElementById('downloadPercentage').textContent = percentage + '%';
+                document.getElementById('downloadSpeed').textContent = formatSpeed(downloadSpeed);
+                document.getElementById('downloadSize').textContent = `${formatSize(downloadedBytes)} / ${formatSize(totalBytes)}`;
+                document.getElementById('downloadProgressBar').style.width = percentage + '%';
+                document.getElementById('downloadStatus').textContent = '下载中...';
+            }
+            
+            // 直接开始下载，不发送HEAD请求以提高速度
+            const headers = {
+                'Range': 'bytes=0-'
+            };
+            
+            fetch(url, {
+                signal,
+                headers
+            }).then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                // 获取文件大小
+                totalBytes = parseInt(response.headers.get('content-length') || '0');
+                
+                // 检测文件类型
+                let detectedFileType = 'audio/mpeg';
+                let detectedExtension = 'mp3';
+                
+                // 从响应头获取Content-Type
+                const contentType = response.headers.get('content-type');
+                if (contentType) {
+                    detectedFileType = contentType;
+                    
+                    // 根据MIME类型确定扩展名
+                    const mimeToExtension = {
+                        'audio/mpeg': 'mp3',
+                        'audio/mp4': 'm4a',
+                        'audio/ogg': 'ogg',
+                        'audio/wav': 'wav',
+                        'audio/flac': 'flac',
+                        'audio/aac': 'aac'
+                    };
+                    
+                    if (mimeToExtension[contentType]) {
+                        detectedExtension = mimeToExtension[contentType];
+                    }
+                }
+                
+                // 更新文件名，使用检测到的扩展名
+                const baseFileName = fileName.substring(0, fileName.lastIndexOf('.'));
+                updatedFileName = `${baseFileName}.${detectedExtension}`;
+                
+                // 创建读取器
+                const reader = response.body.getReader();
+                
+                // 读取数据
+                function read() {
+                    return reader.read().then(({ done, value }) => {
+                        if (done) {
+                            // 下载完成
+                            const blob = new Blob(chunks, { type: detectedFileType });
+                            saveBlobAsFile(blob, updatedFileName);
+                            return;
+                        }
+                        
+                        // 添加数据块
+                        chunks.push(value);
+                        downloadedBytes += value.length;
+                        
+                        // 更新进度
+                        updateProgress(downloadedBytes, totalBytes);
+                        
+                        // 继续读取
+                        return read();
+                    });
+                }
+                
+                return read();
+            }).then(() => {
+                // 下载成功
+                document.getElementById('downloadStatus').textContent = '下载完成';
+                showStatusMessage(`下载完成: ${updatedFileName}`, 'success');
+                
+                // 3秒后自动关闭面板
+                setTimeout(hideDownloadPanel, 3000);
+            }).catch(error => {
+                if (error.name === 'AbortError') {
+                    // 取消下载的情况已经在cancelDownload函数中处理，这里可以忽略
+                    // 避免重复显示消息和关闭面板
+                } else {
+                    console.error('下载失败:', error);
+                    document.getElementById('downloadStatus').textContent = '下载失败';
+                    showStatusMessage('下载失败: ' + error.message, 'error');
+                    setTimeout(hideDownloadPanel, 2000);
+                }
+            });
+        }
+        
+        // 保存Blob为文件
+        function saveBlobAsFile(blob, fileName) {
+            try {
+                // 创建下载链接
+                const url = window.URL.createObjectURL(blob);
+                const link = document.createElement('a');
+                link.href = url;
+                link.download = fileName;
+                link.style.display = 'none';
+                
+                // 触发下载
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                
+                // 释放URL对象
+                setTimeout(() => {
+                    window.URL.revokeObjectURL(url);
+                }, 100);
+                
+            } catch (error) {
+                console.error('保存文件失败:', error);
+                showStatusMessage('保存文件失败，请重试', 'error');
+            }
+        }
+        
+        // 取消下载
+        function cancelDownload() {
+            if (downloadController) {
+                downloadController.abort();
+                downloadController = null;
+                
+                // 立即更新UI状态，不等待Promise catch
+                document.getElementById('downloadStatus').textContent = '下载已取消';
+                showStatusMessage('下载已取消', 'info');
+                hideDownloadPanel(); // 立即关闭下载面板，不延迟
+            }
+        }
+        
+        // 初始化下载面板事件监听器
+        function initDownloadPanel() {
+            const closeBtn = document.getElementById('closeDownloadPanel');
+            const cancelBtn = document.getElementById('cancelDownloadBtn');
+            
+            if (closeBtn) {
+                closeBtn.addEventListener('click', hideDownloadPanel);
+            }
+            
+            if (cancelBtn) {
+                cancelBtn.addEventListener('click', cancelDownload);
+            }
+        }
+
+        // 初始化公告面板事件监听器
+        function initAnnouncementPanel() {
+            const announcementBtn = document.getElementById('announcementBtn');
+            const closeBtn = document.getElementById('closeAnnouncementPanel');
+            
+            if (announcementBtn) {
+                announcementBtn.addEventListener('click', showAnnouncementPanel);
+            }
+            
+            if (closeBtn) {
+                closeBtn.addEventListener('click', hideAnnouncementPanel);
+            }
+        }
+
+        // 显示公告面板
+        function showAnnouncementPanel() {
+            const panel = document.getElementById('announcementPanel');
+            if (panel) {
+                panel.style.display = 'flex';
+            }
+        }
+
+        // 隐藏公告面板
+        function hideAnnouncementPanel() {
+            const panel = document.getElementById('announcementPanel');
+            if (panel) {
+                panel.style.display = 'none';
+            }
+        }
+        
+        // 检查浏览器是否支持现代下载功能
+        function isModernBrowser() {
+            return (
+                'fetch' in window &&
+                'AbortController' in window &&
+                'ReadableStream' in window &&
+                'Blob' in window &&
+                'createObjectURL' in window.URL
+            );
+        }
+        
+        // 重写downloadSong函数以使用新功能
+        function downloadSong() {
+            if (!audioPlayer.src) {
+                showStatusMessage('请先选择要播放的歌曲', 'warning');
+                return;
+            }
+            
+            // 获取当前歌曲的直链
+            const songUrl = audioPlayer.src;
+            
+            if (!songUrl) {
+                showStatusMessage('无法获取歌曲直链', 'error');
+                return;
+            }
+            
+            // 获取当前播放的歌曲信息
+            const currentSong = getCurrentPlayingSong();
+            if (!currentSong) {
+                showStatusMessage('无法获取歌曲信息', 'error');
+                return;
+            }
+            
+            try {
+                // 清理文件名中的非法字符
+                const cleanFileName = (str) => {
+                    return str.replace(/[<>:"/\\|?*]/g, '').replace(/\s+/g, ' ').trim();
+                };
+                
+                const songName = cleanFileName(currentSong.name || '未知歌曲');
+                const artist = cleanFileName(currentSong.artist || '未知艺术家');
+                
+                // 设置下载文件名
+                const fileName = `${songName} - ${artist}.mp3`;
+                
+                // 确保downloadController为null，避免之前的下载影响
+                if (downloadController) {
+                    downloadController.abort();
+                    downloadController = null;
+                }
+                
+                // 检查浏览器兼容性
+                if (isModernBrowser()) {
+                    // 显示下载进度面板
+                    showDownloadPanel();
+                    
+                    // 更新下载信息
+                    document.getElementById('downloadFileName').textContent = fileName;
+                    document.getElementById('downloadStatus').textContent = '准备下载...';
+                    document.getElementById('downloadPercentage').textContent = '0%';
+                    document.getElementById('downloadSpeed').textContent = '0 KB/s';
+                    document.getElementById('downloadSize').textContent = '0 MB / 0 MB';
+                    document.getElementById('downloadProgressBar').style.width = '0%';
+                    
+                    // 开始下载
+                    startDownloadWithProgress(songUrl, fileName);
+                } else {
+                    // 降级方案：使用传统的a标签下载
+                    showStatusMessage('浏览器不支持高级下载功能，使用传统下载方式', 'info');
+                    
+                    // 创建下载链接
+                    const link = document.createElement('a');
+                    link.href = songUrl;
+                    link.download = fileName;
+                    link.style.display = 'none';
+                    
+                    // 触发下载
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                    
+                    showStatusMessage(`开始下载: ${fileName}`, 'success');
+                }
+                
+            } catch (error) {
+                console.error('下载失败:', error);
+                showStatusMessage('下载失败，请重试', 'error');
+                hideDownloadPanel();
+                
+                // 确保downloadController被重置
+                if (downloadController) {
+                    downloadController = null;
+                }
             }
         }
         
