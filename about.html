@@ -113,7 +113,6 @@
         .avatar-section {
             padding: 80px 0 60px;
             text-align: center;
-            background: #ffffff;
         }
         
         .avatar-container {
@@ -126,7 +125,7 @@
             height: 200px;
             border-radius: 50%;
             object-fit: cover;
-            border: 5px solid white;
+            border: 5px solid #f8f9fa;
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
             margin-bottom: 30px;
             transition: all 0.3s ease;
@@ -143,48 +142,6 @@
             color: var(--primary-color);
             margin: 0;
             text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-        }
-        
-        /* 页脚样式 */
-        .footer {
-            background-color: var(--primary-color);
-            color: #fff;
-            padding: 20px 0 10px;
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            width: 100%;
-            z-index: 999;
-        }
-        
-        .footer-content {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 12px;
-        }
-        
-        .footer-links {
-            display: flex;
-            gap: 20px;
-        }
-        
-        .footer-links a {
-            color: #b2bec3;
-            text-decoration: none;
-            transition: color 0.3s;
-        }
-        
-        .footer-links a:hover {
-            color: white;
-        }
-        
-        .footer-bottom {
-            text-align: center;
-            padding-top: 12px;
-            border-top: 1px solid rgba(255, 255, 255, 0.15);
-            color: #b2bec3;
-            font-size: 12px;
         }
         
         /* 响应式设计 - 超小屏幕 (手机竖屏) */
@@ -217,19 +174,6 @@
                 font-size: 18px;
             }
             
-            .footer {
-                padding: 15px 0 8px;
-                position: fixed;
-                bottom: 0;
-                left: 0;
-                width: 100%;
-                z-index: 999;
-            }
-            
-            .footer-content {
-                margin-bottom: 15px;
-            }
-            
             .mobile-nav {
                 width: 100%;
                 max-width: 280px;
@@ -259,12 +203,6 @@
                 width: 160px;
                 height: 160px;
                 margin-bottom: 25px;
-            }
-            
-            .footer-content {
-                flex-direction: column;
-                gap: 16px;
-                text-align: center;
             }
             
             .mobile-nav {
@@ -357,10 +295,6 @@
                 color: var(--accent-color);
             }
             
-            .footer-links a:active {
-                color: white;
-            }
-            
             .mobile-menu-btn:active {
                 transform: scale(0.95);
             }
@@ -442,7 +376,7 @@
         
         /* 打印样式 */
         @media print {
-            .navbar, .footer, .mobile-menu-btn {
+            .navbar, .mobile-menu-btn {
                 display: none !important;
             }
             
@@ -556,6 +490,39 @@
             display: block;
             opacity: 1;
         }
+
+        .draggable-widget {
+            position: fixed;
+            cursor: move;
+            z-index: 9999999;
+            user-select: none;
+            transition: none;
+        }
+
+        .draggable-widget:hover {
+            box-shadow: none;
+        }
+
+        .draggable-widget.dragging {
+            opacity: 0.8;
+            cursor: grabbing;
+        }
+
+        /* 透明背景处理 */
+        .draggable-widget {
+            background-color: transparent;
+            filter: none;
+        }
+
+        /* 对于白色背景的GIF，使用混合模式使其透明 */
+        .draggable-widget {
+            mix-blend-mode: multiply;
+        }
+
+        /* 增强透明度效果 */
+        .draggable-widget {
+            filter: brightness(1.1) contrast(1.1);
+        }
     </style>
 </head>
 <body>
@@ -595,26 +562,13 @@
         <div class="container">
             <div class="avatar-container">
                 <img src="https://cdn.jsdu.cn/opdav/20251122/f849aef8a4d6a832e434ce664319b511.png" alt="JOKING0610" class="avatar-image">
-                <h2 class="avatar-name">JOKING</h2>
+                <h2 class="avatar-name">JOKING0610</h2>
             </div>
         </div>
     </div>
-    
-    <!-- 页脚 -->
-    <footer class="footer">
-        <div class="container">
-            <div class="footer-content">
-                <div class="logo" style="color: white;">JOKING<span style="color: #b2bec3;">导航</span></div>
-                <div class="footer-links">
-                    <a href="index.html">首页</a>
-                    <a href="about.html">关于</a>
-                </div>
-            </div>
-            <div class="footer-bottom">
-                <p>© 2026 JOKING的个人导航. 本页面仅用于个人收藏与分享。</p>
-            </div>
-        </div>
-    </footer>
+
+    <!-- 可拖动挂件 -->
+    <img src="https://free.picui.cn/free/2026/02/07/6986a267a0baf.gif" alt="挂件" class="draggable-widget" id="draggableWidget" draggable="false" style="width: 100px; height: auto; bottom: 50px; right: 50px;">
 
     <script>
         // 移动菜单功能
@@ -670,6 +624,72 @@
                 mobileNavOverlay.classList.remove('active');
             }
         });
+
+        // 拖拽功能
+        const widget = document.getElementById('draggableWidget');
+        let isDragging = false;
+        let currentX;
+        let currentY;
+        let initialX;
+        let initialY;
+        let xOffset = 0;
+        let yOffset = 0;
+
+        widget.addEventListener('mousedown', dragStart);
+        widget.addEventListener('touchstart', dragStart, { passive: false });
+
+        document.addEventListener('mousemove', drag);
+        document.addEventListener('touchmove', drag, { passive: false });
+
+        document.addEventListener('mouseup', dragEnd);
+        document.addEventListener('touchend', dragEnd);
+
+        function dragStart(e) {
+            e.preventDefault();
+
+            if (e.type === 'touchstart') {
+                initialX = e.touches[0].clientX - xOffset;
+                initialY = e.touches[0].clientY - yOffset;
+            } else {
+                initialX = e.clientX - xOffset;
+                initialY = e.clientY - yOffset;
+            }
+
+            if (e.target === widget) {
+                isDragging = true;
+                widget.classList.add('dragging');
+            }
+        }
+
+        function drag(e) {
+            if (isDragging) {
+                e.preventDefault();
+
+                if (e.type === 'touchmove') {
+                    currentX = e.touches[0].clientX - initialX;
+                    currentY = e.touches[0].clientY - initialY;
+                } else {
+                    currentX = e.clientX - initialX;
+                    currentY = e.clientY - initialY;
+                }
+
+                xOffset = currentX;
+                yOffset = currentY;
+
+                setTranslate(currentX, currentY, widget);
+            }
+        }
+
+        function dragEnd(e) {
+            initialX = currentX;
+            initialY = currentY;
+            isDragging = false;
+            widget.classList.remove('dragging');
+        }
+
+        function setTranslate(xPos, yPos, el) {
+            el.style.transform = `translate3d(${xPos}px, ${yPos}px, 0)`;
+        }
     </script>
 </body>
 </html>
