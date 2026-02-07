@@ -103,7 +103,7 @@
             text-decoration: none;
             color: var(--text-color);
             font-weight: 500;
-            transition: color 0.3;
+            transition: color 0.3s;
             position: relative;
             cursor: pointer;
         }
@@ -194,7 +194,7 @@
             border-radius: 12px;
             padding: 25px;
             box-shadow: var(--shadow);
-            transition: all 0.3;
+            transition: all 0.3s;
             display: flex;
             flex-direction: column;
             height: 100%;
@@ -223,7 +223,7 @@
 
         .website-icon.constellation {
             background: linear-gradient(135deg, #667eea, #764ba2);
-            animation: starPulse 2 ease-in-out infinite;
+            animation: starPulse 2s ease-in-out infinite;
         }
 
         @keyframes starPulse {
@@ -264,48 +264,6 @@
         .website-link:hover {
             background-color: var(--accent-color);
             color: white;
-        }
-        
-        /* 页脚样式 */
-        .footer {
-            background: linear-gradient(135deg, #2d3436, #636e72);
-            color: white;
-            padding: 30px 0;
-            margin-top: 60px;
-            position: relative;
-            width: 100%;
-            z-index: 10;
-            border-top: 1px solid rgba(255, 255, 255, 0.15);
-        }
-        
-        .footer-content {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 12px;
-        }
-        
-        .footer-links {
-            display: flex;
-            gap: 20px;
-        }
-        
-        .footer-links a {
-            color: #b2bec3;
-            text-decoration: none;
-            transition: color 0.3s;
-        }
-        
-        .footer-links a:hover {
-            color: white;
-        }
-        
-        .footer-bottom {
-            text-align: center;
-            padding-top: 12px;
-            border-top: 1px solid rgba(255, 255, 255, 0.15);
-            color: #b2bec3;
-            font-size: 12px;
         }
         
         /* 响应式设计 - 超小屏幕 (手机竖屏) */
@@ -374,19 +332,6 @@
                 font-size: 20px;
                 margin-bottom: 20px;
             }
-            
-            .footer {
-                padding: 15px 0 8px;
-                position: fixed;
-                bottom: 0;
-                left: 0;
-                width: 100%;
-                z-index: 999;
-            }
-            
-            .footer-content {
-                margin-bottom: 15px;
-            }
         }
         
         /* 响应式设计 - 小屏幕 (手机横屏/小平板) */
@@ -438,12 +383,6 @@
             
             .website-desc {
                 font-size: 14px;
-            }
-            
-            .footer-content {
-                flex-direction: column;
-                gap: 16px;
-                text-align: center;
             }
             
             .section-title {
@@ -680,7 +619,7 @@
         
         /* 打印样式 */
         @media print {
-            .navbar, .footer, .mobile-menu-btn {
+            .navbar, .mobile-menu-btn {
                 display: none !important;
             }
             
@@ -707,7 +646,7 @@
             background-color: var(--card-bg);
             box-shadow: -5px 0 15px rgba(0, 0, 0, 0.1);
             z-index: 1001;
-            transition: right 0.3;
+            transition: right 0.3s;
             padding: 25px 20px;
             display: none;
             overflow-y: auto;
@@ -759,7 +698,7 @@
             display: block;
             padding: 12px 15px;
             border-radius: 8px;
-            transition: all 0.2;
+            transition: all 0.2s;
         }
         
         .mobile-nav-links a:hover,
@@ -783,7 +722,7 @@
             z-index: 1000;
             display: none;
             opacity: 0;
-            transition: opacity 0.3;
+            transition: opacity 0.3s;
         }
         
         .mobile-nav-overlay.active {
@@ -830,7 +769,7 @@
             text-transform: uppercase;
             letter-spacing: 0.5px;
             box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
-            animation: pulse 2 infinite;
+            animation: pulse 2s infinite;
             white-space: nowrap;
             display: inline-flex;
             align-items: center;
@@ -929,22 +868,6 @@
             </div>
         </div>
     </main>
-    
-    <!-- 页脚 -->
-    <footer class="footer">
-        <div class="container">
-            <div class="footer-content">
-                <div class="logo" style="color: white;">JOKING<span style="color: #b2bec3;">导航</span></div>
-                <div class="footer-links">
-                    <a href="#">首页</a>
-                    <a href="about.html">关于</a>
-                </div>
-            </div>
-            <div class="footer-bottom">
-                <p>© 2026 JOKING的个人导航. 本页面仅用于个人收藏与分享。</p>
-            </div>
-        </div>
-    </footer>
 
     <script>
         // 移动菜单功能
