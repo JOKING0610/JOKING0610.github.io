@@ -49,7 +49,8 @@
             color: var(--text-primary);
             min-height: 100vh;
             line-height: 1.6;
-            padding-bottom: 140px;
+            padding-bottom: 120px;
+            font-size: 12px;
         }
 
         /* 背景层 - 应用于整个播放器界面 */
@@ -63,7 +64,7 @@
             background-position: center;
             background-repeat: no-repeat;
             z-index: -1;
-            transition: opacity 0.5 ease, filter 0.3 ease;
+            transition: opacity 0.5s ease, filter 0.3s ease;
             opacity: 0.5;
             filter: blur(0px);
             pointer-events: none;
@@ -113,12 +114,12 @@
         }
         
         .container {
-            max-width: 1400px;
+            max-width: 1200px;
             margin: 0 auto;
-            padding: 20px;
+            padding: 12px;
             display: flex;
             flex-direction: column;
-            gap: 24px;
+            gap: 20px;
         }
         
         /* 头部区域 */
@@ -126,7 +127,7 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 20px 0;
+            padding: 12px 0;
             border-bottom: 1px solid var(--border-color);
         }
         
@@ -140,15 +141,15 @@
             background: rgba(255, 255, 255, 0.05);
             border: 1px solid var(--border-color);
             color: var(--text-secondary);
-            width: 40px;
-            height: 40px;
+            width: 32px;
+            height: 32px;
             border-radius: 10px;
             display: flex;
             align-items: center;
             justify-content: center;
             cursor: pointer;
             transition: all 0.3s;
-            font-size: 16px;
+            font-size: 13px;
         }
         
         .header-btn:hover {
@@ -164,18 +165,18 @@
         }
         
         .logo-icon {
-            width: 3rem;
-            height: 3rem;
+            width: 2.2rem;
+            height: 2.2rem;
             background: linear-gradient(135deg, var(--primary-color), var(--primary-light));
             border-radius: 12px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 1.5rem;
+            font-size: 1rem;
         }
         
         .logo-text h1 {
-            font-size: 28px;
+            font-size: 20px;
             font-weight: 700;
             background: linear-gradient(90deg, var(--primary-light), var(--primary-color));
             -webkit-background-clip: text;
@@ -185,7 +186,7 @@
         }
         
         .logo-text p {
-            font-size: 14px;
+            font-size: 11px;
             color: var(--text-secondary);
         }
         
@@ -220,12 +221,12 @@
         .search-section {
             background: var(--card-bg);
             backdrop-filter: blur(20px);
-            border-radius: 20px;
-            padding: 30px;
+            border-radius: 16px;
+            padding: 16px;
             box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
             border: 1px solid var(--border-color);
-            position: relative; /* 确保z-index有效 */
-            z-index: 10; /* 低于平台下拉菜单 */
+            position: relative;
+            z-index: 10;
         }
         
         .section-header {
@@ -236,11 +237,11 @@
         }
         
         .section-title {
-            font-size: 22px;
+            font-size: 18px;
             font-weight: 600;
             display: flex;
             align-items: center;
-            gap: 12px;
+            gap: 8px;
         }
         
         .section-title i {
@@ -250,7 +251,7 @@
         .search-form {
             display: grid;
             grid-template-columns: 1fr 2fr 1fr;
-            gap: 20px;
+            gap: 15px;
             margin-bottom: 24px;
         }
         
@@ -325,12 +326,13 @@
             
             /* 移动端音量控制优化 */
             .volume-control {
-                max-width: 150px;
+                max-width: none;
+                min-width: 100px;
                 gap: 8px;
             }
             
             .volume-slider {
-                height: 3px;
+                height: 6px;
             }
         }
 
@@ -359,9 +361,9 @@
         
         .form-label {
             display: block;
-            margin-bottom: 8px;
+            margin-bottom: 6px;
             color: var(--text-secondary);
-            font-size: 14px;
+            font-size: 13px;
             font-weight: 500;
         }
         
@@ -375,7 +377,7 @@
             display: flex;
             align-items: center;
             justify-content: space-between;
-            padding: 16px;
+            padding: 12px;
             background: rgba(255, 255, 255, 0.05);
             border: 1px solid var(--border-color);
             border-radius: 12px;
@@ -383,7 +385,7 @@
             cursor: pointer;
             transition: all 0.3s;
             position: relative;
-            z-index: 2001; /* 高于下拉菜单触发器 */
+            z-index: 2001;
         }
         
         .platform-toggle:hover {
@@ -458,12 +460,12 @@
         
         .search-input {
             width: 100%;
-            padding: 16px;
+            padding: 10px;
             background: rgba(255, 255, 255, 0.05);
             border: 1px solid var(--border-color);
             border-radius: 12px;
             color: var(--text-primary);
-            font-size: 16px;
+            font-size: 13px;
             transition: all 0.3s;
         }
         
@@ -486,7 +488,8 @@
             border: 1px solid var(--border-color);
             border-right: none;
             color: var(--text-primary);
-            font-size: 16px;
+            font-size: 14px;
+            padding: 10px;
         }
         
         .search-input-container .search-input:focus {
@@ -504,12 +507,12 @@
             border-left: none;
             border-radius: 0 8px 8px 0;
             padding: 0 16px;
-            font-size: 16px;
+            font-size: 14px;
             font-weight: 500;
             cursor: pointer;
             white-space: nowrap;
-            min-height: 54px;
-            min-width: 54px;
+            min-height: 44px;
+            min-width: 44px;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -548,8 +551,9 @@
             color: white;
             border: none;
             border-radius: 12px;
-            padding: 1rem 2rem;
-            font-size: 1rem;
+            padding: 0 16px;
+            height: 42px;
+            font-size: 13px;
             font-weight: 600;
             cursor: pointer;
             transition: all 0.3s;
@@ -584,9 +588,9 @@
         .search-btn,
         .recommend-btn {
             flex: 1;
-            height: 54px;
+            height: 48px;
             min-width: 160px;
-            padding: 0 32px;
+            padding: 0 20px;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -598,8 +602,9 @@
             color: white;
             border: none;
             border-radius: 12px;
-            padding: 16px 32px;
-            font-size: 16px;
+            padding: 0 16px;
+            height: 42px;
+            font-size: 13px;
             font-weight: 600;
             cursor: pointer;
             transition: all 0.3s;
@@ -648,10 +653,10 @@
             background: var(--card-bg);
             backdrop-filter: blur(20px);
             border-radius: 20px;
-            padding: 30px;
+            padding: 24px;
             max-width: 90vw;
             max-height: 80vh;
-            width: 600px;
+            width: 550px;
             border: 1px solid var(--border-color);
             box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
             display: flex;
@@ -674,13 +679,13 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 20px;
-            padding-bottom: 15px;
+            margin-bottom: 16px;
+            padding-bottom: 12px;
             border-bottom: 1px solid var(--border-color);
         }
         
         .modal-title {
-            font-size: 20px;
+            font-size: 18px;
             font-weight: 600;
             display: flex;
             align-items: center;
@@ -695,15 +700,15 @@
             background: rgba(255, 255, 255, 0.05);
             border: 1px solid var(--border-color);
             color: var(--text-secondary);
-            width: 36px;
-            height: 36px;
+            width: 32px;
+            height: 32px;
             border-radius: 10px;
             display: flex;
             align-items: center;
             justify-content: center;
             cursor: pointer;
             transition: all 0.3s;
-            font-size: 16px;
+            font-size: 14px;
         }
         
         .modal-close:hover {
@@ -727,14 +732,14 @@
         }
         
         .playback-rate-grid-option {
-            padding: 16px 12px;
+            padding: 12px 10px;
             background: rgba(255, 255, 255, 0.05);
             border: 1px solid var(--border-color);
             border-radius: 12px;
             text-align: center;
             cursor: pointer;
             transition: all 0.2s ease;
-            font-size: 16px;
+            font-size: 14px;
             font-weight: 500;
             color: var(--text-secondary);
         }
@@ -937,12 +942,13 @@
             border: 1px solid var(--border-color);
             color: var(--text-secondary);
             border-radius: 10px;
-            padding: 10px 20px;
+            padding: 8px 16px;
             cursor: pointer;
             transition: all 0.3s;
             display: flex;
             align-items: center;
             gap: 8px;
+            font-size: 13px;
         }
         
         .page-btn:hover:not(:disabled) {
@@ -960,15 +966,15 @@
         .results-section {
             background: var(--card-bg);
             backdrop-filter: blur(20px);
-            border-radius: 20px;
-            padding: 30px;
+            border-radius: 16px;
+            padding: 16px;
             box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
             border: 1px solid var(--border-color);
             display: flex;
             flex-direction: column;
             min-height: 600px;
             position: relative;
-            z-index: 5; /* 确保低于平台下拉菜单的z-index */
+            z-index: 5;
         }
         
         .results-header {
@@ -1019,14 +1025,14 @@
         .song-item {
             background: rgba(255, 255, 255, 0.03);
             border-radius: 16px;
-            padding: 20px;
-            margin-bottom: 16px;
+            padding: 12px;
+            margin-bottom: 12px;
             border: 1px solid transparent;
             transition: all 0.3s;
             cursor: pointer;
             display: flex;
             align-items: center;
-            gap: 16px;
+            gap: 10px;
             animation: fadeIn 0.5s ease;
             position: relative;
             z-index: 1;
@@ -1143,9 +1149,9 @@
         }
         
         .song-cover {
-            width: 70px;
-            height: 70px;
-            border-radius: 12px;
+            width: 50px;
+            height: 50px;
+            border-radius: 10px;
             overflow: hidden;
             flex-shrink: 0;
             background: rgba(255, 255, 255, 0.05);
@@ -1172,9 +1178,9 @@
         }
         
         .song-title {
-            font-size: 18px;
+            font-size: 15px;
             font-weight: 600;
-            margin-bottom: 6px;
+            margin-bottom: 2px;
             color: var(--text-primary);
             white-space: nowrap;
             overflow: hidden;
@@ -1182,16 +1188,16 @@
         }
         
         .song-artist {
-            font-size: 15px;
+            font-size: 13px;
             color: var(--text-secondary);
-            margin-bottom: 4px;
+            margin-bottom: 2px;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
         }
         
         .song-album {
-            font-size: 14px;
+            font-size: 12px;
             color: var(--text-secondary);
             display: flex;
             align-items: center;
@@ -1207,14 +1213,15 @@
             background: rgba(255, 255, 255, 0.05);
             border: 1px solid var(--border-color);
             color: var(--text-secondary);
-            width: 40px;
-            height: 40px;
+            width: 32px;
+            height: 32px;
             border-radius: 10px;
             display: flex;
             align-items: center;
             justify-content: center;
             cursor: pointer;
             transition: all 0.3s;
+            font-size: 13px;
         }
         
         .song-action-btn:hover {
@@ -1227,8 +1234,8 @@
             background: rgba(255, 255, 255, 0.05);
             border: 1px solid var(--border-color);
             color: var(--text-secondary);
-            width: 40px;
-            height: 40px;
+            width: 36px;
+            height: 36px;
             border-radius: 10px;
             display: flex;
             align-items: center;
@@ -1254,18 +1261,18 @@
             left: 50%;
             transform: translateX(-50%);
             width: calc(100% - 40px);
-            max-width: 800px;
+            max-width: 650px;
             background: rgba(15, 23, 42, 0.95);
             backdrop-filter: blur(20px);
             border-radius: 16px;
-            padding: 20px;
+            padding: 10px;
             box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
             border: 1px solid var(--border-color);
             z-index: 1000;
             transition: all 0.3s;
             display: flex;
             flex-direction: column;
-            gap: 15px;
+            gap: 8px;
             overflow-x: hidden;
         }
 
@@ -1287,8 +1294,8 @@
         }
         
         .player-cover {
-            width: 60px;
-            height: 60px;
+            width: 50px;
+            height: 50px;
             border-radius: 10px;
             overflow: hidden;
             flex-shrink: 0;
@@ -1312,7 +1319,7 @@
         }
         
         .player-song-title {
-            font-size: 16px;
+            font-size: 15px;
             font-weight: 600;
             margin-bottom: 4px;
             color: var(--text-primary);
@@ -1322,7 +1329,7 @@
         }
         
         .player-song-artist {
-            font-size: 14px;
+            font-size: 13px;
             color: var(--text-secondary);
             white-space: nowrap;
             overflow: hidden;
@@ -1331,13 +1338,13 @@
         
         /* 新增：播放器歌词行 */
         .player-lyrics-line {
-            font-size: 13px;
+            font-size: 11px;
             color: var(--text-secondary);
             margin-top: 4px;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
-            height: 20px;
+            height: 16px;
             transition: all 0.3s;
             opacity: 0.8;
         }
@@ -1372,24 +1379,24 @@
         .player-controls {
             display: flex;
             align-items: center;
-            gap: 15px;
+            gap: 10px;
         }
         
         .control-btn {
             background: rgba(255, 255, 255, 0.05);
             border: 1px solid var(--border-color);
             color: var(--text-primary);
-            width: 40px;
-            height: 40px;
-            min-width: 44px;
-            min-height: 44px;
+            width: 32px;
+            height: 32px;
+            min-width: 32px;
+            min-height: 32px;
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
             cursor: pointer;
             transition: all 0.3s;
-            font-size: 16px;
+            font-size: 13px;
             touch-action: manipulation;
         }
         
@@ -1400,9 +1407,9 @@
         }
         
         .play-btn {
-            width: 50px;
-            height: 50px;
-            font-size: 20px;
+            width: 40px;
+            height: 40px;
+            font-size: 16px;
             background: linear-gradient(135deg, var(--primary-color), var(--primary-light));
             border: none;
             color: white;
@@ -1420,12 +1427,13 @@
             color: var(--text-secondary);
             cursor: pointer;
             transition: all 0.3s;
-            width: 30px;
-            height: 30px;
+            width: 28px;
+            height: 28px;
             display: flex;
             align-items: center;
             justify-content: center;
             border-radius: 6px;
+            font-size: 11px;
         }
         
         .toggle-player-btn:hover {
@@ -1456,14 +1464,14 @@
         .time-display {
             display: flex;
             justify-content: space-between;
-            margin-bottom: clamp(8px, 2vw, 10px);
-            font-size: clamp(12px, 2vw, 14px);
+            margin-bottom: 6px;
+            font-size: 12px;
             color: var(--text-secondary);
         }
         
         .progress-container {
             position: relative;
-            height: 6px;
+            height: 4px;
             background: rgba(255, 255, 255, 0.05);
             border-radius: 3px;
             cursor: pointer;
@@ -1491,8 +1499,8 @@
             position: absolute;
             top: 50%;
             transform: translate(-50%, -50%);
-            width: 16px;
-            height: 16px;
+            width: 14px;
+            height: 14px;
             background: white;
             border-radius: 50%;
             box-shadow: 0 0 8px rgba(0, 0, 0, 0.5);
@@ -1510,14 +1518,14 @@
             align-items: center;
             justify-content: space-between;
             margin-top: 10px;
-            gap: 15px;
+            gap: 12px;
             flex-wrap: wrap;
         }
         
         .secondary-controls {
             display: flex;
             align-items: center;
-            gap: clamp(8px, 2vw, 10px);
+            gap: 8px;
             flex-wrap: wrap;
             width: 100%;
         }
@@ -1526,11 +1534,11 @@
             background: transparent;
             border: none;
             color: var(--text-secondary);
-            font-size: 14px;
+            font-size: 13px;
             cursor: pointer;
             transition: all 0.3s;
-            width: 30px;
-            height: 30px;
+            width: 32px;
+            height: 32px;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -1550,22 +1558,25 @@
         .volume-control {
             display: flex;
             align-items: center;
-            gap: clamp(8px, 2vw, 10px);
+            gap: 8px;
+            flex: 0 1 auto;
+            min-width: 150px;
+            max-width: 300px;
         }
         
         .volume-btn {
             background: transparent;
             border: none;
             color: var(--text-secondary);
-            font-size: 14px;
+            font-size: 13px;
             cursor: pointer;
             transition: all 0.3s;
-            width: 30px;
-            height: 30px;
+            width: 32px;
+            height: 32px;
             display: flex;
             align-items: center;
             justify-content: center;
-            flex-shrink: 0;
+            flex: 0 0 auto;
             border-radius: 8px;
         }
         
@@ -1600,11 +1611,11 @@
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%) scale(0.95);
-            width: 320px;
+            width: 300px;
             background: rgba(15, 23, 42, 0.95);
             backdrop-filter: blur(20px);
             border-radius: 16px;
-            padding: 20px;
+            padding: 15px;
             box-shadow: 0 15px 50px rgba(0, 0, 0, 0.6);
             border: 1px solid var(--border-color);
             z-index: 3000;
@@ -1627,7 +1638,7 @@
         }
         
         .opacity-panel-title {
-            font-size: 16px;
+            font-size: 14px;
             font-weight: 600;
             color: var(--text-primary);
         }
@@ -1733,15 +1744,15 @@
         .settings-group {
             background: rgba(255, 255, 255, 0.05);
             border-radius: 16px;
-            padding: 20px;
-            margin-bottom: 20px;
+            padding: 16px;
+            margin-bottom: 16px;
         }
 
         .settings-item {
             display: flex;
             flex-direction: column;
-            gap: 8px;
-            margin-bottom: 20px;
+            gap: 6px;
+            margin-bottom: 16px;
         }
 
         .settings-item:last-child {
@@ -1751,7 +1762,7 @@
         .settings-label {
             display: flex;
             justify-content: space-between;
-            font-size: 14px;
+            font-size: 13px;
             color: var(--text-secondary);
         }
 
@@ -1963,7 +1974,7 @@
             border-top: 1px solid rgba(255, 255, 255, 0.15);
             z-index: 1001;
             transition: all 0.3s ease;
-            padding: 6px 0;
+            padding: 0;
             box-shadow: 0 -4px 15px rgba(0, 0, 0, 0.3);
         }
 
@@ -1989,18 +2000,19 @@
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            gap: 3px;
+            gap: 0;
             color: var(--text-secondary);
             text-decoration: none;
-            padding: 6px 15px;
-            border-radius: 10px;
+            width: 44px;
+            height: 44px;
+            border-radius: 8px;
             transition: all 0.3s ease;
-            font-size: 12px;
+            font-size: 10px;
             position: relative;
         }
 
         .navbar-item i {
-            font-size: 16px;
+            font-size: 18px;
             transition: all 0.3s ease;
         }
 
@@ -2058,18 +2070,8 @@
             }
 
             .navbar-item {
-                padding: 5px 12px;
-                font-size: 11px;
-            }
-
-            .navbar-item i {
-                font-size: 14px;
-            }
-        }
-
-        @media (max-width: 480px) {
-            .navbar-item {
-                padding: 4px 8px;
+                width: 40px;
+                height: 40px;
                 font-size: 10px;
             }
 
@@ -2078,14 +2080,42 @@
             }
         }
 
+        @media (max-width: 480px) {
+            .navbar-item {
+                width: 36px;
+                height: 36px;
+                font-size: 9px;
+            }
+
+            .navbar-item i {
+                font-size: 12px;
+            }
+
+            .volume-control {
+                min-width: 120px;
+                gap: 4px;
+            }
+
+            .volume-slider-embedded {
+                min-width: 50px;
+            }
+
+            .volume-btn {
+                width: 28px;
+                height: 28px;
+                font-size: 12px;
+            }
+        }
+
         /* 大屏幕适配 */
         @media (min-width: 769px) {
             .navbar {
-                padding: 6px 0;
+                padding: 2px 0;
             }
 
             .navbar-item {
-                padding: 8px 20px;
+                width: 48px;
+                height: 48px;
                 font-size: 13px;
             }
 
@@ -2100,18 +2130,18 @@
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%) scale(0.95);
-            width: 400px;
+            width: 360px;
             max-width: 90vw;
             background: rgba(15, 23, 42, 0.95);
             backdrop-filter: blur(20px);
             border-radius: 16px;
-            padding: 24px;
+            padding: 16px;
             box-shadow: 0 15px 50px rgba(0, 0, 0, 0.6);
             border: 1px solid var(--border-color);
             z-index: 3000;
             display: none;
             flex-direction: column;
-            gap: 20px;
+            gap: 16px;
             animation: panelSlideIn 0.3s ease forwards;
             outline: none;
         }
@@ -2124,11 +2154,11 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 8px;
+            margin-bottom: 6px;
         }
         
         .download-panel-title {
-            font-size: 18px;
+            font-size: 15px;
             font-weight: 600;
             color: var(--text-primary);
         }
@@ -2164,7 +2194,7 @@
             background: rgba(15, 23, 42, 0.95);
             backdrop-filter: blur(20px);
             border-radius: 16px;
-            padding: 24px;
+            padding: 20px;
             box-shadow: 0 15px 50px rgba(0, 0, 0, 0.6);
             border: 1px solid var(--border-color);
             z-index: 3000;
@@ -2187,7 +2217,7 @@
         }
         
         .download-options-panel-title {
-            font-size: 18px;
+            font-size: 16px;
             font-weight: 600;
             color: var(--text-primary);
         }
@@ -2384,19 +2414,19 @@
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%) scale(0.95);
-            width: 500px;
+            width: 450px;
             max-width: 90vw;
             max-height: 80vh;
             background: rgba(15, 23, 42, 0.95);
             backdrop-filter: blur(20px);
             border-radius: 16px;
-            padding: 24px;
+            padding: 16px;
             box-shadow: 0 15px 50px rgba(0, 0, 0, 0.6);
             border: 1px solid var(--border-color);
             z-index: 3000;
             display: none;
             flex-direction: column;
-            gap: 20px;
+            gap: 16px;
             animation: panelSlideIn 0.3s ease forwards;
             outline: none;
         }
@@ -2409,11 +2439,11 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 8px;
+            margin-bottom: 6px;
         }
         
         .announcement-panel-title {
-            font-size: 18px;
+            font-size: 15px;
             font-weight: 600;
             color: var(--text-primary);
         }
@@ -2612,20 +2642,20 @@
         /* 歌词面板 - 修改：支持拖动 */
         .lyrics-panel {
             position: fixed;
-            width: 300px;
-            max-height: 400px;
+            width: 260px;
+            max-height: 350px;
             background: rgba(15, 23, 42, 0.95);
             backdrop-filter: blur(20px);
             border-radius: 16px;
-            padding: 20px;
+            padding: 12px;
             box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
             border: 1px solid var(--border-color);
             z-index: 999;
             display: none;
             flex-direction: column;
-            cursor: default; /* 默认光标 */
-            resize: both; /* 允许调整大小 */
-            overflow: hidden; /* 隐藏溢出 */
+            cursor: default;
+            resize: both;
+            overflow: hidden;
             min-width: 250px;
             min-height: 200px;
         }
@@ -2637,22 +2667,22 @@
         /* 拖动句柄样式 */
         .lyrics-drag-handle {
             cursor: move;
-            user-select: none; /* 防止文本被选中 */
+            user-select: none;
         }
         
         .lyrics-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 15px;
-            padding-bottom: 10px;
+            margin-bottom: 8px;
+            padding-bottom: 6px;
             border-bottom: 1px solid var(--border-color);
             cursor: move;
             user-select: none;
         }
         
         .lyrics-title {
-            font-size: 16px;
+            font-size: 13px;
             font-weight: 600;
             color: var(--text-primary);
             display: flex;
@@ -2689,8 +2719,8 @@
             flex: 1;
             overflow-y: auto;
             color: var(--text-secondary);
-            font-size: 14px;
-            line-height: 1.8;
+            font-size: 12px;
+            line-height: 1.6;
             white-space: pre-line;
             font-family: 'Courier New', monospace;
             text-align: center;
@@ -2700,14 +2730,14 @@
         
         /* 歌词行样式 */
         .lyrics-line {
-            padding: 8px 12px;
-            margin: 4px 0;
+            padding: 4px 6px;
+            margin: 2px 0;
             border-radius: 8px;
             transition: all 0.3s ease;
             cursor: default;
             opacity: 0.7;
             transform: scale(0.95);
-            min-height: 24px;
+            min-height: 18px;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -3081,10 +3111,10 @@
             bottom: auto;
             top: 150px;
             display: flex;
-            gap: 10px;
+            gap: 3px;
             background: rgba(15, 23, 42, 0.8);
             backdrop-filter: blur(10px);
-            padding: 8px;
+            padding: 3px;
             border-radius: 30px;
             border: 1px solid var(--border-color);
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
@@ -3094,13 +3124,13 @@
         }
 
         .player-top-bar.position-left {
-            left: 20px;
+            left: 0;
             right: auto;
         }
 
         .player-top-bar.position-right {
             left: auto;
-            right: 20px;
+            right: 0;
         }
 
         /* 工具栏内的按钮样式 */
@@ -3110,15 +3140,15 @@
         .player-top-bar .settings-btn {
             background: rgba(255, 255, 255, 0.1);
             border: 1px solid var(--border-color);
-            width: 40px;
-            height: 40px;
+            width: 24px;
+            height: 24px;
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
             cursor: pointer;
             transition: all 0.2s;
-            font-size: 16px;
+            font-size: 10px;
             color: var(--text-primary);
             margin: 0;
         }
@@ -3243,14 +3273,16 @@
         /* 移动端适配 */
         @media (max-width: 768px) {
             .player-top-bar {
-                gap: 8px;
-                padding: 6px;
+                gap: 4px;
+                padding: 4px;
             }
             .player-top-bar .toggle-player-btn,
             .player-top-bar .playlist-btn,
             .player-top-bar .hide-player-btn,
             .player-top-bar .settings-btn {
-                font-size: 14px;
+                width: 28px;
+                height: 28px;
+                font-size: 12px;
             }
         }
         
@@ -3319,20 +3351,45 @@
         }
         
         .volume-slider-embedded {
-            flex: 1;
+            flex: 1 1 100px;
             display: flex;
             align-items: center;
             padding: 0 12px;
-            min-width: 150px;
+            min-width: 60px;
         }
         
         .volume-slider {
             width: 100%;
-            height: 4px;
+            height: 6px;
             margin: 0;
+            -webkit-appearance: none;
+            appearance: none;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 3px;
+            outline: none;
             cursor: pointer;
             flex: 1;
-            min-width: 100px;
+            min-width: 80px;
+        }
+        
+        .volume-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: var(--primary-light);
+            border: 2px solid rgba(255, 255, 255, 0.8);
+            cursor: pointer;
+        }
+        
+        .volume-slider::-moz-range-thumb {
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: var(--primary-light);
+            border: 2px solid rgba(255, 255, 255, 0.8);
+            cursor: pointer;
         }
         
 
@@ -3712,7 +3769,7 @@
             
             .volume-control {
                 min-width: 100px;
-                max-width: 150px;
+                max-width: none;
                 gap: 8px;
             }
             
@@ -3728,7 +3785,7 @@
             }
             
             .volume-slider {
-                height: 4px;
+                height: 6px;
             }
             
             /* 平板端播放器展开区域优化 */
@@ -3748,7 +3805,7 @@
             
             .volume-control {
                 min-width: 120px;
-                max-width: 200px;
+                max-width: none;
                 gap: 12px;
             }
             
@@ -3758,7 +3815,7 @@
             }
             
             .volume-slider {
-                height: 5px;
+                height: 6px;
             }
             
             .lyrics-panel {
@@ -4036,13 +4093,13 @@
             }
             
             .volume-control {
-                min-width: 80px;
-                max-width: 120px;
+                min-width: 100px;
+                max-width: none;
                 gap: 6px;
             }
             
             .volume-slider-embedded {
-                min-width: 50px;
+                min-width: 60px;
                 padding: 0 6px;
             }
             
@@ -4053,7 +4110,7 @@
             }
             
             .volume-slider {
-                height: 3px;
+                height: 6px;
             }
             
             .opacity-btn {
@@ -4286,13 +4343,13 @@
             }
             
             .volume-control {
-                min-width: 70px;
-                max-width: 100px;
+                min-width: 90px;
+                max-width: none;
                 gap: 4px;
             }
             
             .volume-slider-embedded {
-                min-width: 45px;
+                min-width: 50px;
                 padding: 0 5px;
             }
             
@@ -4303,7 +4360,7 @@
             }
             
             .volume-slider {
-                height: 3px;
+                height: 6px;
             }
             
             .opacity-btn {
@@ -4536,13 +4593,13 @@
             }
             
             .volume-control {
-                min-width: 60px;
-                max-width: 80px;
+                min-width: 80px;
+                max-width: none;
                 gap: 3px;
             }
             
             .volume-slider-embedded {
-                min-width: 40px;
+                min-width: 45px;
                 padding: 0 4px;
             }
             
@@ -4553,7 +4610,7 @@
             }
             
             .volume-slider {
-                height: 3px;
+                height: 6px;
             }
             
             .opacity-btn {
@@ -4619,6 +4676,20 @@
                 height: 20px;
             }
             
+            .volume-slider {
+                height: 10px;
+            }
+            
+            .volume-slider::-webkit-slider-thumb {
+                width: 22px;
+                height: 22px;
+            }
+            
+            .volume-slider::-moz-range-thumb {
+                width: 22px;
+                height: 22px;
+            }
+            
             .song-item {
                 cursor: pointer;
                 -webkit-tap-highlight-color: transparent;
@@ -4669,6 +4740,18 @@
             .container {
                 padding: 10px;
                 gap: 15px;
+            }
+            
+            /* 调整音量控制 - 允许换行 */
+            .volume-control {
+                flex-wrap: wrap;
+                min-width: 250px;
+                max-width: 300px;
+            }
+            
+            .volume-slider-embedded {
+                min-width: 60px;
+                flex: 1;
             }
             
             /* 调整搜索区域 */
@@ -5446,19 +5529,19 @@
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%) scale(0.95);
-            width: 320px;
+            width: 280px;
             max-width: 90vw;
             max-height: 70vh;
             background: rgba(15, 23, 42, 0.95);
             backdrop-filter: blur(20px);
             border-radius: 16px;
-            padding: 20px;
+            padding: 12px;
             box-shadow: 0 15px 50px rgba(0, 0, 0, 0.6);
             border: 1px solid var(--border-color);
             z-index: 3000;
             display: none;
             flex-direction: column;
-            gap: 15px;
+            gap: 12px;
             animation: panelSlideIn 0.3s ease forwards;
             outline: none;
         }
@@ -5471,13 +5554,13 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 8px;
-            padding-bottom: 10px;
+            margin-bottom: 6px;
+            padding-bottom: 6px;
             border-bottom: 1px solid var(--border-color);
         }
 
         .playlist-panel-title {
-            font-size: 16px;
+            font-size: 13px;
             font-weight: 600;
             color: var(--text-primary);
             display: flex;
@@ -5521,13 +5604,13 @@
         .playlist-item {
             background: rgba(255, 255, 255, 0.03);
             border-radius: 10px;
-            padding: 12px;
+            padding: 10px;
             cursor: pointer;
-            transition: all 0.2;
+            transition: all 0.2s;
             border: 1px solid transparent;
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 8px;
         }
 
         .playlist-item:hover {
@@ -5568,7 +5651,7 @@
         }
 
         .playlist-item-title {
-            font-size: 14px;
+            font-size: 13px;
             font-weight: 600;
             color: var(--text-primary);
             margin-bottom: 2px;
@@ -5578,7 +5661,7 @@
         }
 
         .playlist-item-artist {
-            font-size: 12px;
+            font-size: 11px;
             color: var(--text-secondary);
             white-space: nowrap;
             overflow: hidden;
@@ -5610,7 +5693,7 @@
             align-items: center;
             justify-content: center;
             cursor: pointer;
-            transition: all 0.3;
+            transition: all 0.3s;
             font-size: 16px;
             box-shadow: 0 2px 8px rgba(67, 97, 238, 0.3);
             margin-left: 5px;
@@ -5622,7 +5705,7 @@
         }
 
         .playlist-btn i {
-            transition: transform 0.3;
+            transition: transform 0.3s;
         }
 
         /* 移动端适配 */
@@ -5637,6 +5720,51 @@
                 width: 280px;
                 padding: 15px;
             }
+        }
+
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 52px;
+            height: 26px;
+        }
+
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(255,255,255,0.2);
+            transition: .3s;
+            border-radius: 26px;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 20px;
+            width: 20px;
+            left: 3px;
+            bottom: 3px;
+            background-color: white;
+            transition: .3s;
+            border-radius: 50%;
+        }
+
+        input:checked + .slider {
+            background-color: var(--primary-color);
+        }
+
+        input:checked + .slider:before {
+            transform: translateX(26px);
         }
     </style>
 </head>
@@ -5654,7 +5782,7 @@
                         <i class="fas fa-music"></i>
                     </div>
                     <div class="logo-text">
-                        <h1>零柒零音乐<span class="beta-badge">Beta</span></h1>
+                        <h1>零柒零音乐 0.2.2<span class="beta-badge">Beta</span></h1>
                         <p>更好的音乐搜索与播放体验</p>
                     </div>
                 </div>
@@ -5879,7 +6007,26 @@
             </div>
 
             <div class="search-section" style="min-height: auto;">
-                <div class="section-header">
+                <div class="section-header" style="margin-top: 0;">
+                    <h2 class="section-title">
+                        <i class="fas fa-key"></i> API 授权
+                    </h2>
+                    <a href="https://yunzhiapi.cn/user" target="_blank" style="color: var(--primary-light); font-size: 14px; text-decoration: none;">
+                        <i class="fas fa-external-link-alt"></i> 获取Token
+                    </a>
+                </div>
+                <div class="settings-group">
+                    <div class="settings-item">
+                        <div class="settings-label">
+                            <span>云智API Token</span>
+                        </div>
+                        <input type="text" class="config-input" id="yunzhiTokenInput" 
+                               placeholder="请输入你的云智API Token" value="">
+                        <button class="config-btn" id="saveYunzhiTokenBtn" style="margin-top: 8px;">保存Token</button>
+                    </div>
+                </div>
+
+                <div class="section-header" style="margin-top: 30px;">
                     <h2 class="section-title">
                         <i class="fas fa-adjust"></i> 透明度设置
                     </h2>
@@ -5924,6 +6071,31 @@
                     <div class="settings-options">
                         <button class="settings-option-btn" data-position="left">左侧</button>
                         <button class="settings-option-btn" data-position="right">右侧</button>
+                    </div>
+                </div>
+
+                <div class="section-header" style="margin-top: 30px;">
+                    <h2 class="section-title">
+                        <i class="fas fa-image"></i> 背景设置
+                    </h2>
+                </div>
+                <div class="settings-group">
+                    <div class="settings-item" style="flex-direction: row; align-items: center; justify-content: space-between;">
+                        <span class="settings-label">显示背景</span>
+                        <label class="switch">
+                            <input type="checkbox" id="backgroundToggle" checked>
+                            <span class="slider round"></span>
+                        </label>
+                    </div>
+                    <div class="settings-item" style="margin-top: 15px;">
+                        <button class="config-btn" id="localWallpaperBtn">选择本地壁纸</button>
+                        <input type="file" id="wallpaperFileInput" accept="image/*" style="display: none;">
+                        <button class="config-btn" id="resetWallpaperBtn" style="margin-top: 8px;">恢复默认背景</button>
+                    </div>
+                    <div class="settings-item" style="margin-top: 15px;">
+                        <span class="settings-label" style="display: block; margin-bottom: 8px;">URL背景</span>
+                        <input type="text" id="urlWallpaperInput" placeholder="输入图片URL" style="width: 100%; padding: 8px 12px; background: rgba(255, 255, 255, 0.05); border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-primary); font-size: 12px; margin-bottom: 8px;">
+                        <button class="config-btn" id="applyUrlWallpaperBtn">应用URL背景</button>
                     </div>
                 </div>
             </div>
@@ -6414,6 +6586,10 @@
         let isPlayerExpanded = false;
         let isLyricsVisible = false;
         
+        // 缓存键名
+        const DAILY_RECOMMEND_KEY = 'dailyRecommendation';
+        const DAILY_RECOMMEND_DATE_KEY = 'dailyRecommendationDate';
+        
         // 歌词面板拖动状态
         let isLyricsDragging = false;
         let lyricsDragStartX = 0;
@@ -6443,6 +6619,9 @@
         // 佳欣歌词API状态
         let jiaxinApiKey = localStorage.getItem('jiaxin_api_key') || '9024401e275f939d'; // 默认使用示例中的Key
         let currentSongInfo = null; // 当前歌曲信息，用于佳欣歌词搜索
+        
+        // 云智API Token
+        let yunzhiToken = localStorage.getItem('yunzhi_token') || '';
         
         // 播放器状态
         let isPlaying = false;
@@ -6566,6 +6745,135 @@
             
             // 佳欣歌词API配置事件
             saveJiaxinKeyBtn.addEventListener('click', saveJiaxinApiKey);
+            
+            // 云智API Token 相关元素
+            const yunzhiTokenInput = document.getElementById('yunzhiTokenInput');
+            const saveYunzhiTokenBtn = document.getElementById('saveYunzhiTokenBtn');
+
+            if (yunzhiTokenInput) {
+                yunzhiTokenInput.value = yunzhiToken;
+            }
+
+            if (saveYunzhiTokenBtn) {
+                saveYunzhiTokenBtn.addEventListener('click', function() {
+                    const token = yunzhiTokenInput.value.trim();
+                    if (token) {
+                        yunzhiToken = token;
+                        localStorage.setItem('yunzhi_token', token);
+                        showStatusMessage('云智API Token已保存', 'success');
+                    } else {
+                        yunzhiToken = '';
+                        localStorage.removeItem('yunzhi_token');
+                        showStatusMessage('Token已清空', 'info');
+                    }
+                });
+            }
+            
+            // 背景控制相关元素
+            const backgroundLayer = document.getElementById('backgroundLayer');
+            const backgroundToggle = document.getElementById('backgroundToggle');
+            const wallpaperFileInput = document.getElementById('wallpaperFileInput');
+            const localWallpaperBtn = document.getElementById('localWallpaperBtn');
+            const resetWallpaperBtn = document.getElementById('resetWallpaperBtn');
+
+            // 默认背景图片（横竖屏由 CSS 媒体查询控制，但这里我们统一设置 background-image）
+            const defaultBackgrounds = {
+                portrait: 'url("https://free.picui.cn/free/2026/02/08/6987f0c183dc5.png")',
+                landscape: 'url("https://free.picui.cn/free/2026/02/08/6987f0bfd71dc.png")'
+            };
+
+            // 初始化背景设置
+            function initBackgroundSettings() {
+                // 读取保存的背景显示状态
+                const bgEnabled = localStorage.getItem('bgEnabled') !== 'false'; // 默认为 true
+                backgroundToggle.checked = bgEnabled;
+                backgroundLayer.style.opacity = bgEnabled ? '0.5' : '0';
+
+                // 读取保存的自定义壁纸
+                const customWallpaper = localStorage.getItem('customWallpaper');
+                if (customWallpaper) {
+                    backgroundLayer.style.backgroundImage = customWallpaper;
+                    // 检查是否是URL背景（不是本地图片的dataURL）
+                    if (customWallpaper.startsWith('url("http')) {
+                        const urlMatch = customWallpaper.match(/url\("([^"]+)"\)/);
+                        if (urlMatch && urlMatch[1]) {
+                            urlWallpaperInput.value = urlMatch[1];
+                        }
+                    }
+                } else {
+                    // 使用默认背景（由 CSS 媒体查询决定）
+                    backgroundLayer.style.backgroundImage = ''; // 让 CSS 控制
+                }
+
+                // 监听开关变化
+                backgroundToggle.addEventListener('change', function() {
+                    const enabled = this.checked;
+                    backgroundLayer.style.opacity = enabled ? '0.5' : '0';
+                    localStorage.setItem('bgEnabled', enabled);
+                });
+            }
+
+            // 选择本地壁纸
+            localWallpaperBtn.addEventListener('click', () => {
+                wallpaperFileInput.click();
+            });
+
+            wallpaperFileInput.addEventListener('change', function(e) {
+                const file = e.target.files[0];
+                if (!file) return;
+
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    const dataUrl = event.target.result;
+                    // 保存到 localStorage
+                    localStorage.setItem('customWallpaper', `url("${dataUrl}")`);
+                    // 应用壁纸
+                    backgroundLayer.style.backgroundImage = `url("${dataUrl}")`;
+                    // 确保背景开启
+                    backgroundToggle.checked = true;
+                    backgroundLayer.style.opacity = '0.5';
+                    localStorage.setItem('bgEnabled', 'true');
+                    showStatusMessage('壁纸已应用', 'success');
+                };
+                reader.readAsDataURL(file);
+            });
+
+            // 应用URL背景
+            applyUrlWallpaperBtn.addEventListener('click', function() {
+                const url = urlWallpaperInput.value.trim();
+                if (!url) {
+                    showStatusMessage('请输入图片URL', 'error');
+                    return;
+                }
+
+                // 验证URL格式
+                try {
+                    new URL(url);
+                } catch (e) {
+                    showStatusMessage('请输入有效的URL', 'error');
+                    return;
+                }
+
+                // 保存到 localStorage
+                localStorage.setItem('customWallpaper', `url("${url}")`);
+                // 应用壁纸
+                backgroundLayer.style.backgroundImage = `url("${url}")`;
+                // 确保背景开启
+                backgroundToggle.checked = true;
+                backgroundLayer.style.opacity = '0.5';
+                localStorage.setItem('bgEnabled', 'true');
+                showStatusMessage('URL背景已应用', 'success');
+            });
+
+            // 恢复默认背景
+            resetWallpaperBtn.addEventListener('click', function() {
+                localStorage.removeItem('customWallpaper');
+                backgroundLayer.style.backgroundImage = ''; // 恢复 CSS 控制
+                showStatusMessage('已恢复默认背景', 'info');
+            });
+
+            // 调用初始化
+            initBackgroundSettings();
             
             // 播放器控制事件
             playPauseBtn.addEventListener('click', togglePlayPause);
@@ -7206,6 +7514,11 @@
         
         // 执行搜索
         async function performSearch() {
+            if (!yunzhiToken) {
+                showStatusMessage('请先在设置页面配置云智API Token', 'warning');
+                return;
+            }
+
             const songName = songNameInput.value.trim();
             const page = searchPageNumber;
             const limit = 20;
@@ -7277,9 +7590,14 @@
             }
             
             const url = 'https://yunzhiapi.cn/API/qqrgbd.php';
-            const params = { count };
+            const params = new URLSearchParams();
+            params.append('count', count);
             
-            const response = await fetch(`${url}?${new URLSearchParams(params)}`, {
+            if (yunzhiToken) {
+                params.append('token', yunzhiToken);
+            }
+            
+            const response = await fetch(`${url}?${params.toString()}`, {
                 method: 'GET',
                 headers: {
                     'Content-Type': 'application/json',
@@ -7299,8 +7617,13 @@
             return data;
         }
         
-        // 每日推荐功能
+        // 每日推荐功能（支持缓存）
         async function loadDailyRecommendation() {
+            if (!yunzhiToken) {
+                showStatusMessage('请先在设置页面配置云智API Token', 'warning');
+                return;
+            }
+
             const recommendBtn = document.getElementById('recommendBtn');
             const recommendModal = document.getElementById('recommendModal');
             const recommendSongList = document.getElementById('recommendSongList');
@@ -7309,8 +7632,27 @@
             recommendBtn.disabled = true;
             
             try {
-                // 直接请求 API 获取推荐数据
-                const hotSongsData = await makeRequest(getQQHotSongs, 20);
+                // 获取今天的日期字符串（用于判断缓存是否过期）
+                const today = new Date().toLocaleDateString('zh-CN');
+                let hotSongsData = null;
+                
+                // 尝试从 localStorage 读取缓存
+                const cachedDate = localStorage.getItem(DAILY_RECOMMEND_DATE_KEY);
+                const cachedData = localStorage.getItem(DAILY_RECOMMEND_KEY);
+                
+                if (cachedDate === today && cachedData) {
+                    // 缓存有效，直接使用
+                    hotSongsData = JSON.parse(cachedData);
+                    showStatusMessage('使用缓存的今日推荐', 'info');
+                } else {
+                    // 无缓存或已过期，调用 API 获取（改为 100 首）
+                    hotSongsData = await makeRequest(getQQHotSongs, 100);
+                    
+                    // 存入 localStorage
+                    localStorage.setItem(DAILY_RECOMMEND_DATE_KEY, today);
+                    localStorage.setItem(DAILY_RECOMMEND_KEY, JSON.stringify(hotSongsData));
+                    showStatusMessage('已获取最新每日推荐', 'success');
+                }
                 
                 // 清空列表
                 recommendSongList.innerHTML = '';
@@ -7322,15 +7664,15 @@
                     li.innerHTML = `
                         <div class="recommend-song-index">${index + 1}</div>
                         <div class="recommend-song-info">
-                            <div class="recommend-song-name">${song.albumname}</div>
-                            <div class="recommend-song-artist">${song.name}</div>
+                            <div class="recommend-song-name">${escapeHTML(song.albumname || '未知歌曲')}</div>
+                            <div class="recommend-song-artist">${escapeHTML(song.name || '未知艺术家')}</div>
                         </div>
                     `;
                     
                     // 点击歌曲项，搜索并播放
                     li.addEventListener('click', () => {
                         recommendModal.classList.remove('active');
-                        songNameInput.value = song.albumname;
+                        songNameInput.value = song.albumname; // 使用 albumname 作为搜索关键词
                         performSearch();
                     });
                     
@@ -7344,70 +7686,15 @@
             } catch (error) {
                 // 显示友好的错误消息
                 showStatusMessage('推荐服务暂时不可用，请稍后再试', 'error');
+                console.error('每日推荐加载失败:', error);
             } finally {
                 // 重新启用按钮
                 recommendBtn.disabled = false;
             }
         }
 
-        // ========== API 请求限制管理 ==========
-        const requestLimit = {
-            daily: 1500,
-            perMinute: 90,
-            dailyKey: 'api_daily_count',
-            perMinuteKey: 'api_minute_count',
-            minuteTimestampKey: 'api_minute_timestamp',
-            dayKey: 'api_day'
-        };
-
-        // 检查并增加计数，返回是否允许请求
-        function checkRequestLimit() {
-            const now = Date.now();
-            const today = new Date().toDateString();
-
-            let dailyCount = parseInt(localStorage.getItem(requestLimit.dailyKey) || '0');
-            let storedDay = localStorage.getItem(requestLimit.dayKey) || '';
-            let minuteCount = parseInt(localStorage.getItem(requestLimit.perMinuteKey) || '0');
-            let minuteTimestamp = parseInt(localStorage.getItem(requestLimit.minuteTimestampKey) || '0');
-
-            // 检查日期是否改变，重置每日计数
-            if (storedDay !== today) {
-                dailyCount = 0;
-                localStorage.setItem(requestLimit.dayKey, today);
-                localStorage.setItem(requestLimit.dailyKey, '0');
-            }
-
-            // 检查分钟是否改变（距离上次记录超过60秒），重置分钟计数
-            if (now - minuteTimestamp > 60000) {
-                minuteCount = 0;
-                localStorage.setItem(requestLimit.minuteTimestampKey, now.toString());
-                localStorage.setItem(requestLimit.perMinuteKey, '0');
-            } else {
-                if (minuteCount >= requestLimit.perMinute) {
-                    return { allowed: false, reason: '每分钟请求次数已达上限，请稍后再试' };
-                }
-            }
-
-            if (dailyCount >= requestLimit.daily) {
-                return { allowed: false, reason: '今日请求次数已达上限' };
-            }
-
-            // 允许请求，增加计数
-            dailyCount++;
-            minuteCount++;
-            localStorage.setItem(requestLimit.dailyKey, dailyCount.toString());
-            localStorage.setItem(requestLimit.perMinuteKey, minuteCount.toString());
-            localStorage.setItem(requestLimit.minuteTimestampKey, now.toString());
-
-            return { allowed: true };
-        }
-
-        // 包装请求函数，自动检查限制并抛出错误
+        // 包装请求函数，直接调用（无限制）
         async function makeRequest(requestFn, ...args) {
-            const check = checkRequestLimit();
-            if (!check.allowed) {
-                throw new Error(check.reason);
-            }
             return await requestFn(...args);
         }
 
@@ -7427,6 +7714,10 @@
             queryParams.append('type', params.type);
             queryParams.append('page', params.page);
             queryParams.append('limit', params.limit);
+            
+            if (yunzhiToken) {
+                queryParams.append('token', yunzhiToken);
+            }
             
             const response = await fetch(`${requestUrl}?${queryParams.toString()}`, {
                 method: 'GET',
@@ -8024,6 +8315,10 @@
                 queryParams.append("id", params.id);
                 queryParams.append("type", params.type);
                 
+                if (yunzhiToken) {
+                    queryParams.append("token", yunzhiToken);
+                }
+                
                 fetch(`${requestUrl}?${queryParams.toString()}`)
                     .then(response => {
                         if (!response.ok) {
@@ -8068,6 +8363,10 @@
             params.append('id', id);
             params.append('msg', msg);
             params.append('type', type);
+            
+            if (yunzhiToken) {
+                params.append('token', yunzhiToken);
+            }
 
             try {
                 // 发送API请求
@@ -10383,19 +10682,15 @@
         <div class="navbar-container">
             <a href="#" class="navbar-item active" data-page="home">
                 <i class="fas fa-home"></i>
-                <span>首页</span>
             </a>
             <a href="#" class="navbar-item" data-page="search">
                 <i class="fas fa-search"></i>
-                <span>搜索</span>
             </a>
             <a href="#" class="navbar-item" data-page="settings">
                 <i class="fas fa-cog"></i>
-                <span>设置</span>
             </a>
             <a href="#" class="navbar-item" data-page="profile">
                 <i class="fas fa-user"></i>
-                <span>我的</span>
             </a>
         </div>
     </nav>
