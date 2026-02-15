@@ -27,21 +27,21 @@
 
         /* 新春主题颜色变量（默认不启用，通过类名切换） */
         .new-year-theme {
-            --primary-color: #e63946;
-            --primary-light: #ffb3c6;
-            --primary-color-rgb: 230, 57, 70;
-            --primary-light-rgb: 255, 179, 198;
+            --primary-color: #ff0000;
+            --primary-light: #ff6666;
+            --primary-color-rgb: 255, 0, 0;
+            --primary-light-rgb: 255, 102, 102;
             --secondary-color: #f4a261;
             --dark-bg: #2b2d42;
             --darker-bg: #1e1e2f;
-            --card-bg: rgba(230, 57, 70, 0.2);
+            --card-bg: rgba(255, 0, 0, 0.2);
             --border-color: rgba(255, 215, 0, 0.3);
             --text-primary: #fff0f0;
             --text-secondary: #ffe5b4;
             --success-color: #2a9d8f;
             --error-color: #d62828;
             --warning-color: #fcbf49;
-            --lyrics-highlight: rgba(255, 215, 0, 0.3);
+            --lyrics-highlight: rgba(255, 0, 0, 0.3);
         }
 
         /* 新春主题背景 - 横竖屏自适应 */
@@ -99,7 +99,7 @@
             background-size: cover;
             background-position: center;
             background-repeat: no-repeat;
-            z-index: -1;
+            z-index: -2;
             transition: opacity 0.5s ease, filter 0.3s ease;
             opacity: 0.5;
             filter: blur(0px);
@@ -125,7 +125,7 @@
             width: 100%;
             height: 100%;
             background: linear-gradient(135deg, var(--darker-bg) 0%, var(--dark-bg) 100%);
-            z-index: -1;
+            z-index: -3;
             pointer-events: none;
         }
         
@@ -255,10 +255,33 @@
 
         /* 新春主题Beta徽章适配 */
         .new-year-theme .beta-badge {
-            background-image: linear-gradient(135deg, #e63946 0%, #f4a261 100%);
-            box-shadow: 0 2px 8px rgba(230, 57, 70, 0.3);
+            background-image: linear-gradient(135deg, #ff0000 0%, #f4a261 100%);
+            box-shadow: 0 2px 8px rgba(255, 0, 0, 0.3);
         }
-        
+
+        /* 完善新春主题：面板背景使用主题深色 */
+        .new-year-theme .lyrics-panel,
+        .new-year-theme .download-panel,
+        .new-year-theme .announcement-panel,
+        .new-year-theme .playlist-panel,
+        .new-year-theme .download-options-panel,
+        .new-year-theme .modal-content,
+        .new-year-theme .toolbar-settings-panel,
+        .new-year-theme .opacity-panel {
+            background: rgba(43, 45, 66, 0.95);
+            backdrop-filter: blur(20px);
+            border-color: var(--border-color);
+        }
+
+        /* 推荐按钮使用主题渐变，统一视觉 */
+        .new-year-theme .recommend-btn {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+        }
+        .new-year-theme .recommend-btn:hover {
+            box-shadow: 0 10px 25px rgba(255, 0, 0, 0.3);
+        }
+
         /* 搜索区域 */
         .search-section {
             background: var(--card-bg);
@@ -2133,16 +2156,18 @@
 
         /* 新春主题按钮颜色 */
         .new-year-theme .play-btn {
-            background: linear-gradient(135deg, #e63946, #f4a261);
+            background: linear-gradient(135deg, #ff0000, #f4a261);
         }
         .new-year-theme .search-btn {
-            background: linear-gradient(135deg, #e63946, #f4a261);
+            background: linear-gradient(135deg, #ff0000, #f4a261);
         }
 
         /* 页面容器样式 */
         .page-container {
             display: none;
             animation: fadeIn 0.3s ease;
+            position: relative;
+            z-index: 1;
         }
 
         .page-container.active {
@@ -3636,6 +3661,10 @@
             transform: translateX(150%);
             transition: transform 0.3s;
             box-shadow: 0 5px 20px rgba(0, 0, 0, 0.3);
+        }
+        
+        .status-message i {
+            color: var(--primary-light);
         }
         
         .status-message.active {
@@ -5880,6 +5909,9 @@
     <!-- 背景层 -->
     <div class="background-layer" id="backgroundLayer"></div>
 
+    <!-- 烟花效果画布（置于背景与内容之间） -->
+    <canvas id="fireworksCanvas" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: -1;"></canvas>
+
     <!-- 首页 -->
     <div class="page-container active" id="home-page">
         <div class="container">
@@ -6616,7 +6648,26 @@
                 }
             }
         }
-        
+
+        // 更新隐藏/显示按钮和收起按钮的状态
+        function updatePlayerVisibilityButtonState() {
+            const isVisible = floatingPlayer.style.display !== 'none';
+            const togglePlayerVisibilityBtn = document.getElementById('togglePlayerVisibilityBtn');
+            if (togglePlayerVisibilityBtn) {
+                if (isVisible) {
+                    togglePlayerVisibilityBtn.innerHTML = '<i class="fas fa-eye-slash"></i>';
+                    togglePlayerVisibilityBtn.title = '隐藏播放器';
+                } else {
+                    togglePlayerVisibilityBtn.innerHTML = '<i class="fas fa-eye"></i>';
+                    togglePlayerVisibilityBtn.title = '显示播放器';
+                }
+            }
+            // 收起/展开按钮：播放器隐藏时隐藏该按钮，显示时恢复
+            if (togglePlayerBtn) {
+                togglePlayerBtn.style.display = isVisible ? 'flex' : 'none';
+            }
+        }
+
         // 初始化设备优化
         document.addEventListener('DOMContentLoaded', function() {
             applyDeviceOptimizations();
@@ -6922,23 +6973,28 @@
                 const bgLayer = document.getElementById('backgroundLayer');
                 const customWallpaper = localStorage.getItem('customWallpaper');
                 const bgEnabled = localStorage.getItem('bgEnabled') !== 'false';
+                const toggle = document.getElementById('backgroundToggle');
 
-                // 如果有自定义壁纸，优先使用自定义壁纸
                 if (customWallpaper) {
-                    bgLayer.style.backgroundImage = customWallpaper;
-                } else {
-                    // 无自定义壁纸时，根据主题设置背景
-                    if (theme === 'newyear') {
-                        // 移除内联样式，让 CSS 媒体查询控制背景
-                        bgLayer.style.backgroundImage = '';
-                        // 确保背景显示
-                        backgroundToggle.checked = true;
-                        localStorage.setItem('bgEnabled', 'true');
-                    } else {
-                        // 默认主题：清除内联样式，让 CSS 默认背景生效
-                        bgLayer.style.backgroundImage = '';
-                    }
+                    bgLayer.style.setProperty('background-image', customWallpaper);
+                    bgLayer.style.setProperty('opacity', bgEnabled ? (theme === 'newyear' ? '0.7' : '0.5') : '0');
+                    if (toggle) toggle.checked = bgEnabled;
+                    return;
                 }
+
+                bgLayer.style.removeProperty('background-image');
+
+                if (bgEnabled) {
+                    bgLayer.style.removeProperty('opacity');
+                } else {
+                    bgLayer.style.setProperty('opacity', '0');
+                }
+
+                if (toggle) toggle.checked = bgEnabled;
+
+                bgLayer.style.display = 'none';
+                bgLayer.offsetHeight;
+                bgLayer.style.display = '';
             }
 
             // 初始化背景设置
@@ -7099,6 +7155,13 @@
 
                 // 应用主题背景
                 applyThemeBackground(savedTheme);
+
+                // 新增：控制烟花
+                if (savedTheme === 'newyear') {
+                    if (window.fireworksControl) window.fireworksControl.start();
+                } else {
+                    if (window.fireworksControl) window.fireworksControl.stop();
+                }
             }
 
             // 绑定主题按钮事件
@@ -7114,6 +7177,13 @@
 
                     // 应用主题背景
                     applyThemeBackground(theme);
+
+                    // 新增：控制烟花
+                    if (theme === 'newyear') {
+                        if (window.fireworksControl) window.fireworksControl.start();
+                    } else {
+                        if (window.fireworksControl) window.fireworksControl.stop();
+                    }
 
                     showStatusMessage(theme === 'newyear' ? '新春主题已应用' : '默认主题已应用', 'success');
                 });
@@ -7161,25 +7231,6 @@
                 updatePlayerVisibilityButtonState();
                 updateToolbarPosition();
                 localStorage.setItem('playerHidden', isPlayerHiddenByUser ? 'true' : 'false');
-            }
-
-            // 更新隐藏/显示按钮和收起按钮的状态
-            function updatePlayerVisibilityButtonState() {
-                const isVisible = floatingPlayer.style.display !== 'none';
-                const togglePlayerVisibilityBtn = document.getElementById('togglePlayerVisibilityBtn');
-                if (togglePlayerVisibilityBtn) {
-                    if (isVisible) {
-                        togglePlayerVisibilityBtn.innerHTML = '<i class="fas fa-eye-slash"></i>';
-                        togglePlayerVisibilityBtn.title = '隐藏播放器';
-                    } else {
-                        togglePlayerVisibilityBtn.innerHTML = '<i class="fas fa-eye"></i>';
-                        togglePlayerVisibilityBtn.title = '显示播放器';
-                    }
-                }
-                // 收起/展开按钮：播放器隐藏时隐藏该按钮，显示时恢复
-                if (togglePlayerBtn) {
-                    togglePlayerBtn.style.display = isVisible ? 'flex' : 'none';
-                }
             }
 
             // 绑定切换按钮点击事件
@@ -9422,18 +9473,21 @@
             // 保存当前透明度设置
             localStorage.setItem('lyricsOpacity', opacity);
             
+            // 根据主题选择基础背景色
+            const baseColor = document.body.classList.contains('new-year-theme') ? '43, 45, 66' : '15, 23, 42';
+            
             // 更新歌词面板的透明度
-            lyricsPanel.style.background = `rgba(15, 23, 42, ${opacity})`;
+            lyricsPanel.style.background = `rgba(${baseColor}, ${opacity})`;
             
             // 更新歌词内容区域的背景透明度
             const lyricsContent = playerLyrics;
             if (lyricsContent) {
-                lyricsContent.style.background = `rgba(15, 23, 42, ${Math.max(0, opacity - 0.1)})`;
+                lyricsContent.style.background = `rgba(${baseColor}, ${Math.max(0, opacity - 0.1)})`;
             }
             
             // 更新下拉菜单的透明度
             if (lyricsSourceDropdown) {
-                lyricsSourceDropdown.style.background = `rgba(15, 23, 42, ${opacity})`;
+                lyricsSourceDropdown.style.background = `rgba(${baseColor}, ${opacity})`;
             }
             
             // 更新下拉菜单触发器的透明度
@@ -10977,6 +11031,177 @@
                 playlistBtn.classList.remove('active');
             });
         });
+
+        // ========== 烟花效果（可控制、仅新春主题显示，适配各种设备） ==========
+        (function() {
+            const canvas = document.getElementById('fireworksCanvas');
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            let width, height;
+            let fireworks = [];
+            let animationId = null;
+            let intervalId = null;
+            let config = {};
+
+            const colors = [
+                '255,99,71', '135,206,250', '50,205,50', '255,215,0',
+                '218,112,214', '255,140,0', '75,0,130', '255,20,147'
+            ];
+
+            function getDeviceConfig() {
+                const w = window.innerWidth;
+                if (w < 768) {
+                    return {
+                        particlesPerFirework: 40,
+                        interval: 500,
+                        speedFactor: 0.8,
+                        riseSpeedBase: 4
+                    };
+                } else if (w < 1024) {
+                    return {
+                        particlesPerFirework: 60,
+                        interval: 400,
+                        speedFactor: 0.9,
+                        riseSpeedBase: 5
+                    };
+                } else {
+                    return {
+                        particlesPerFirework: 80,
+                        interval: 300,
+                        speedFactor: 1.0,
+                        riseSpeedBase: 6
+                    };
+                }
+            }
+
+            function resizeCanvas() {
+                width = window.innerWidth;
+                height = window.innerHeight;
+                canvas.width = width;
+                canvas.height = height;
+            }
+            window.addEventListener('resize', resizeCanvas);
+
+            function Particle(x, y, color, cfg) {
+                const angle = Math.random() * Math.PI * 2;
+                const speed = (Math.random() * 3 + 2) * cfg.speedFactor;
+                this.x = x;
+                this.y = y;
+                this.vx = Math.cos(angle) * speed;
+                this.vy = Math.sin(angle) * speed;
+                this.life = 150;
+                this.color = color;
+                this.shape = Math.random() > 0.5 ? 'circle' : 'line';
+            }
+
+            function initFirework() {
+                if (!config) config = getDeviceConfig();
+                const x = Math.random() * width;
+                const y = height;
+                const v = Math.random() * 5 + config.riseSpeedBase;
+                const color = colors[Math.floor(Math.random() * colors.length)];
+                const targetHeight = Math.random() * height / 2 + height / 4;
+                const firework = { x, y, v, color, height: targetHeight, particles: [] };
+                fireworks.push(firework);
+            }
+
+            function updateFireworks() {
+                for (let i = fireworks.length - 1; i >= 0; i--) {
+                    const firework = fireworks[i];
+                    if (firework.y > firework.height) {
+                        firework.y -= firework.v;
+                        ctx.beginPath();
+                        ctx.arc(firework.x, firework.y, 3, 0, 2 * Math.PI);
+                        ctx.fillStyle = `rgb(${firework.color})`;
+                        ctx.fill();
+                    } else {
+                        if (firework.particles.length === 0) {
+                            const particleCount = config.particlesPerFirework;
+                            for (let j = 0; j < particleCount; j++) {
+                                firework.particles.push(new Particle(firework.x, firework.y, firework.color, config));
+                            }
+                        }
+                        for (let j = firework.particles.length - 1; j >= 0; j--) {
+                            const particle = firework.particles[j];
+                            particle.x += particle.vx;
+                            particle.y += particle.vy;
+                            particle.vy += 0.02;
+                            particle.life--;
+                            const alpha = particle.life / 150;
+
+                            if (particle.shape === 'circle') {
+                                const gradient = ctx.createRadialGradient(particle.x, particle.y, 0, particle.x, particle.y, 2);
+                                gradient.addColorStop(0, `rgba(255,255,255,${alpha})`);
+                                gradient.addColorStop(1, `rgba(${particle.color},${alpha})`);
+                                ctx.fillStyle = gradient;
+                                ctx.beginPath();
+                                ctx.arc(particle.x, particle.y, 2, 0, 2 * Math.PI);
+                                ctx.fill();
+                            } else {
+                                const endX = particle.x - particle.vx * 2;
+                                const endY = particle.y - particle.vy * 2;
+                                const gradient = ctx.createLinearGradient(particle.x, particle.y, endX, endY);
+                                gradient.addColorStop(0, `rgba(${particle.color},${alpha})`);
+                                gradient.addColorStop(1, `rgba(${particle.color},0)`);
+                                ctx.strokeStyle = gradient;
+                                ctx.lineWidth = 2;
+                                ctx.beginPath();
+                                ctx.moveTo(particle.x, particle.y);
+                                ctx.lineTo(endX, endY);
+                                ctx.stroke();
+                            }
+
+                            if (particle.life <= 0) {
+                                firework.particles.splice(j, 1);
+                            }
+                        }
+                        if (firework.particles.length === 0) {
+                            fireworks.splice(i, 1);
+                        }
+                    }
+                }
+            }
+
+            function animate() {
+                if (!canvas.style.display || canvas.style.display === 'none') {
+                    if (animationId) {
+                        cancelAnimationFrame(animationId);
+                        animationId = null;
+                    }
+                    return;
+                }
+                ctx.clearRect(0, 0, width, height);
+                updateFireworks();
+                animationId = requestAnimationFrame(animate);
+            }
+
+            function start() {
+                if (intervalId) return;
+                config = getDeviceConfig();
+                canvas.style.display = 'block';
+                resizeCanvas();
+                intervalId = setInterval(initFirework, config.interval);
+                animate();
+            }
+
+            function stop() {
+                if (intervalId) {
+                    clearInterval(intervalId);
+                    intervalId = null;
+                }
+                if (animationId) {
+                    cancelAnimationFrame(animationId);
+                    animationId = null;
+                }
+                fireworks = [];
+                canvas.style.display = 'none';
+                ctx.clearRect(0, 0, width, height);
+            }
+
+            window.fireworksControl = { start, stop };
+
+            canvas.style.display = 'none';
+        })();
     </script>
 
     <!-- 倍速切换中央弹窗 -->
