@@ -10,6 +10,8 @@
         :root {
             --primary-color: #4361ee;
             --primary-light: #4cc9f0;
+            --primary-color-rgb: 67, 97, 238;
+            --primary-light-rgb: 76, 201, 240;
             --secondary-color: #3a0ca3;
             --dark-bg: #0f172a;
             --darker-bg: #0a0f1c;
@@ -21,6 +23,40 @@
             --error-color: #ef4444;
             --warning-color: #f59e0b;
             --lyrics-highlight: rgba(76, 201, 240, 0.2);
+        }
+
+        /* 新春主题颜色变量（默认不启用，通过类名切换） */
+        .new-year-theme {
+            --primary-color: #e63946;
+            --primary-light: #ffb3c6;
+            --primary-color-rgb: 230, 57, 70;
+            --primary-light-rgb: 255, 179, 198;
+            --secondary-color: #f4a261;
+            --dark-bg: #2b2d42;
+            --darker-bg: #1e1e2f;
+            --card-bg: rgba(230, 57, 70, 0.2);
+            --border-color: rgba(255, 215, 0, 0.3);
+            --text-primary: #fff0f0;
+            --text-secondary: #ffe5b4;
+            --success-color: #2a9d8f;
+            --error-color: #d62828;
+            --warning-color: #fcbf49;
+            --lyrics-highlight: rgba(255, 215, 0, 0.3);
+        }
+
+        /* 新春主题背景 - 横竖屏自适应 */
+        .new-year-theme .background-layer {
+            background-image: url('https://free.picui.cn/free/2026/02/15/69918df8d530a.png');
+            background-size: cover;
+            background-position: center;
+            opacity: 0.7;
+        }
+
+        @media (orientation: landscape) {
+            .new-year-theme .background-layer {
+                background-image: url('https://free.picui.cn/free/2026/02/15/69918a721f004.jpg');
+                opacity: 0.7;
+            }
         }
         
         /* 重置所有元素的默认margin和padding */
@@ -153,7 +189,7 @@
         }
         
         .header-btn:hover {
-            background: rgba(67, 97, 238, 0.2);
+            background: rgba(var(--primary-color-rgb), 0.2);
             color: var(--primary-light);
             border-color: var(--primary-color);
         }
@@ -216,6 +252,12 @@
                 box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
             }
         }
+
+        /* 新春主题Beta徽章适配 */
+        .new-year-theme .beta-badge {
+            background-image: linear-gradient(135deg, #e63946 0%, #f4a261 100%);
+            box-shadow: 0 2px 8px rgba(230, 57, 70, 0.3);
+        }
         
         /* 搜索区域 */
         .search-section {
@@ -234,6 +276,64 @@
             justify-content: space-between;
             align-items: center;
             margin-bottom: 24px;
+        }
+
+        /* 可折叠标题栏 */
+        .collapsible-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            user-select: none;
+            margin-top: 30px;
+            margin-bottom: 0;
+            padding: 8px 0;
+            border-bottom: 1px solid var(--border-color);
+            transition: border-color 0.3s;
+        }
+
+        .collapsible-header:hover {
+            border-bottom-color: var(--primary-light);
+        }
+
+        .collapse-btn {
+            background: transparent;
+            border: none;
+            color: var(--text-secondary);
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 16px;
+        }
+
+        .collapse-btn:hover {
+            background: rgba(var(--primary-color-rgb), 0.1);
+            color: var(--primary-light);
+        }
+
+        .collapse-btn i {
+            transition: transform 0.3s ease;
+        }
+
+        /* 折叠内容区域 */
+        .collapse-content {
+            overflow: hidden;
+            transition: max-height 0.3s ease, opacity 0.3s ease, margin 0.3s ease;
+            max-height: 500px;
+            opacity: 1;
+            margin-top: 15px;
+        }
+
+        .collapse-content.collapsed {
+            max-height: 0;
+            opacity: 0;
+            margin-top: 0;
+            pointer-events: none;
         }
         
         .section-title {
@@ -1036,7 +1136,7 @@
             animation: fadeIn 0.5s ease;
             position: relative;
             z-index: 1;
-            min-height: 44px;
+            min-height: 35px;
             touch-action: manipulation;
         }
         
@@ -1789,7 +1889,7 @@
             background: var(--primary-light);
             border-radius: 50%;
             cursor: pointer;
-            box-shadow: 0 0 8px rgba(67, 97, 238, 0.5);
+            box-shadow: 0 0 8px rgba(var(--primary-color-rgb), 0.5);
             border: 2px solid rgba(255, 255, 255, 0.8);
         }
 
@@ -1799,7 +1899,7 @@
             background: var(--primary-light);
             border-radius: 50%;
             cursor: pointer;
-            box-shadow: 0 0 8px rgba(67, 97, 238, 0.5);
+            box-shadow: 0 0 8px rgba(var(--primary-color-rgb), 0.5);
             border: 2px solid rgba(255, 255, 255, 0.8);
         }
 
@@ -2003,8 +2103,8 @@
             gap: 0;
             color: var(--text-secondary);
             text-decoration: none;
-            width: 44px;
-            height: 44px;
+            width: 35px;
+            height: 35px;
             border-radius: 8px;
             transition: all 0.3s ease;
             font-size: 10px;
@@ -2029,6 +2129,14 @@
 
         .navbar-item.active i {
             transform: scale(1.1);
+        }
+
+        /* 新春主题按钮颜色 */
+        .new-year-theme .play-btn {
+            background: linear-gradient(135deg, #e63946, #f4a261);
+        }
+        .new-year-theme .search-btn {
+            background: linear-gradient(135deg, #e63946, #f4a261);
         }
 
         /* 页面容器样式 */
@@ -2399,9 +2507,9 @@
         }
 
         .select-all-btn:hover {
-            background: rgba(67, 97, 238, 0.15);
+            background: rgba(var(--primary-color-rgb), 0.15);
             color: var(--primary-light);
-            border-color: rgba(76, 201, 240, 0.3);
+            border-color: rgba(var(--primary-light-rgb), 0.3);
         }
 
         .select-all-btn:active {
@@ -2864,12 +2972,12 @@
         }
         
         .playback-rate-option:hover {
-            background: rgba(67, 97, 238, 0.2);
+            background: rgba(var(--primary-color-rgb), 0.2);
             color: var(--primary-light);
         }
         
         .playback-rate-option.active {
-            background: rgba(67, 97, 238, 0.3);
+            background: rgba(var(--primary-color-rgb), 0.3);
             color: var(--primary-light);
             font-weight: 600;
         }
@@ -2889,12 +2997,12 @@
         }
         
         .lyrics-source-item:hover {
-            background: rgba(67, 97, 238, 0.2);
+            background: rgba(var(--primary-color-rgb), 0.2);
             color: var(--primary-light);
         }
         
         .lyrics-source-item.active {
-            background: rgba(67, 97, 238, 0.3);
+            background: rgba(var(--primary-color-rgb), 0.3);
             color: var(--primary-light);
         }
         
@@ -2925,7 +3033,7 @@
             border-radius: 50%;
             background: var(--primary-light);
             cursor: pointer;
-            box-shadow: 0 0 5px rgba(76, 201, 240, 0.3);
+            box-shadow: 0 0 5px rgba(var(--primary-light-rgb), 0.3);
             transition: all 0.3s;
         }
         
@@ -2935,7 +3043,7 @@
             border-radius: 50%;
             background: var(--primary-light);
             cursor: pointer;
-            box-shadow: 0 0 5px rgba(76, 201, 240, 0.3);
+            box-shadow: 0 0 5px rgba(var(--primary-light-rgb), 0.3);
             border: none;
             transition: all 0.3s;
         }
@@ -2943,7 +3051,7 @@
         #lyricsOpacitySlider::-webkit-slider-thumb:hover,
         #lyricsOpacitySlider::-moz-range-thumb:hover {
             transform: scale(1.2);
-            box-shadow: 0 0 8px rgba(76, 201, 240, 0.5);
+            box-shadow: 0 0 8px rgba(var(--primary-light-rgb), 0.5);
         }
         
         /* 佳欣歌词API配置区域 */
@@ -2987,7 +3095,7 @@
         .config-btn {
             width: 100%;
             padding: 8px;
-            background: rgba(67, 97, 238, 0.3);
+            background: rgba(var(--primary-color-rgb), 0.3);
             border: 1px solid var(--primary-color);
             border-radius: 6px;
             color: var(--primary-light);
@@ -2997,7 +3105,7 @@
         }
         
         .config-btn:hover {
-            background: rgba(67, 97, 238, 0.5);
+            background: rgba(var(--primary-color-rgb), 0.5);
         }
         
         .show-lyrics-btn {
@@ -3715,8 +3823,8 @@
             }
             
             .play-btn {
-                width: 44px;
-                height: 44px;
+                width: 36px;
+                height: 36px;
                 font-size: 18px;
             }
             
@@ -5160,8 +5268,8 @@
         /* 设备特定优化样式 */
         .touch-device .control-btn,
         .touch-device .song-item {
-            min-height: 44px !important;
-            min-width: 44px !important;
+            min-height: 35px !important;
+            min-width: 35px !important;
         }
         
         .mobile-device .floating-player {
@@ -5281,8 +5389,8 @@
         .mobile-device .secondary-btn {
             padding: 8px 12px;
             font-size: 12px;
-            min-height: 44px;
-            min-width: 44px;
+            min-height: 35px;
+            min-width: 35px;
         }
         
         /* 平板设备布局优化 */
@@ -5476,8 +5584,8 @@
 
             /* 调整按钮大小适应竖屏 */
             .floating-player .player-controls .control-btn {
-                width: 44px;
-                height: 44px;
+                width: 35px;
+                height: 35px;
                 font-size: 18px;
             }
 
@@ -5856,7 +5964,7 @@
                     </div>
 
                     <div class="form-group">
-                        <div class="form-label"><i class="fas fa-fire"></i> 快捷操作</div>
+                        <div class="form-label"><i class="fas fa-fire"></i> 每日推荐</div>
                         <div class="quick-actions">
                             <button class="recommend-btn" id="recommendBtn">
                                 <i class="fas fa-fire"></i> 每日推荐
@@ -6026,12 +6134,15 @@
                     </div>
                 </div>
 
-                <div class="section-header" style="margin-top: 30px;">
+                <div class="section-header collapsible-header" id="opacitySectionHeader">
                     <h2 class="section-title">
                         <i class="fas fa-adjust"></i> 透明度设置
                     </h2>
+                    <button class="collapse-btn" id="toggleOpacitySection">
+                        <i class="fas fa-chevron-down"></i>
+                    </button>
                 </div>
-                <div class="settings-group">
+                <div class="settings-group collapse-content collapsed" id="opacitySectionContent">
                     <div class="settings-item">
                         <div class="settings-label">
                             <span>播放器透明度</span>
@@ -6074,12 +6185,15 @@
                     </div>
                 </div>
 
-                <div class="section-header" style="margin-top: 30px;">
+                <div class="section-header collapsible-header" id="bgSectionHeader">
                     <h2 class="section-title">
                         <i class="fas fa-image"></i> 背景设置
                     </h2>
+                    <button class="collapse-btn" id="toggleBgSection">
+                        <i class="fas fa-chevron-down"></i>
+                    </button>
                 </div>
-                <div class="settings-group">
+                <div class="settings-group collapse-content collapsed" id="bgSectionContent">
                     <div class="settings-item" style="flex-direction: row; align-items: center; justify-content: space-between;">
                         <span class="settings-label">显示背景</span>
                         <label class="switch">
@@ -6088,14 +6202,26 @@
                         </label>
                     </div>
                     <div class="settings-item" style="margin-top: 15px;">
+                        <span class="settings-label" style="display: block; margin-bottom: 8px;"></span>
+                        <input type="text" id="urlWallpaperInput" placeholder="输入图片URL" style="width: 100%; padding: 8px 12px; background: rgba(255, 255, 255, 0.05); border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-primary); font-size: 12px; margin-bottom: 8px;">
+                        <button class="config-btn" id="applyUrlWallpaperBtn">应用URL背景</button>
+                    </div>
+                    <div class="settings-item">
                         <button class="config-btn" id="localWallpaperBtn">选择本地壁纸</button>
                         <input type="file" id="wallpaperFileInput" accept="image/*" style="display: none;">
                         <button class="config-btn" id="resetWallpaperBtn" style="margin-top: 8px;">恢复默认背景</button>
                     </div>
-                    <div class="settings-item" style="margin-top: 15px;">
-                        <span class="settings-label" style="display: block; margin-bottom: 8px;">URL背景</span>
-                        <input type="text" id="urlWallpaperInput" placeholder="输入图片URL" style="width: 100%; padding: 8px 12px; background: rgba(255, 255, 255, 0.05); border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-primary); font-size: 12px; margin-bottom: 8px;">
-                        <button class="config-btn" id="applyUrlWallpaperBtn">应用URL背景</button>
+                </div>
+
+                <div class="section-header" style="margin-top: 30px;">
+                    <h2 class="section-title">
+                        <i class="fas fa-palette"></i> 主题设置
+                    </h2>
+                </div>
+                <div class="settings-group">
+                    <div class="settings-options">
+                        <button class="settings-option-btn theme-option" data-theme="default">默认主题</button>
+                        <button class="settings-option-btn theme-option" data-theme="newyear">新春主题</button>
                     </div>
                 </div>
             </div>
@@ -6398,8 +6524,8 @@
                 // 增加触摸目标大小
                 const touchElements = document.querySelectorAll('button, .song-item, .control-btn');
                 touchElements.forEach(el => {
-                    el.style.minHeight = '44px';
-                    el.style.minWidth = '44px';
+                    el.style.minHeight = '35px';
+                    el.style.minWidth = '35px';
                 });
             }
             
@@ -6496,6 +6622,14 @@
             applyDeviceOptimizations();
             handleResize();
             window.addEventListener('resize', handleResize);
+            
+            // 恢复播放器隐藏状态
+            const hidden = localStorage.getItem('playerHidden') === 'true';
+            if (hidden) {
+                floatingPlayer.style.display = 'none';
+                isPlayerHiddenByUser = true;
+                updatePlayerVisibilityButtonState();
+            }
         });
         
         // DOM元素
@@ -6585,6 +6719,7 @@
         let totalSongsCount = 0;
         let isPlayerExpanded = false;
         let isLyricsVisible = false;
+        let isPlayerHiddenByUser = false;
         
         // 缓存键名
         const DAILY_RECOMMEND_KEY = 'dailyRecommendation';
@@ -6782,6 +6917,30 @@
                 landscape: 'url("https://free.picui.cn/free/2026/02/08/6987f0bfd71dc.png")'
             };
 
+            // 应用主题背景
+            function applyThemeBackground(theme) {
+                const bgLayer = document.getElementById('backgroundLayer');
+                const customWallpaper = localStorage.getItem('customWallpaper');
+                const bgEnabled = localStorage.getItem('bgEnabled') !== 'false';
+
+                // 如果有自定义壁纸，优先使用自定义壁纸
+                if (customWallpaper) {
+                    bgLayer.style.backgroundImage = customWallpaper;
+                } else {
+                    // 无自定义壁纸时，根据主题设置背景
+                    if (theme === 'newyear') {
+                        // 移除内联样式，让 CSS 媒体查询控制背景
+                        bgLayer.style.backgroundImage = '';
+                        // 确保背景显示
+                        backgroundToggle.checked = true;
+                        localStorage.setItem('bgEnabled', 'true');
+                    } else {
+                        // 默认主题：清除内联样式，让 CSS 默认背景生效
+                        bgLayer.style.backgroundImage = '';
+                    }
+                }
+            }
+
             // 初始化背景设置
             function initBackgroundSettings() {
                 // 读取保存的背景显示状态
@@ -6792,23 +6951,31 @@
                 // 读取保存的自定义壁纸
                 const customWallpaper = localStorage.getItem('customWallpaper');
                 if (customWallpaper) {
-                    backgroundLayer.style.backgroundImage = customWallpaper;
                     // 检查是否是URL背景（不是本地图片的dataURL）
                     if (customWallpaper.startsWith('url("http')) {
                         const urlMatch = customWallpaper.match(/url\("([^"]+)"\)/);
                         if (urlMatch && urlMatch[1]) {
                             urlWallpaperInput.value = urlMatch[1];
                         }
+                        backgroundLayer.style.backgroundImage = customWallpaper;
+                    } else if (customWallpaper.startsWith('url("data:')) {
+                        // 本地图片的dataURL
+                        backgroundLayer.style.backgroundImage = customWallpaper;
+                    } else {
+                        // 其他情况，清除无效的壁纸
+                        localStorage.removeItem('customWallpaper');
+                        // 根据主题设置背景
+                        applyThemeBackground(localStorage.getItem('theme') || 'default');
                     }
                 } else {
-                    // 使用默认背景（由 CSS 媒体查询决定）
-                    backgroundLayer.style.backgroundImage = ''; // 让 CSS 控制
+                    // 没有自定义壁纸，根据主题设置背景
+                    applyThemeBackground(localStorage.getItem('theme') || 'default');
                 }
 
                 // 监听开关变化
                 backgroundToggle.addEventListener('change', function() {
                     const enabled = this.checked;
-                    backgroundLayer.style.opacity = enabled ? '0.5' : '0';
+                    backgroundLayer.style.opacity = enabled ? (document.body.classList.contains('new-year-theme') ? '0.6' : '0.5') : '0';
                     localStorage.setItem('bgEnabled', enabled);
                 });
             }
@@ -6822,21 +6989,57 @@
                 const file = e.target.files[0];
                 if (!file) return;
 
+                // 检查文件大小（限制为 2MB）
+                const maxSize = 2 * 1024 * 1024; // 2MB
+                if (file.size > maxSize) {
+                    showStatusMessage('图片过大，请选择小于2MB的图片', 'error');
+                    return;
+                }
+
+                // 尝试使用 FileReader（支持大部分浏览器）
                 const reader = new FileReader();
                 reader.onload = function(event) {
                     const dataUrl = event.target.result;
-                    // 保存到 localStorage
-                    localStorage.setItem('customWallpaper', `url("${dataUrl}")`);
-                    // 应用壁纸
-                    backgroundLayer.style.backgroundImage = `url("${dataUrl}")`;
-                    // 确保背景开启
-                    backgroundToggle.checked = true;
-                    backgroundLayer.style.opacity = '0.5';
-                    localStorage.setItem('bgEnabled', 'true');
-                    showStatusMessage('壁纸已应用', 'success');
+                    try {
+                        localStorage.setItem('customWallpaper', `url("${dataUrl}")`);
+                        backgroundLayer.style.backgroundImage = `url("${dataUrl}")`;
+                        backgroundToggle.checked = true;
+                        backgroundLayer.style.opacity = document.body.classList.contains('new-year-theme') ? '0.7' : '0.5';
+                        localStorage.setItem('bgEnabled', 'true');
+                        showStatusMessage('壁纸已应用', 'success');
+                    } catch (storageError) {
+                        // localStorage 可能溢出，改用临时 URL（不存储）
+                        console.warn('localStorage 存储失败，使用临时 URL', storageError);
+                        applyTempWallpaper(file);
+                    }
+                };
+                reader.onerror = function() {
+                    // FileReader 失败，尝试 createObjectURL
+                    console.warn('FileReader 失败，尝试 createObjectURL');
+                    applyTempWallpaper(file);
                 };
                 reader.readAsDataURL(file);
             });
+
+            // 辅助函数：使用 createObjectURL 临时应用壁纸
+            function applyTempWallpaper(file) {
+                try {
+                    const objectUrl = URL.createObjectURL(file);
+                    backgroundLayer.style.backgroundImage = `url("${objectUrl}")`;
+                    backgroundToggle.checked = true;
+                    backgroundLayer.style.opacity = document.body.classList.contains('new-year-theme') ? '0.7' : '0.5';
+                    localStorage.setItem('bgEnabled', 'true');
+                    // 不存储到 localStorage，避免刷新后丢失
+                    showStatusMessage('壁纸已临时应用（刷新后失效）', 'info');
+                    // 可选：释放之前的 object URL
+                    if (window._lastWallpaperUrl) {
+                        URL.revokeObjectURL(window._lastWallpaperUrl);
+                    }
+                    window._lastWallpaperUrl = objectUrl;
+                } catch (e) {
+                    showStatusMessage('无法应用壁纸，请尝试其他图片', 'error');
+                }
+            }
 
             // 应用URL背景
             applyUrlWallpaperBtn.addEventListener('click', function() {
@@ -6860,7 +7063,7 @@
                 backgroundLayer.style.backgroundImage = `url("${url}")`;
                 // 确保背景开启
                 backgroundToggle.checked = true;
-                backgroundLayer.style.opacity = '0.5';
+                backgroundLayer.style.opacity = document.body.classList.contains('new-year-theme') ? '0.7' : '0.5';
                 localStorage.setItem('bgEnabled', 'true');
                 showStatusMessage('URL背景已应用', 'success');
             });
@@ -6868,13 +7071,71 @@
             // 恢复默认背景
             resetWallpaperBtn.addEventListener('click', function() {
                 localStorage.removeItem('customWallpaper');
-                backgroundLayer.style.backgroundImage = ''; // 恢复 CSS 控制
+                // 移除内联样式，让 CSS 媒体查询重新生效
+                backgroundLayer.style.backgroundImage = '';
+                // 如果使用了临时 URL，释放它
+                if (window._lastWallpaperUrl) {
+                    URL.revokeObjectURL(window._lastWallpaperUrl);
+                    window._lastWallpaperUrl = null;
+                }
                 showStatusMessage('已恢复默认背景', 'info');
             });
 
             // 调用初始化
             initBackgroundSettings();
-            
+
+            // 主题切换功能
+            function initTheme() {
+                const savedTheme = localStorage.getItem('theme') || 'default';
+                document.body.classList.toggle('new-year-theme', savedTheme === 'newyear');
+
+                // 高亮当前主题按钮
+                document.querySelectorAll('.theme-option').forEach(btn => {
+                    btn.classList.remove('active');
+                    if (btn.dataset.theme === savedTheme) {
+                        btn.classList.add('active');
+                    }
+                });
+
+                // 应用主题背景
+                applyThemeBackground(savedTheme);
+            }
+
+            // 绑定主题按钮事件
+            document.querySelectorAll('.theme-option').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const theme = this.dataset.theme;
+                    localStorage.setItem('theme', theme);
+                    document.body.classList.toggle('new-year-theme', theme === 'newyear');
+
+                    // 更新按钮状态
+                    document.querySelectorAll('.theme-option').forEach(b => b.classList.remove('active'));
+                    this.classList.add('active');
+
+                    // 应用主题背景
+                    applyThemeBackground(theme);
+
+                    showStatusMessage(theme === 'newyear' ? '新春主题已应用' : '默认主题已应用', 'success');
+                });
+            });
+
+            // 初始化主题
+            initTheme();
+
+            // 监听屏幕方向变化，确保背景及时更新
+            window.addEventListener('resize', () => {
+                // 如果当前是新春主题且无自定义壁纸，强制重绘背景（某些浏览器可能需要）
+                if (document.body.classList.contains('new-year-theme') && !localStorage.getItem('customWallpaper')) {
+                    const bgLayer = document.getElementById('backgroundLayer');
+                    // 触发重绘
+                    bgLayer.style.transition = 'none';
+                    bgLayer.style.backgroundImage = 'url("https://free.picui.cn/free/2026/02/15/69918df8d530a.png")';
+                    setTimeout(() => {
+                        bgLayer.style.transition = '';
+                    }, 10);
+                }
+            });
+
             // 播放器控制事件
             playPauseBtn.addEventListener('click', togglePlayPause);
             prevBtn.addEventListener('click', playPrevSong);
@@ -6892,11 +7153,14 @@
             function togglePlayerVisibility() {
                 if (floatingPlayer.style.display !== 'none') {
                     floatingPlayer.style.display = 'none';
+                    isPlayerHiddenByUser = true;
                 } else {
                     floatingPlayer.style.display = 'flex';
+                    isPlayerHiddenByUser = false;
                 }
                 updatePlayerVisibilityButtonState();
                 updateToolbarPosition();
+                localStorage.setItem('playerHidden', isPlayerHiddenByUser ? 'true' : 'false');
             }
 
             // 更新隐藏/显示按钮和收起按钮的状态
@@ -7090,6 +7354,84 @@
             }
 
             initSettingsValues();
+
+            // 透明度设置折叠功能（默认收起，无状态存储）
+            const opacitySectionHeader = document.getElementById('opacitySectionHeader');
+            const opacitySectionContent = document.getElementById('opacitySectionContent');
+            const opacityCollapseBtn = document.getElementById('toggleOpacitySection');
+            const opacityCollapseIcon = opacityCollapseBtn.querySelector('i');
+
+            // 确保初始为收起状态（如果 HTML 中已添加 collapsed 类，则只需同步图标）
+            if (opacitySectionContent.classList.contains('collapsed')) {
+                opacityCollapseIcon.style.transform = 'rotate(0deg)'; // 向下箭头
+            } else {
+                // 若没有，强制设为收起（理论上不会发生）
+                opacitySectionContent.classList.add('collapsed');
+                opacityCollapseIcon.style.transform = 'rotate(0deg)';
+            }
+
+            // 切换折叠函数
+            function toggleOpacityCollapse() {
+                const isCollapsed = opacitySectionContent.classList.contains('collapsed');
+                if (isCollapsed) {
+                    opacitySectionContent.classList.remove('collapsed');
+                    opacityCollapseIcon.style.transform = 'rotate(180deg)'; // 向上箭头
+                } else {
+                    opacitySectionContent.classList.add('collapsed');
+                    opacityCollapseIcon.style.transform = 'rotate(0deg)'; // 向下箭头
+                }
+            }
+
+            // 点击标题切换（排除按钮本身）
+            opacitySectionHeader.addEventListener('click', function(e) {
+                if (e.target.closest('.collapse-btn')) return;
+                toggleOpacityCollapse();
+            });
+
+            // 点击按钮切换
+            opacityCollapseBtn.addEventListener('click', function(e) {
+                e.stopPropagation();
+                toggleOpacityCollapse();
+            });
+
+            // 背景设置折叠功能（默认收起）
+            const bgSectionHeader = document.getElementById('bgSectionHeader');
+            const bgSectionContent = document.getElementById('bgSectionContent');
+            const bgCollapseBtn = document.getElementById('toggleBgSection');
+            const bgCollapseIcon = bgCollapseBtn.querySelector('i');
+
+            // 确保初始为收起状态（图标向下）
+            if (bgSectionContent.classList.contains('collapsed')) {
+                bgCollapseIcon.style.transform = 'rotate(0deg)'; // 向下箭头
+            } else {
+                // 强制设为收起
+                bgSectionContent.classList.add('collapsed');
+                bgCollapseIcon.style.transform = 'rotate(0deg)';
+            }
+
+            // 切换折叠函数
+            function toggleBgCollapse() {
+                const isCollapsed = bgSectionContent.classList.contains('collapsed');
+                if (isCollapsed) {
+                    bgSectionContent.classList.remove('collapsed');
+                    bgCollapseIcon.style.transform = 'rotate(180deg)'; // 向上箭头
+                } else {
+                    bgSectionContent.classList.add('collapsed');
+                    bgCollapseIcon.style.transform = 'rotate(0deg)'; // 向下箭头
+                }
+            }
+
+            // 点击标题切换（排除按钮本身）
+            bgSectionHeader.addEventListener('click', function(e) {
+                if (e.target.closest('.collapse-btn')) return;
+                toggleBgCollapse();
+            });
+
+            // 点击按钮切换
+            bgCollapseBtn.addEventListener('click', function(e) {
+                e.stopPropagation();
+                toggleBgCollapse();
+            });
 
             // 下载按钮事件
             downloadBtn.addEventListener('click', downloadSong);
@@ -10548,10 +10890,15 @@
                 // 控制悬浮播放器的显示隐藏
                 const floatingPlayer = document.getElementById('floatingPlayer');
                 if (floatingPlayer) {
-                    if (pageId === 'profile') {
+                    // 从 localStorage 读取用户隐藏状态（如果没有则默认为 false）
+                    const userHidden = localStorage.getItem('playerHidden') === 'true';
+                    
+                    if (pageId === 'profile' || pageId === 'settings') {
+                        // 个人中心页和设置页强制隐藏播放器，但不改变用户隐藏状态变量
                         floatingPlayer.style.display = 'none';
                     } else {
-                        floatingPlayer.style.display = 'flex';
+                        // 其他页面：如果用户主动隐藏则隐藏，否则显示
+                        floatingPlayer.style.display = userHidden ? 'none' : 'flex';
                     }
                     // 更新按钮状态
                     updatePlayerVisibilityButtonState();
