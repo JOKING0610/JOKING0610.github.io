@@ -3,8 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>新春烟花 · 红金年华</title>
+    <title>新年烟花</title>
     <style>
+        @font-face {
+            font-family: 'LuoGuoChengMaoBiXiaoXingJianTi';
+            src: url('./LuoGuoChengMaoBiXiaoXingJianTi-2.ttf') format('truetype');
+            font-weight: normal;
+            font-style: normal;
+            font-display: swap;
+        }
+
         /* 全局保留黑底，让烟花更夺目 */
         html, body {
             margin: 0;
@@ -72,7 +80,7 @@
             text-shadow: 0 2px 10px #ff6f00, 0 0 20px #ffd700;
             letter-spacing: 4px;
             margin-bottom: 12px;
-            font-family: 'Microsoft YaHei', sans-serif;
+            font-family: 'LuoGuoChengMaoBiXiaoXingJianTi', sans-serif;
         }
 
         .play-card-text {
@@ -98,7 +106,7 @@
             color: #FFD700;
             font-size: clamp(3rem, 15vw, 6rem);
             font-weight: 900;
-            font-family: 'Microsoft YaHei', '楷体', '华文楷体', sans-serif;
+            font-family: 'LuoGuoChengMaoBiXiaoXingJianTi', '楷体', '华文楷体', sans-serif;
             text-align: center;
             white-space: nowrap;
             text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
@@ -107,6 +115,34 @@
             pointer-events: none;
             z-index: 20000;
             letter-spacing: 8px;
+        }
+
+        /* 恭贺新禧特效 */
+        .effect-gongxi {
+            color: #FFD700;
+            text-shadow: 0 0 20px #FFD700, 0 0 40px #FFA500, 2px 2px 4px rgba(0,0,0,0.5);
+        }
+
+        /* 2026特效 */
+        .effect-2026 {
+            color: #FFD700;
+            text-shadow: 0 0 20px #FFD700, 0 0 40px #FFA500, 2px 2px 4px rgba(0,0,0,0.5);
+        }
+
+        /* 新春快乐特效 */
+        .effect-xinchun {
+            color: #FFD700;
+            text-shadow: 0 0 20px #FFD700, 0 0 40px #FFA500, 2px 2px 4px rgba(0,0,0,0.5);
+        }
+
+        /* 切换闪光特效 */
+        .text-switch {
+            animation: flash 0.3s ease;
+        }
+
+        @keyframes flash {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.3; }
         }
 
         /* canvas 初始透明，点击后淡入 */
@@ -141,7 +177,7 @@
     <div id="playCard" class="play-card">
         <div class="play-card-icon"></div>
         <div class="play-card-title">恭贺新禧</div>
-        <div class="play-card-text">点击开启 · 红运烟花</div>
+        <div class="play-card-text">点击开启 · 好运烟花</div>
     </div>
 
     <!-- 真正的HTML新春文本 (点击后显示) -->
@@ -480,7 +516,7 @@
             this.style.pointerEvents = 'none';
             setTimeout(() => { this.style.display = 'none'; }, 400);
 
-            // 淡出两个canvas (原第三个已移除)
+            // 淡出两个canvas
             document.getElementById('fireworkCanvas').style.opacity = '1';
             document.getElementById('canvas').style.opacity = '1';
 
@@ -493,16 +529,35 @@
             frame();
             fwInitFireworks();
             fwAnimate();
-            
+
+            // 文本与特效映射
             const texts = ['Joking祝你', '2026', '新年快乐'];
+            const effectClasses = ['effect-gongxi', 'effect-2026', 'effect-xinchun'];
             let idx = 0;
+
+            // 初始文本和特效
+            textEl.textContent = texts[0];
+            textEl.classList.add(effectClasses[0]);
+
             const textInterval = setInterval(() => {
+                // 移除当前特效类
+                textEl.classList.remove(effectClasses[idx]);
+
+                // 添加切换闪光特效（短暂出现后移除）
+                textEl.classList.add('text-switch');
+                setTimeout(() => {
+                    textEl.classList.remove('text-switch');
+                }, 300);
+
                 idx++;
                 if (idx >= texts.length) {
                     clearInterval(textInterval);
+                    // 渐隐文字并移除所有特效类
                     textEl.style.opacity = '0';
+                    textEl.classList.remove(effectClasses[idx-1]);
                 } else {
                     textEl.textContent = texts[idx];
+                    textEl.classList.add(effectClasses[idx]);
                 }
             }, 3000);
         });
