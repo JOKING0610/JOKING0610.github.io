@@ -2,68 +2,37 @@
 <html lang="zh">
 <head>
     <meta charset="UTF-8">
-    <!-- 视口设置：确保移动端正确缩放，禁止用户缩放以保持最佳显示效果 -->
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>新春烟花 · 红金年华（横屏引导）</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>新春烟花 · 红金年华</title>
     <style>
         /* 全局保留黑底，让烟花更夺目 */
         html, body {
             margin: 0;
-            padding: 0;
             width: 100%;
             height: 100%;
             overflow: hidden;
             background: #000;
-            /* 移动端点击元素时去除默认高亮 */
-            -webkit-tap-highlight-color: transparent;
         }
         .music {
             display: none;
         }
 
-        /* 新春主题播放卡片 —— 红金配色，响应式尺寸 */
+        /* 新春主题播放卡片 —— 红金配色，带有祥云般的渐变 */
         .play-card {
             position: fixed;
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
             background: linear-gradient(145deg, #d32f2f 0%, #b71c1c 40%, #ff8f00 100%);
-            border-radius: min(30px, 8vw);
-            padding: min(40px, 8vw) min(70px, 12vw);
+            border-radius: 30px;
+            padding: 40px 70px;
             text-align: center;
             box-shadow: 0 15px 40px rgba(230, 30, 30, 0.6), 0 0 30px rgba(255, 215, 0, 0.5);
-            border: min(2px, 0.6vw) solid #ffd966;
+            border: 2px solid #ffd966;
             z-index: 10000;
             cursor: pointer;
             transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
             animation: springPulse 2.2s infinite;
-            max-width: 85vw;
-            box-sizing: border-box;
-            white-space: nowrap;
-        }
-
-        /* 手机小屏时适当缩小字体和内边距 */
-        @media (max-width: 600px) {
-            .play-card {
-                padding: min(30px, 6vw) min(40px, 8vw);
-            }
-            .play-card-title {
-                font-size: min(28px, 7vw);
-            }
-            .play-card-text {
-                font-size: min(16px, 4vw);
-            }
-            .play-card-icon {
-                width: min(70px, 15vw);
-                height: min(70px, 15vw);
-                margin-bottom: 15px;
-            }
-            .play-card-icon::before {
-                border-left: min(28px, 7vw) solid #b71c1c;
-                border-top: min(18px, 4vw) solid transparent;
-                border-bottom: min(18px, 4vw) solid transparent;
-                margin-left: min(8px, 2vw);
-            }
         }
 
         .play-card:hover {
@@ -73,45 +42,45 @@
         }
 
         .play-card-icon {
-            width: min(90px, 18vw);
-            height: min(90px, 18vw);
-            margin: 0 auto min(25px, 5vw);
+            width: 90px;
+            height: 90px;
+            margin: 0 auto 25px;
             background: radial-gradient(circle at 30% 30%, #ffeb9c, #ff8c00);
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
             box-shadow: 0 0 25px #ffd700;
-            border: min(3px, 0.8vw) solid #fff2b5;
+            border: 3px solid #fff2b5;
         }
 
         .play-card-icon::before {
             content: '';
             width: 0;
             height: 0;
-            border-left: min(36px, 8vw) solid #b71c1c;
-            border-top: min(22px, 5vw) solid transparent;
-            border-bottom: min(22px, 5vw) solid transparent;
-            margin-left: min(12px, 2.5vw);
+            border-left: 36px solid #b71c1c;
+            border-top: 22px solid transparent;
+            border-bottom: 22px solid transparent;
+            margin-left: 12px;
             filter: drop-shadow(2px 2px 4px rgba(0,0,0,0.3));
         }
 
         .play-card-title {
-            font-size: min(32px, 8vw);
+            font-size: 32px;
             font-weight: 900;
             color: #ffecb3;
             text-shadow: 0 2px 10px #ff6f00, 0 0 20px #ffd700;
-            letter-spacing: 0.1em;
-            margin-bottom: min(12px, 3vw);
+            letter-spacing: 4px;
+            margin-bottom: 12px;
             font-family: 'Microsoft YaHei', sans-serif;
         }
 
         .play-card-text {
-            font-size: min(18px, 5vw);
+            font-size: 18px;
             color: #ffe082;
             text-shadow: 0 2px 5px #b71c1c;
             font-weight: 500;
-            letter-spacing: 0.1em;
+            letter-spacing: 2px;
         }
 
         @keyframes springPulse {
@@ -120,21 +89,19 @@
             100% { box-shadow: 0 15px 40px rgba(230, 30, 30, 0.6), 0 0 30px rgba(255, 215, 0, 0.5); }
         }
 
-        /* canvas 初始透明，点击后淡入；所有canvas强制填满屏幕且不模糊 */
+        /* canvas 初始透明，点击后淡入 */
         canvas {
             position: absolute;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            display: block;
             opacity: 0;
             transition: opacity 1.2s ease;
-            pointer-events: none;
         }
         #fireworkCanvas {
             z-index: 1;
-            pointer-events: none;
+            pointer-events: auto; /* 允许点击生成烟花 */
         }
         #canvas {
             z-index: 8888;
@@ -143,73 +110,13 @@
             z-index: 9999;
         }
         .overlay {
-            display: none;
-        }
-
-        /* 横屏提示层 - 只在竖屏时显示，不阻挡点击 */
-        .rotate-hint {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.7);
-            backdrop-filter: blur(8px);
-            -webkit-backdrop-filter: blur(8px);
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            z-index: 10001; /* 高于卡片和canvas */
-            pointer-events: none; /* 让点击可以穿透到下层卡片/canvas */
-            opacity: 0;
-            transition: opacity 0.3s ease;
-            color: white;
-            font-family: 'Microsoft YaHei', sans-serif;
-            text-align: center;
-        }
-        .rotate-hint.visible {
-            opacity: 1;
-        }
-        .rotate-icon {
-            width: min(120px, 30vw);
-            height: min(120px, 30vw);
-            margin-bottom: min(20px, 5vw);
-            border: min(4px, 1vw) solid rgba(255, 215, 0, 0.8);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            animation: rotate-phone 2s infinite ease-in-out;
-            background: rgba(255, 200, 50, 0.2);
-            box-shadow: 0 0 40px rgba(255, 215, 0, 0.5);
-        }
-        .rotate-icon::after {
-            content: '📱';
-            font-size: min(60px, 15vw);
-            transform: rotate(-90deg);
-            display: block;
-        }
-        .rotate-hint p {
-            font-size: min(24px, 6vw);
-            font-weight: bold;
-            text-shadow: 0 2px 10px #b71c1c;
-            margin: min(10px, 2vw) 0;
-        }
-        .rotate-hint small {
-            font-size: min(16px, 4vw);
-            opacity: 0.9;
-        }
-        @keyframes rotate-phone {
-            0% { transform: rotate(0deg); }
-            50% { transform: rotate(-90deg); }
-            100% { transform: rotate(0deg); }
+            display: none;  /* 原有覆盖层隐藏，保持简洁 */
         }
     </style>
 </head>
 <body>
 
-    <!-- 背景音乐 -->
+    <!-- 背景音乐，静待播放 -->
     <audio id="bgMusic" loop preload="auto">
         <source src="yanhua.mp3" type="audio/mpeg">
         您的浏览器不支持 audio 元素。
@@ -222,18 +129,10 @@
         <div class="play-card-text">点击开启 · 红运烟花</div>
     </div>
 
-    <!-- 横屏提示层（初始隐藏） -->
-    <div id="rotateHint" class="rotate-hint">
-        <div class="rotate-icon"></div>
-        <p>为了更好的体验</p>
-        <p>请将设备旋转至横屏</p>
-        <small>✨ 烟花在横屏下更绚烂 ✨</small>
-    </div>
-
-    <!-- 三个canvas -->
-    <canvas id="fireworkCanvas"></canvas>
-    <canvas id="canvas"></canvas>
-    <canvas class="canvas"></canvas>
+    <!-- 三个canvas，原结构不变 -->
+    <canvas id="fireworkCanvas" style="position:absolute; width:100%; height:100%; z-index:1;"></canvas>
+    <canvas id="canvas" style="position:absolute; width:100%; height:100%; z-index:8888;"></canvas>
+    <canvas class="canvas" style="position:absolute; width:100%; height:100%; z-index:9999;"></canvas>
 
     <div class="overlay">
         <div class="tabs">
@@ -245,34 +144,21 @@
     </div>
 
     <script>
-        // ==================== 工具函数：适配设备像素比，使canvas清晰 ====================
-        function resizeCanvasWithDPI(canvas, width, height) {
-            const dpr = window.devicePixelRatio || 1;
-            canvas.style.width = width + 'px';
-            canvas.style.height = height + 'px';
-            canvas.width = width * dpr;
-            canvas.height = height * dpr;
-            const ctx = canvas.getContext('2d');
-            ctx.scale(dpr, dpr);
-            return ctx;
-        }
-
-        // ==================== 原3D粒子烟花（调整resize逻辑） ====================
+        // ==================== 原3D粒子烟花（不做大改） ====================
         function initVars() {
             pi = Math.PI;
             ctx = canvas.getContext("2d");
-            const rect = canvas.parentNode ? canvas.parentNode.getBoundingClientRect() : { width: window.innerWidth, height: window.innerHeight };
-            const w = rect.width, h = rect.height;
-            resizeCanvasWithDPI(canvas, w, h);
-            cx = canvas.width / 2 / (window.devicePixelRatio || 1);
-            cy = canvas.height / 2 / (window.devicePixelRatio || 1);
+            canvas.width = canvas.clientWidth;
+            canvas.height = canvas.clientHeight;
+            cx = canvas.width / 2;
+            cy = canvas.height / 2;
             playerZ = -25;
             playerX = playerY = playerVX = playerVY = playerVZ = pitch = yaw = pitchV = yawV = 0;
             scale = 600;
             seedTimer = 0; seedInterval = 5; seedLife = 100; gravity = .02;
             seeds = [];
             sparkPics = [];
-            s = "https://cantelope.org/NYE/";
+            s = "https://cantelope.org/NYE/";  // 外部图片，保持原样
             for (i = 1; i <= 10; ++i) {
                 sparkPic = new Image();
                 sparkPic.src = s + "spark" + i + ".png";
@@ -443,7 +329,7 @@
         }
 
         function draw() {
-            ctx.clearRect(0, 0, canvas.width / (window.devicePixelRatio || 1), canvas.height / (window.devicePixelRatio || 1));
+            ctx.clearRect(0, 0, cx * 2, cy * 2);
             ctx.fillStyle = "#ff8";
             for (i = -100; i < 100; i += 3) {
                 for (j = -100; j < 100; j += 4) {
@@ -517,27 +403,21 @@
             requestAnimationFrame(frame);
         }
 
-        // 增强resize：使用dpi适配
         window.addEventListener("resize", () => {
-            if (window._resizeTimer) clearTimeout(window._resizeTimer);
-            window._resizeTimer = setTimeout(() => {
-                const w = canvas.clientWidth, h = canvas.clientHeight;
-                if (w && h) {
-                    resizeCanvasWithDPI(canvas, w, h);
-                    cx = canvas.width / 2 / (window.devicePixelRatio || 1);
-                    cy = canvas.height / 2 / (window.devicePixelRatio || 1);
-                }
-            }, 100);
+            canvas.width = canvas.clientWidth;
+            canvas.height = canvas.clientHeight;
+            cx = canvas.width / 2;
+            cy = canvas.height / 2;
         });
 
-        // ==================== Shape Shifter 文字特效（其内部已使用窗口尺寸，但我们需要确保canvas清晰） ====================
+        // ==================== Shape Shifter 文字特效（金色为主，稍作多彩点缀） ====================
         var S = {
             init: function () {
                 var action = window.location.href, i = action.indexOf('?a=');
                 S.Drawing.init('.canvas');
                 document.body.classList.add('body--ready');
                 if (i !== -1) { S.UI.simulate(decodeURI(action).substring(i + 3)); } 
-                else { S.UI.simulate('|Joking祝你|2026|新年快乐|'); }
+                else { S.UI.simulate('|恭贺新禧|2026|新春快乐|'); }  // 祝福语改为新春版
                 S.Drawing.loop(function () { S.Shape.render(); });
             }
         };
@@ -546,38 +426,12 @@
             var canvas, context, renderFn,
                 requestFrame = window.requestAnimationFrame || window.webkitRequestAnimationFrame || window.mozRequestAnimationFrame || window.oRequestAnimationFrame || window.msRequestAnimationFrame || function (c) { window.setTimeout(c, 1000 / 60); };
             return {
-                init: function (el) {
-                    canvas = document.querySelector(el);
-                    context = canvas.getContext('2d');
-                    this.adjustCanvas();
-                    window.addEventListener('resize', function () { S.Drawing.adjustCanvas(); });
-                },
-                loop: function (fn) {
-                    renderFn = !renderFn ? fn : renderFn;
-                    this.clearFrame();
-                    renderFn();
-                    requestFrame.call(window, this.loop.bind(this));
-                },
-                adjustCanvas: function () {
-                    const dpr = window.devicePixelRatio || 1;
-                    const w = window.innerWidth, h = window.innerHeight;
-                    canvas.style.width = w + 'px';
-                    canvas.style.height = h + 'px';
-                    canvas.width = w * dpr;
-                    canvas.height = h * dpr;
-                    context.scale(dpr, dpr);
-                },
-                clearFrame: function () {
-                    context.clearRect(0, 0, canvas.width / (window.devicePixelRatio || 1), canvas.height / (window.devicePixelRatio || 1));
-                },
-                getArea: function () { return { w: window.innerWidth, h: window.innerHeight }; },
-                drawCircle: function (p, c) {
-                    context.fillStyle = c.render();
-                    context.beginPath();
-                    context.arc(p.x, p.y, p.z, 0, 2 * Math.PI, true);
-                    context.closePath();
-                    context.fill();
-                }
+                init: function (el) { canvas = document.querySelector(el); context = canvas.getContext('2d'); this.adjustCanvas(); window.addEventListener('resize', function () { S.Drawing.adjustCanvas(); }); },
+                loop: function (fn) { renderFn = !renderFn ? fn : renderFn; this.clearFrame(); renderFn(); requestFrame.call(window, this.loop.bind(this)); },
+                adjustCanvas: function () { canvas.width = window.innerWidth; canvas.height = window.innerHeight; },
+                clearFrame: function () { context.clearRect(0, 0, canvas.width, canvas.height); },
+                getArea: function () { return { w: canvas.width, h: canvas.height }; },
+                drawCircle: function (p, c) { context.fillStyle = c.render(); context.beginPath(); context.arc(p.x, p.y, p.z, 0, 2 * Math.PI, true); context.closePath(); context.fill(); }
             };
         }());
 
@@ -661,10 +515,11 @@
             this.p = new S.Point({ x: x, y: y, z: 5, a: 1, h: 0 });
             this.e = 0.07;
             this.s = true;
+            // 保持金色为主，偶尔增加一点红/橙点缀（10%概率）
             if (Math.random() < 0.1) {
-                this.c = new S.Color(255, 100, 50, this.p.a);
+                this.c = new S.Color(255, 100, 50, this.p.a); // 橙红色
             } else {
-                this.c = new S.Color(255, 200, 50, this.p.a);
+                this.c = new S.Color(255, 200, 50, this.p.a); // 暖金色
             }
             this.t = this.clone();
             this.q = [];
@@ -726,40 +581,34 @@
             };
         }());
 
-        // ==================== 2D点击烟花 (fireworkCanvas) 增强颜色多样性 & 适配DPI ====================
+        // ==================== 2D点击烟花 (fireworkCanvas) 增强颜色多样性 ====================
         const fireworkCanvas = document.getElementById('fireworkCanvas');
-        let fwCtx = fireworkCanvas.getContext('2d', { willReadFrequently: false });
+        const fwCtx = fireworkCanvas.getContext('2d', { willReadFrequently: false });
 
         fwCtx.imageSmoothingEnabled = true;
         fwCtx.imageSmoothingQuality = 'high';
 
-        function resizeFireworkCanvas() {
-            const w = window.innerWidth, h = window.innerHeight;
-            const dpr = window.devicePixelRatio || 1;
-            fireworkCanvas.style.width = w + 'px';
-            fireworkCanvas.style.height = h + 'px';
-            fireworkCanvas.width = w * dpr;
-            fireworkCanvas.height = h * dpr;
-            fwCtx = fireworkCanvas.getContext('2d', { willReadFrequently: false });
-            fwCtx.scale(dpr, dpr);
-            fwCtx.imageSmoothingEnabled = true;
-            fwCtx.imageSmoothingQuality = 'high';
-        }
+        function resizeFireworkCanvas() { fireworkCanvas.width = window.innerWidth; fireworkCanvas.height = window.innerHeight; }
         resizeFireworkCanvas();
-        window.addEventListener('resize', () => {
-            clearTimeout(resizeFireworkCanvas.timeout);
-            resizeFireworkCanvas.timeout = setTimeout(resizeFireworkCanvas, 100);
-        });
+        window.addEventListener('resize', () => { clearTimeout(resizeFireworkCanvas.timeout); resizeFireworkCanvas.timeout = setTimeout(resizeFireworkCanvas, 100); });
 
         const fwRandom = (min, max) => Math.random() * (max - min) + min;
         const fwRandomInt = (min, max) => (Math.random() * (max - min + 1) + min) | 0;
 
+        // ★ 增强颜色：70%暖色（红橙黄玫红），30%冷色（蓝绿紫），同时保持高饱和度、明亮
         function fwGetRandomColor() {
             let hue;
             if (Math.random() < 0.7) {
-                if (Math.random() < 0.8) { hue = fwRandomInt(0, 60); } else { hue = fwRandomInt(340, 360); }
+                // 暖色：80% 红到黄 (0-60)，20% 玫红/紫红 (340-360)
+                if (Math.random() < 0.8) {
+                    hue = fwRandomInt(0, 60);
+                } else {
+                    hue = fwRandomInt(340, 360);
+                }
             } else {
+                // 冷色/任意色：完全随机，但可以偏向蓝绿紫 (180-300)
                 hue = fwRandomInt(0, 360);
+                // 如果随机到了暖色范围，也保留，增加意外惊喜
             }
             return `hsl(${hue}, 85%, 60%)`;
         }
@@ -776,10 +625,9 @@
         class FWFirework {
             constructor(x = null) {
                 this.color = fwGetRandomColor(); this.particles = []; this.isExploded = false;
-                const startX = x !== null ? x : fwRandomInt(0, window.innerWidth);
-                const startY = window.innerHeight + 10;
+                const startX = x !== null ? x : fwRandomInt(0, fireworkCanvas.width); const startY = fireworkCanvas.height + 10;
                 this.fireworkParticle = new FWParticle(startX, startY, new FWVector(fwRandom(-1, 1), fwRandom(-15, -20)), this.color, true);
-                this.explosionHeight = fwRandomInt(window.innerHeight * 0.1, window.innerHeight * 0.5);
+                this.explosionHeight = fwRandomInt(fireworkCanvas.height * 0.1, fireworkCanvas.height * 0.5);
             }
             update() {
                 if (!this.isExploded) { const alive = this.fireworkParticle.update(); this.fireworkParticle.draw(); if (!alive || this.fireworkParticle.pos.y <= this.explosionHeight) { this.explode(); this.isExploded = true; } return true; }
@@ -793,38 +641,16 @@
         function fwAnimate(timestamp) {
             requestAnimationFrame(fwAnimate);
             if (timestamp - fwLastTime < 16) return; fwLastTime = timestamp;
-            fwCtx.fillStyle = 'rgba(0, 0, 0, 0.1)'; fwCtx.fillRect(0, 0, window.innerWidth, window.innerHeight); fwCtx.globalAlpha = 1;
+            fwCtx.fillStyle = 'rgba(0, 0, 0, 0.1)'; fwCtx.fillRect(0, 0, fireworkCanvas.width, fireworkCanvas.height); fwCtx.globalAlpha = 1;
             if (Math.random() > 0.85 && fwFireworks.length < fwMaxFireworks) { fwFireworks.push(new FWFirework()); }
             fwFireworks = fwFireworks.filter(firework => { const alive = firework.update(); if (!alive && Math.random() > 0.5 && fwFireworks.length < fwMaxFireworks) { return true; } return alive; });
-            if (Math.random() > 0.95 && fwFireworks.length < fwMaxFireworks) { const miniFirework = new FWFirework(fwRandomInt(50, window.innerWidth - 50)); miniFirework.fireworkParticle.vel.y = -fwRandom(18, 22); fwFireworks.push(miniFirework); }
+            if (Math.random() > 0.95 && fwFireworks.length < fwMaxFireworks) { const miniFirework = new FWFirework(fwRandomInt(50, fireworkCanvas.width - 50)); miniFirework.fireworkParticle.vel.y = -fwRandom(18, 22); fwFireworks.push(miniFirework); }
         }
         fireworkCanvas.addEventListener('click', (e) => {
-            if (fwFireworks.length >= fwMaxFireworks) return;
-            const rect = fireworkCanvas.getBoundingClientRect();
-            const scaleX = fireworkCanvas.width / rect.width / (window.devicePixelRatio || 1);
-            const x = (e.clientX - rect.left) * scaleX;
-            const firework = new FWFirework(x);
-            firework.explosionHeight = fwRandomInt(window.innerHeight * 0.1, window.innerHeight * 0.4);
-            fwFireworks.push(firework);
+            if (fwFireworks.length >= fwMaxFireworks) return; const firework = new FWFirework(e.clientX); firework.explosionHeight = fwRandomInt(fireworkCanvas.height * 0.1, fireworkCanvas.height * 0.4); fwFireworks.push(firework);
         });
 
-        // ==================== 横屏检测与提示 ====================
-        const rotateHint = document.getElementById('rotateHint');
-        function checkOrientation() {
-            // 如果高度大于宽度，认为是竖屏
-            if (window.innerHeight > window.innerWidth) {
-                rotateHint.classList.add('visible');
-            } else {
-                rotateHint.classList.remove('visible');
-            }
-        }
-        // 初始检测
-        checkOrientation();
-        // 监听resize和orientationchange
-        window.addEventListener('resize', checkOrientation);
-        window.addEventListener('orientationchange', checkOrientation);
-
-        // ==================== 播放卡片点击：启动一切，并开启fireworkCanvas的点击事件 ====================
+        // ==================== 播放卡片点击：启动一切 ====================
         document.getElementById('playCard').addEventListener('click', function() {
             const bgMusic = document.getElementById('bgMusic');
             bgMusic.play().catch(e => console.log('音频播放需用户交互:', e));
@@ -833,13 +659,10 @@
             this.style.pointerEvents = 'none';
             setTimeout(() => { this.style.display = 'none'; }, 400);
 
-            // 显示所有canvas
+            // 淡出三个canvas
             document.getElementById('fireworkCanvas').style.opacity = '1';
             document.getElementById('canvas').style.opacity = '1';
             document.querySelector('.canvas').style.opacity = '1';
-
-            // 允许fireworkCanvas接收点击
-            fireworkCanvas.style.pointerEvents = 'auto';
 
             // 启动所有烟花引擎
             initVars();
