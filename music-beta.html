@@ -849,7 +849,14 @@
             overflow-y: auto;
             padding-right: 10px;
         }
-        
+
+        #shareLinkInput:focus {
+            outline: none;
+            border-color: var(--border-color);
+            box-shadow: none;
+            background: rgba(255, 255, 255, 0.1);
+        }
+
         .playback-rate-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
@@ -1448,6 +1455,10 @@
 
         .add-to-list-btn i {
             font-size: 14px;
+        }
+
+        .song-action-btn .fa-share-alt {
+            color: var(--primary-light);
         }
         
         .floating-player {
@@ -7156,6 +7167,8 @@
         // 应用状态
         let currentSongId = null;
         let currentPlatform = 'wy';
+        let shareModal = null;
+        let shareLinkInput = null;
         let currentSearchResults = [];
         let playlistSongs = [];
         let pendingTimeouts = []; // 存储所有待处理的 setTimeout ID
@@ -7354,7 +7367,30 @@
                     this.classList.remove('active');
                 }
             });
-            
+
+            // 分享弹窗相关
+            shareModal = document.getElementById('shareModal');
+            const closeShareModal = document.getElementById('closeShareModal');
+            const copyShareLinkBtn = document.getElementById('copyShareLinkBtn');
+            shareLinkInput = document.getElementById('shareLinkInput');
+
+            if (closeShareModal) {
+                closeShareModal.addEventListener('click', () => shareModal.classList.remove('active'));
+                // 点击遮罩关闭
+                shareModal.addEventListener('click', (e) => {
+                    if (e.target === shareModal) shareModal.classList.remove('active');
+                });
+            }
+
+            if (copyShareLinkBtn && shareLinkInput) {
+                copyShareLinkBtn.addEventListener('click', () => {
+                    shareLinkInput.select();
+                    document.execCommand('copy');
+                    showStatusMessage('链接已复制', 'success');
+                    shareModal.classList.remove('active');
+                });
+            }
+
             // 输入框回车事件
             let searchDebounceTimer = null;
             songNameInput.addEventListener('input', function(event) {
@@ -9124,6 +9160,19 @@
             playBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
             actionsDiv.appendChild(playBtn);
 
+            if (currentPlatform === 'wy') {
+                const shareBtn = document.createElement('button');
+                shareBtn.className = 'song-action-btn';
+                shareBtn.dataset.id = song.id;
+                shareBtn.innerHTML = '<i class="fas fa-share-alt"></i>';
+                shareBtn.title = '分享网易云链接';
+                shareBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    shareSong(song.id, song.name, song.artist);
+                });
+                actionsDiv.appendChild(shareBtn);
+            }
+
             songItem.appendChild(coverDiv);
             songItem.appendChild(infoDiv);
             songItem.appendChild(actionsDiv);
@@ -9591,6 +9640,30 @@
             } finally {
                 isPlayingSong = false;
             }
+        }
+
+        function shareSong(songId, songName = '未知歌曲', artist = '未知艺术家') {
+            const url = `对方给你分享了${artist}的${songName}：https://y.music.163.com/m/song?id=${songId}\n获取更多音乐前往：https://joking0610.github.io/music-beta.html`;
+            if (shareLinkInput && shareModal) {
+                shareLinkInput.value = url;
+                shareModal.classList.add('active');
+            } else {
+                fallbackCopy(url);
+            }
+        }
+
+        function fallbackCopy(text) {
+            const textarea = document.createElement('textarea');
+            textarea.value = text;
+            document.body.appendChild(textarea);
+            textarea.select();
+            try {
+                document.execCommand('copy');
+                showStatusMessage('网易云链接已复制到剪贴板', 'success');
+            } catch (err) {
+                showStatusMessage('复制失败，请手动复制', 'error');
+            }
+            document.body.removeChild(textarea);
         }
         
         // 音乐聚合搜索API
@@ -12653,6 +12726,29 @@
             <div class="playlist-empty">
                 <i class="fas fa-music"></i>
                 <p>暂无歌曲，请先搜索</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- 分享链接弹窗 -->
+    <div class="modal-overlay" id="shareModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">
+                    <i class="fas fa-share-alt"></i> 分享网易云歌曲
+                </h3>
+                <button class="modal-close" id="closeShareModal">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p style="margin-bottom: 10px;">复制以下链接分享歌曲：</p>
+            <textarea id="shareLinkInput" readonly 
+                style="width: 100%; padding: 8px; background: rgba(255,255,255,0.1); border: 1px solid var(--border-color); border-radius: 6px; color: var(--text-primary); font-family: monospace; resize: none; box-sizing: border-box; margin-bottom: 15px; outline: none;" 
+                rows="3"></textarea>
+                <div style="text-align: center;">
+                    <button class="download-options-btn confirm" id="copyShareLinkBtn" style="display: inline-block;">复制链接</button>
+                </div>
             </div>
         </div>
     </div>
