@@ -7392,23 +7392,12 @@
             }
 
             // 输入框回车事件
-            let searchDebounceTimer = null;
-            songNameInput.addEventListener('input', function(event) {
-                clearTimeout(searchDebounceTimer);
-                searchDebounceTimer = setTimeout(() => {
-                    if (this.value.trim()) {
-                        performSearch();
-                    }
-                }, 500);
-            });
-            
             songNameInput.addEventListener('keyup', function(event) {
                 if (event.key === 'Enter') {
-                    clearTimeout(searchDebounceTimer);
                     performSearch();
                 }
             });
-            
+
             prevPageBtn.addEventListener('click', goToPrevPage);
             nextPageBtn.addEventListener('click', goToNextPage);
             
@@ -8771,15 +8760,21 @@
                 
                 // 更新分页按钮状态
                 updatePaginationButtons(searchData);
-                
+
+                // 如果搜索结果为空，立即启用分页按钮
+                if (!searchData.data || searchData.data.length === 0) {
+                    prevPageBtn.disabled = searchPageNumber <= 1;
+                    nextPageBtn.disabled = !hasNextPage;
+                }
+
                 showStatusMessage(`找到 ${searchData.data?.length || 0} 首歌曲`, 'success');
                 
             } catch (error) {
                 // 显示友好的错误消息
                 showStatusMessage('搜索服务暂时不可用，请稍后再试', 'error');
             } finally {
-                // 隐藏加载状态
-                showLoading(false);
+                // 隐藏加载状态（但不启用分页按钮，分页按钮由加载完成控制）
+                // showLoading(false);  // 移除这行，分页按钮保持禁用状态，直到加载完成
             }
         }
         
@@ -9059,11 +9054,14 @@
                 updateErrorSongItem(song, error.message);
             }
             
-            // 如果所有歌曲都加载完成，隐藏预加载信息
+            // 如果所有歌曲都加载完成，隐藏预加载信息并启用分页按钮
             if (loadedSongsCount >= totalSongsCount) {
                 setTimeout(() => {
                     showPreloadInfo(false);
                     showStatusMessage(`${totalSongsCount} 首歌曲已加载完成`, 'success');
+                    // 启用分页按钮
+                    prevPageBtn.disabled = searchPageNumber <= 1;
+                    nextPageBtn.disabled = !hasNextPage;
                 }, 500);
             }
         }
@@ -9178,6 +9176,11 @@
             songItem.appendChild(actionsDiv);
 
             playBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                playSong(song.id, true);
+            });
+
+            songItem.addEventListener('dblclick', (e) => {
                 e.stopPropagation();
                 playSong(song.id, true);
             });
@@ -9515,14 +9518,6 @@
                 // 重置当前歌曲播放标志，确保新歌可以自动播放
                 hasPlayedCurrentSong = false;
 
-                // 如果播放器被隐藏，自动显示
-                if (floatingPlayer.style.display === 'none') {
-                    floatingPlayer.style.display = 'flex';
-                    isPlayerHiddenByUser = false;
-                    updatePlayerVisibilityButtonState();
-                    updateToolbarPosition();
-                    localStorage.setItem('playerHidden', 'false');
-                }
                 // 如果当前有正在播放的歌曲，先累加播放时长（同 pause 逻辑）
                 if (isPlaybackActive && lastUpdateTime !== null) {
                     const now = Date.now();
@@ -9643,7 +9638,7 @@
         }
 
         function shareSong(songId, songName = '未知歌曲', artist = '未知艺术家') {
-            const url = `对方给你分享了${artist}的${songName}：https://y.music.163.com/m/song?id=${songId}\n获取更多音乐前往：https://joking0610.github.io/music-beta.html`;
+            const url = `对方给你分享了${artist}的${songName}：https://y.music.163.com/m/song?id=${songId}\n获取更多音乐：https://joking0610.github.io/music.html`;
             if (shareLinkInput && shareModal) {
                 shareLinkInput.value = url;
                 shareModal.classList.add('active');
@@ -10666,14 +10661,6 @@
         }
         
         function togglePlayPause() {
-            // 如果播放器被隐藏，自动显示
-            if (floatingPlayer.style.display === 'none') {
-                floatingPlayer.style.display = 'flex';
-                isPlayerHiddenByUser = false;
-                updatePlayerVisibilityButtonState();
-                updateToolbarPosition();
-                localStorage.setItem('playerHidden', 'false');
-            }
             if (!audioPlayer.src) {
                 showStatusMessage('请先选择要播放的歌曲', 'warning');
                 return;
@@ -12134,6 +12121,10 @@
         }
 
         function goToPrevPage() {
+            if (loadedSongsCount < totalSongsCount) {
+                showStatusMessage('正在加载歌曲信息，请稍后再试', 'warning');
+                return;
+            }
             if (searchPageNumber > 1) {
                 searchPageNumber--;
                 performSearch();
@@ -12141,6 +12132,10 @@
         }
 
         function goToNextPage() {
+            if (loadedSongsCount < totalSongsCount) {
+                showStatusMessage('正在加载歌曲信息，请稍后再试', 'warning');
+                return;
+            }
             searchPageNumber++;
             performSearch();
         }
@@ -12216,12 +12211,21 @@
 
         function updateThemeButtons() {
             const currentTheme = localStorage.getItem('theme') || 'default';
-            document.querySelectorAll('.theme-option').forEach(btn => {
+            const themeBtns = document.querySelectorAll('.theme-option');
+            let found = false;
+
+            themeBtns.forEach(btn => {
                 btn.classList.remove('active');
                 if (btn.dataset.theme === currentTheme) {
                     btn.classList.add('active');
+                    found = true;
                 }
             });
+
+            if (!found && themeBtns.length > 0) {
+                themeBtns[0].classList.add('active');
+                localStorage.setItem('theme', themeBtns[0].dataset.theme);
+            }
         }
 
         function switchPage(pageId) {
@@ -12245,6 +12249,7 @@
                     updateProfilePage();
                 } else if (pageId === 'settings') {
                     updateThemeButtons();
+                    setTimeout(updateThemeButtons, 100);
                 }
 
                 const floatingPlayer = document.getElementById('floatingPlayer');
@@ -12386,8 +12391,23 @@
                         return;
                     }
                     if (confirm('确定要清空播放列表吗？')) {
+                        const hadPlayingSong = currentSongId !== null && playlistSongs.some(s => String(s.id) === String(currentSongId));
+                        
                         playlistSongs = [];
                         updatePlaylistUI();
+                        
+                        if (hadPlayingSong) {
+                            audioPlayer.pause();
+                            audioPlayer.removeAttribute('src');
+                            currentSongId = null;
+                            playerTitle.textContent = '未选择歌曲';
+                            playerArtist.textContent = '--';
+                            playerLyricsLine.textContent = '';
+                            playerAlbumArt.src = '';
+                            playerAlbumArt.style.display = 'none';
+                            const placeholder = document.querySelector('.player-cover .cover-placeholder');
+                            if (placeholder) placeholder.style.display = 'flex';
+                        }
                         showStatusMessage('播放列表已清空', 'success');
                     }
                 });
