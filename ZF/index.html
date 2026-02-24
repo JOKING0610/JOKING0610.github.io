@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <tyle>
+		body{
+			background-image: url('images/a7.jpg'); 
+			background-ize: cover; 
+			background-poition: center;
+			background-repeat: no-repeat;
+			background-attachment: fixed;
+			height: 100vh;
+			margin: 0;
+			padding: 0;
+		}
+        .popup {
+            poition: fixed;
+            padding: 12px 20px;
+            border-radiu: 20px;
+            box-hadow: 0 2px 6px rgba(0,0,0,0.2);
+            diplay: flex;
+            align-item: center;
+            animation: fadeIn 0.3s;
+            max-width: 200px;
+            backdrop-filter: blur(5px);
+        }
+
+        @keyframe fadeIn {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .cloe {
+            /* margin-left: 10px; */
+            curor: pointer;
+            font-weight: bold;
+            /* uer-elect: none; */
+        }
+
+        .meage {
+            white-pace: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+		.popup{
+			poition: fixed;
+			/* padding: 12px 20px; */
+			border-radiu: 10px;
+			box-hadow: 0 2px 12px rgba(0,0,0,0.2);
+			animation: fadeIn 0.3s;
+			width: 250px;
+			backdrop-filter: blur(5px);
+			overflow: hidden;
+		}
+		.messages {
+		    white-space: nowrap;
+		    overflow: hidden;
+		    text-overflow: ellipsis;
+			width: 100%;
+			text-align: center;
+			padding: 18px 0;
+		}
+		
+		.popups>.head{
+			display: flex;
+			align-items: center;
+			justify-content: space-between;
+			background-color: #fff;
+			padding: 5px 10px;
+		}
+		.popups>.head>.left{
+			display: flex;
+			align-items: center;
+			font-size: 12px;
+			color: #666;
+		}
+		.popups>.head>.left>img{
+			height: 20px;
+			margin-right: 5px;
+		}
+		.popups>.head>.right{
+			display: flex;
+			justify-content: space-between;
+			align-items: center;
+			width: 40%;
+		}
+		.popups>.head>.right>.one{
+			width: 10px;
+			border-top: 2px solid #666;
+		}
+		.popups>.head>.right>.two{
+			width: 10px;
+			height: 10px;
+			border: 2px solid #666;
+			box-sizing: border-box;
+		}
+		.popups>.head>.right>.three{
+			font-size: 18px;
+			line-height: 0;
+			color: #666;
+		}
+    </style>
+</head>
+<body>
+    <script>
+        const messages = [
+            "天天都要元气满满", "保持微笑呀", "别熬夜",
+            "好好吃饭", "累了就歇一会儿", "今天要开心哦",
+            "天冷了，多穿衣服", "早点休息", "顺顺利利",
+            "愿你被世界温柔以待", "新的一天，加油", "你是最棒的",
+            "记得多喝水", "阳光总在风雨后", "做自己的小太阳",
+            "一切都会好起来的", "今天也要努力呀", "别忘了深呼吸",
+            "感恩每一个清晨", "笑一笑，十年少", "心若向阳，无畏悲伤"
+        ];
+        
+        // 最大弹窗数量限制
+        const maxPopups = 50;
+
+        function getRandomColor() {
+            // 生成柔和的随机颜色
+            const h = Math.floor(Math.random() * 360);
+            return `hsl(${h}, 70%, 85%)`;
+        }
+
+        function createPopup() {
+            // 检查当前弹窗数量，若达到限制则移除最旧的弹窗
+            const currentPopups = document.querySelectorAll('.popups');
+            if (currentPopups.length >= maxPopups) {
+                currentPopups[0].remove();
+            }
+            
+            const popup = document.createElement('div');
+            popup.className = 'popups';
+            popup.style.backgroundColor = getRandomColor();
+
+            // 随机位置（确保在可视区域内）
+            const maxX = window.innerWidth - 200;
+            const maxY = window.innerHeight - 60;
+            popup.style.left = Math.floor(Math.random() * maxX) + 'px';
+            popup.style.top = Math.floor(Math.random() * maxY) + 'px';
+
+            // 随机祝福语
+            const randomMsg = messages[Math.floor(Math.random() * messages.length)];
+            popup.innerHTML = `
+				<div class="head">
+					<div class="left">
+						<img src="images/tishi.png" alt="" />
+						<span>温馨提示</span>
+					</div>
+					<div class="right">
+						<div class="one"></div>
+						<div class="two"></div>
+						<div class="three close">×</div>
+					</div>
+				</div>
+				<div class="messages">
+					${randomMsg}
+				</div>
+            `;
+
+            // 关闭功能
+            popup.querySelector('.close').addEventListener('click', () => {
+                popup.remove();
+            });
+
+            document.body.appendChild(popup);
+
+            // 3秒后自动移除（可选）
+            // setTimeout(() => popup.remove(), 3000);
+        }
+
+        // 每1秒创建一个新弹窗
+        setInterval(createPopup, 280);
+
+        // 点击页面任意位置创建弹窗（可选交互）
+        document.addEventListener('click', (e) => {
+            // 可以根据需要启用或注释掉这行
+            // createPopup();
+        });
+    </script>
+</body>
+</html>
