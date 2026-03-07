@@ -1,0 +1,1375 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>随机点名工具</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" id="font-awesome-css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            user-select: none;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+        }
+
+        html {
+            overflow-y: scroll;
+        }
+
+        body {
+            font-family: 'Microsoft YaHei', Arial, sans-serif;
+            background-image: linear-gradient(-225deg, #FFFEFF 0%, #D7FFFE 100%);
+            min-height: 100vh;
+            display: flex;
+            position: relative;
+        }
+
+        body::-webkit-scrollbar {
+            width: 10px;
+        }
+
+        body::-webkit-scrollbar-track {
+            background: rgba(128, 128, 128, 0.1);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border-radius: 10px;
+        }
+
+        body::-webkit-scrollbar-thumb {
+            background: rgba(128, 128, 128, 0.4);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            border-radius: 10px;
+            border: 1px solid rgba(128, 128, 128, 0.3);
+        }
+
+        body::-webkit-scrollbar-thumb:hover {
+            background: rgba(128, 128, 128, 0.6);
+            border-color: rgba(128, 128, 128, 0.5);
+        }
+
+        body * {
+            scrollbar-width: thin;
+            scrollbar-color: rgba(128, 128, 128, 0.4) rgba(128, 128, 128, 0.1);
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                radial-gradient(circle at 20% 50%, rgba(102, 126, 234, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(118, 75, 162, 0.08) 0%, transparent 50%),
+                radial-gradient(circle at 40% 80%, rgba(240, 147, 251, 0.06) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .sidebar {
+            width: 200px;
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border-right: 1px solid rgba(255, 255, 255, 0.4);
+            padding: 30px 20px;
+            display: flex;
+            flex-direction: column;
+            transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1), transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            overflow: hidden;
+            overflow-y: hidden;
+            position: fixed;
+            top: 0;
+            left: 0;
+            bottom: 0;
+            z-index: 10;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+            transform: translateZ(0);
+            will-change: width;
+        }
+
+        .sidebar.collapsed {
+            width: 0;
+            padding: 30px 0;
+            border-right: none;
+            transform: translateZ(0);
+        }
+
+        .sidebar-btn {
+            background: rgba(255, 255, 255, 0.7);
+            color: #333;
+            border: 1px solid rgba(255, 255, 255, 0.6);
+            padding: 15px;
+            text-align: left;
+            cursor: pointer;
+            font-size: 16px;
+            border-radius: 12px;
+            margin-bottom: 10px;
+            transition: all 0.3s;
+            flex: none;
+            white-space: nowrap;
+            opacity: 1;
+            transform: translateX(0);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+            transform: translateZ(0);
+            will-change: transform;
+        }
+
+        .sidebar.collapsed .sidebar-btn {
+            opacity: 0;
+            transform: translateX(-20px);
+        }
+
+        .sidebar-btn:hover {
+            background: rgba(255, 255, 255, 0.7);
+            border-color: rgba(255, 255, 255, 0.8);
+            transform: translateX(5px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .sidebar-btn.active {
+            background: rgba(255, 255, 255, 0.85);
+            border-color: rgba(255, 255, 255, 0.9);
+            color: #333;
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12);
+        }
+
+        .page {
+            display: none;
+            width: 100%;
+        }
+
+        .page.active {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .main-content {
+            flex: 1;
+            display: flex;
+            padding: 40px;
+            overflow-y: visible;
+            position: relative;
+            z-index: 5;
+            margin-left: 200px;
+            transition: margin-left 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            transform: translateZ(0);
+            will-change: margin-left;
+        }
+
+        .toggle-btn {
+            position: fixed;
+            left: 200px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(255, 255, 255, 0.5);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            color: #333;
+            border: 1px solid rgba(255, 255, 255, 0.6);
+            border-radius: 0 12px 12px 0;
+            padding: 20px 10px;
+            cursor: pointer;
+            font-size: 20px;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 20;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+        }
+
+        .toggle-btn:hover {
+            background: rgba(255, 255, 255, 0.7);
+            border-color: rgba(255, 255, 255, 0.8);
+            box-shadow: 0 6px 25px rgba(0, 0, 0, 0.12);
+        }
+
+        .toggle-btn.collapsed {
+            left: 0;
+            border-radius: 0 12px 12px 0;
+        }
+
+        .container {
+            max-width: 800px;
+            width: 100%;
+            overflow-y: visible;
+            height: auto;
+            transform: translateZ(0);
+            will-change: transform;
+        }
+
+        #page-manage .container {
+            max-width: none;
+            width: 100%;
+            height: auto;
+            overflow-y: visible;
+            padding-right: 0;
+            transform: translateZ(0);
+            will-change: transform;
+        }
+
+        #page-manage .names-cards {
+            margin-right: 0;
+        }
+
+        #page-manage .page-header {
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 30px;
+            font-size: 28px;
+            text-shadow: none;
+        }
+
+        .page-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 30px;
+        }
+
+        .page-header h1 {
+            margin-bottom: 0;
+            text-align: left;
+        }
+
+        .page-actions {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .names-count {
+            font-size: 18px;
+            color: #666;
+            font-weight: 500;
+            margin-right: 5px;
+            text-shadow: none;
+        }
+
+        .btn-edit, .btn-delete, .btn-clear, .btn-batch, .btn-import, .btn-export {
+            padding: 10px 20px;
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.6);
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: bold;
+            transition: all 0.3s;
+            color: #333;
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            min-width: 80px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            line-height: 1.2;
+            height: 40px;
+            white-space: nowrap;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.06);
+            transform: translateZ(0);
+            will-change: transform;
+        }
+
+        .btn-edit i, .btn-delete i, .btn-clear i, .btn-batch i, .btn-import i, .btn-export i {
+            display: inline-flex;
+            align-items: center;
+            font-size: 14px;
+            flex-shrink: 0;
+        }
+
+        .btn-edit span, .btn-delete span, .btn-clear span, .btn-batch span, .btn-import span, .btn-export span {
+            display: inline-block;
+            line-height: 1.2;
+        }
+
+        .btn-edit:hover, .btn-delete:hover, .btn-clear:hover, .btn-batch:hover, .btn-import:hover, .btn-export:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
+            background: rgba(255, 255, 255, 0.7);
+            border-color: rgba(255, 255, 255, 0.8);
+        }
+
+        .btn-edit.active {
+            background: rgba(244, 67, 54, 0.2);
+            border-color: rgba(244, 67, 54, 0.4);
+            color: #d32f2f;
+        }
+
+        .btn-delete.active {
+            background: rgba(44, 62, 80, 0.2);
+            border-color: rgba(44, 62, 80, 0.4);
+            color: #2c3e50;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        button {
+            flex: 1;
+            padding: 15px;
+            border: 1px solid rgba(255, 255, 255, 0.6);
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            color: #333;
+            background: rgba(255, 255, 255, 0.5);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.06);
+        }
+
+        .btn-random {
+            background: rgba(255, 255, 255, 0.6);
+            border-color: rgba(255, 255, 255, 0.7);
+        }
+
+        .btn-random:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.12);
+            background: rgba(255, 255, 255, 0.8);
+            border-color: rgba(255, 255, 255, 0.9);
+        }
+
+        .btn-random:active {
+            transform: translateY(0);
+        }
+
+        .multi-pick-area {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            width: 100%;
+            margin-top: 15px;
+            background: rgba(255,255,255,0.3);
+            padding: 10px 15px;
+            border-radius: 30px;
+            backdrop-filter: blur(5px);
+        }
+        .multi-pick-area label {
+            font-size: 15px;
+            color: #333;
+            white-space: nowrap;
+        }
+        .multi-pick-area input {
+            width: 80px;
+            padding: 10px 5px;
+            border: 1px solid rgba(255,255,255,0.6);
+            border-radius: 20px;
+            background: rgba(255,255,255,0.6);
+            text-align: center;
+            font-weight: bold;
+            font-size: 16px;
+            color: #333;
+            outline: none;
+            user-select: text;
+            -webkit-user-select: text;
+        }
+        .multi-pick-area .btn-multi {
+            flex: 2;
+            padding: 10px 15px;
+            background: rgba(255,255,255,0.7);
+            border: 1px solid rgba(255,255,255,0.7);
+            white-space: nowrap;
+        }
+        .multi-pick-area .btn-multi:hover {
+            background: rgba(255,255,255,0.9);
+        }
+
+        .names-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+            margin-top: 20px;
+            overflow: visible;
+            transform: translateZ(0);
+            will-change: transform;
+        }
+
+        .name-card {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.6);
+            border-radius: 16px;
+            padding: 20px 15px;
+            text-align: center;
+            font-size: 18px;
+            font-weight: 500;
+            color: #333;
+            transition: all 0.3s ease;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.06);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100px;
+            position: relative;
+            cursor: pointer;
+            transform: translateZ(0);
+            will-change: transform;
+        }
+
+        .name-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.1);
+            border-color: rgba(255, 255, 255, 0.8);
+            background: rgba(255, 255, 255, 0.7);
+        }
+
+        .name-card:active {
+            transform: translateY(-1px);
+        }
+
+        .name-card .delete-btn {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: rgba(244, 67, 54, 0.8);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            transition: all 0.3s;
+            z-index: 2;
+        }
+
+        .name-card .delete-btn:hover {
+            background: rgba(244, 67, 54, 1);
+            transform: scale(1.1);
+            box-shadow: 0 4px 12px rgba(244, 67, 54, 0.4);
+        }
+
+        .name-card .delete-mark {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            background: rgba(244, 67, 54, 0.85);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            font-weight: bold;
+            line-height: 1;
+            z-index: 2;
+            pointer-events: none;
+            box-shadow: 0 2px 8px rgba(244, 67, 54, 0.3);
+        }
+
+        .name-card .edit-name-input {
+            width: 100%;
+            border: 1px solid rgba(0, 0, 0, 0.2);
+            border-radius: 8px;
+            padding: 6px 4px;
+            font-size: 16px;
+            text-align: center;
+            outline: none;
+            background: rgba(255, 255, 255, 0.95);
+            font-weight: 500;
+            color: #333;
+            user-select: text;
+            -webkit-user-select: text;
+            -moz-user-select: text;
+            -ms-user-select: text;
+        }
+
+        .add-card {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 2px dashed rgba(255, 255, 255, 0.5);
+            border-radius: 16px;
+            padding: 20px 15px;
+            text-align: center;
+            font-size: 36px;
+            font-weight: bold;
+            color: rgba(0, 0, 0, 0.5);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.06);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100px;
+            transform: translateZ(0);
+            will-change: transform;
+        }
+
+        .add-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.1);
+            border-color: rgba(255, 255, 255, 0.7);
+            background: rgba(255, 255, 255, 0.5);
+            color: rgba(0, 0, 0, 0.7);
+        }
+
+        .add-card.editing {
+            cursor: text;
+            font-size: 18px;
+            font-weight: 500;
+            background: rgba(255, 255, 255, 0.6);
+            border-style: solid;
+        }
+
+        .add-card input {
+            width: 100%;
+            border: none;
+            background: transparent;
+            color: #333;
+            font-size: 18px;
+            text-align: center;
+            outline: none;
+            padding: 0;
+            font-weight: 500;
+        }
+
+        .add-card input::placeholder {
+            color: rgba(0, 0, 0, 0.4);
+        }
+
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .modal {
+            background: rgba(255, 255, 255, 0.5);
+            backdrop-filter: blur(35px);
+            -webkit-backdrop-filter: blur(35px);
+            border: 1px solid rgba(255, 255, 255, 0.6);
+            border-radius: 24px;
+            padding: 40px;
+            max-width: 500px;
+            width: 90%;
+            box-shadow: 0 25px 80px rgba(0, 0, 0, 0.15);
+            animation: modalIn 0.3s ease;
+            transform: translateZ(0);
+            will-change: transform;
+        }
+
+        @keyframes modalIn {
+            from {
+                opacity: 0;
+                transform: scale(0.8);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        .modal h2 {
+            margin-bottom: 20px;
+            color: #333;
+            font-size: 24px;
+            text-shadow: none;
+        }
+
+        .modal p {
+            margin-bottom: 30px;
+            color: #666;
+            font-size: 16px;
+            line-height: 1.6;
+        }
+
+        .modal textarea {
+            width: 100%;
+            min-width: 300px;
+            max-width: 500px;
+            padding: 15px;
+            border: 1px solid rgba(255, 255, 255, 0.6);
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.5);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            color: #333;
+            font-size: 14px;
+            font-family: 'Microsoft YaHei', Arial, sans-serif;
+            resize: none;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+            user-select: text;
+            -webkit-user-select: text;
+            -moz-user-select: text;
+            -ms-user-select: text;
+        }
+
+        .modal textarea:focus {
+            outline: none;
+            border-color: rgba(255, 255, 255, 0.9);
+            background: rgba(255, 255, 255, 0.8);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .modal-buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: flex-end;
+        }
+
+        .modal-btn {
+            padding: 12px 30px;
+            border: 1px solid rgba(255, 255, 255, 0.6);
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            color: #333;
+            background: rgba(255, 255, 255, 0.5);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.06);
+        }
+
+        .modal-btn-cancel:hover {
+            background: rgba(255, 255, 255, 0.7);
+            border-color: rgba(255, 255, 255, 0.8);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .modal-btn-confirm {
+            background: rgba(255, 255, 255, 0.6);
+            border-color: rgba(255, 255, 255, 0.7);
+        }
+
+        .modal-btn-confirm:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.12);
+            background: rgba(255, 255, 255, 0.8);
+            border-color: rgba(255, 255, 255, 0.9);
+        }
+
+        .result-section {
+            text-align: center;
+            padding: 60px 40px;
+            background: rgba(255, 255, 255, 0.5);
+            backdrop-filter: blur(35px);
+            -webkit-backdrop-filter: blur(35px);
+            border: 1px solid rgba(255, 255, 255, 0.6);
+            border-radius: 24px;
+            min-height: 280px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 25px 80px rgba(0, 0, 0, 0.12);
+            word-break: break-word;
+        }
+
+        .result {
+            font-size: 56px;
+            font-weight: bold;
+            color: #333;
+            animation: fadeIn 0.5s ease-in;
+            text-shadow: none;
+            line-height: 1.3;
+        }
+
+        .result.multiline {
+            font-size: 32px;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            align-items: center;
+            gap: 15px;
+            line-height: 1.5;
+        }
+
+        .result-item {
+            display: inline-block;
+            padding: 8px 16px;
+            background: rgba(255, 255, 255, 0.6);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+            transition: all 0.3s ease;
+        }
+
+        .result-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .placeholder {
+            color: #999;
+            font-size: 20px;
+            font-weight: normal;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: scale(0.8);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(1.05);
+            }
+        }
+
+        .result.animate {
+            animation: pulse 0.3s ease-in-out;
+            transform: translateZ(0);
+            will-change: transform;
+        }
+
+        .about-section {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 60vh;
+            margin-top: 30px;
+        }
+
+        .about-card {
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(30px);
+            -webkit-backdrop-filter: blur(30px);
+            border: 1px solid rgba(255, 255, 255, 0.18);
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+            transform: translateZ(0);
+            will-change: transform;
+            text-align: center;
+            max-width: 400px;
+            width: 90%;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .about-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(
+                90deg,
+                transparent,
+                rgba(255, 255, 255, 0.2),
+                transparent
+            );
+            transition: left 0.5s;
+        }
+
+        .about-card:hover::before {
+            left: 100%;
+        }
+
+        .about-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
+        }
+
+        .about-card h2 {
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .about-card p {
+            color: #666;
+            line-height: 1.6;
+            margin-bottom: 15px;
+            font-size: 16px;
+        }
+
+        .toast {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            color: white;
+            padding: 12px 24px;
+            border-radius: 25px;
+            font-size: 14px;
+            z-index: 9999;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            pointer-events: none;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .toast.show {
+            opacity: 1;
+        }
+
+        .page#page-random .button-group {
+            margin-top: 30px;
+            margin-bottom: 0;
+            flex-direction: column;
+        }
+    </style>
+</head>
+<body>
+    <button class="toggle-btn collapsed" onclick="toggleSidebar()"><i class="fas fa-bars"></i></button>
+    
+    <div class="sidebar collapsed" id="sidebar">
+        <button class="sidebar-btn active" onclick="showPage('random')"><i class="fas fa-dice"></i> 随机点名</button>
+        <button class="sidebar-btn" onclick="showPage('manage')"><i class="fas fa-list"></i> 名单管理</button>
+        <button class="sidebar-btn" onclick="showPage('about')"><i class="fas fa-info-circle"></i> 关于</button>
+    </div>
+
+    <div class="main-content" id="mainContent">
+        <div class="page active" id="page-random">
+            <div class="container">
+                <h1><i class="fas fa-dice"></i> 随机点名工具</h1>
+                <div class="result-section">
+                    <div id="result" class="placeholder">点击"随机点名"开始</div>
+                </div>
+                <div class="button-group">
+                    <button class="btn-random" onclick="randomPick()"><i class="fas fa-random"></i> 随机点名(1个)</button>
+                    <div class="multi-pick-area">
+                        <label><i class="fas fa-hashtag"></i> 数量</label>
+                        <input type="number" id="multipleCount" min="1" max="999" value="3">
+                        <button class="btn-multi" onclick="randomMultiple()"><i class="fas fa-users"></i> 抽取多个</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="page" id="page-manage">
+            <div class="container">
+                <div class="page-header">
+                    <h1><i class="fas fa-list"></i> 名单管理</h1>
+                    <div class="page-actions">
+                        <span class="names-count" id="namesCount">0 个名字</span>
+                        <button class="btn-batch" onclick="openBatchAddModal()"><i class="fas fa-plus"></i> 批量加入</button>
+                        <button class="btn-import" onclick="importNames()"><i class="fas fa-upload"></i> 导入</button>
+                        <button class="btn-export" onclick="exportNames()"><i class="fas fa-download"></i> 导出</button>
+                        <button class="btn-edit" id="editBtn" onclick="toggleEditMode()"><i class="fas fa-edit"></i> 编辑</button>
+                        <button class="btn-delete" id="deleteModeBtn" onclick="toggleDeleteMode()"><i class="fas fa-trash"></i> 删除</button>
+                        <button class="btn-clear" onclick="clearNames()"><i class="fas fa-trash"></i> 清空</button>
+                    </div>
+                </div>
+                
+                <div class="names-cards" id="namesCards"></div>
+            </div>
+        </div>
+
+        <div class="page" id="page-about">
+            <div class="container">
+                <div class="about-section">
+                    <div class="about-card">
+                        <h2>随机点名工具</h2>
+                        <p>开发者：Joking</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="modalOverlay"><div class="modal"><h2><i class="fas fa-exclamation-triangle"></i> 确认清空</h2><p>确定要清空所有名单吗？此操作不可恢复。</p><div class="modal-buttons"><button class="modal-btn modal-btn-cancel" onclick="closeModal()">取消</button><button class="modal-btn modal-btn-confirm" onclick="confirmClearNames()">确认清空</button></div></div></div>
+    <div class="modal-overlay" id="batchAddModalOverlay"><div class="modal"><h2><i class="fas fa-plus"></i> 批量加入</h2><p>请输入名字（每个名字之间用分号”;“  逗号“ , ”或空格分隔）</p><textarea id="batchInput" rows="5" placeholder="例如：张三;李四,王五 老六"></textarea><div class="modal-buttons"><button class="modal-btn modal-btn-cancel" onclick="closeBatchAddModal()">取消</button><button class="modal-btn modal-btn-confirm" onclick="confirmBatchAdd()">确认添加</button></div></div></div>
+    <div class="modal-overlay" id="duplicateModalOverlay"><div class="modal"><h2><i class="fas fa-exclamation-circle"></i> 重复名称</h2><p id="duplicateMessage"></p><div class="modal-buttons"><button class="modal-btn modal-btn-confirm" onclick="closeDuplicateModal()">确定</button></div></div></div>
+    <div class="modal-overlay" id="duplicateConfirmModalOverlay"><div class="modal"><h2><i class="fas fa-question-circle"></i> 名称已存在</h2><p id="duplicateConfirmMessage"></p><div class="modal-buttons"><button class="modal-btn modal-btn-cancel" onclick="closeDuplicateConfirmModal()">取消</button><button class="modal-btn modal-btn-confirm" onclick="confirmDuplicateAdd()">确认</button></div></div></div>
+
+    <div class="toast" id="toast"></div>
+
+    <script>
+        (function() {
+            const STORAGE_KEY = 'sjdm_names';
+
+            let isEditMode = false;
+            let isDeleteMode = false;
+            let batchAddData = null;
+
+            const mainContent = document.getElementById('mainContent');
+            const sidebar = document.getElementById('sidebar');
+            const toggleBtn = document.querySelector('.toggle-btn');
+
+            function escapeHtml(unsafe) {
+                return unsafe.replace(/[&<>"']/g, function(m) {
+                    if(m === '&') return '&amp;'; if(m === '<') return '&lt;'; if(m === '>') return '&gt;';
+                    if(m === '"') return '&quot;'; if(m === "'") return '&#039;';
+                    return m;
+                });
+            }
+
+            function loadNames() {
+                const saved = localStorage.getItem(STORAGE_KEY);
+                updateNamesCards(saved);
+                updateMultipleCountMax();
+            }
+
+            function updateMultipleCountMax() {
+                const saved = localStorage.getItem(STORAGE_KEY) || '';
+                const names = saved ? saved.split('\n').map(name => name.trim()).filter(name => name !== '') : [];
+                const multipleCount = document.getElementById('multipleCount');
+                if (multipleCount) {
+                    const maxValue = names.length || 999;
+                    multipleCount.max = maxValue;
+                    const currentValue = parseInt(multipleCount.value, 10);
+                    if (currentValue > maxValue) {
+                        multipleCount.value = maxValue;
+                    }
+                }
+            }
+
+            function saveNames(namesString) {
+                localStorage.setItem(STORAGE_KEY, namesString);
+                updateNamesCards(namesString);
+                updateMultipleCountMax();
+            }
+
+            function previewName(name) {
+                const resultDiv = document.getElementById('result');
+                resultDiv.className = 'result animate';
+                resultDiv.textContent = name;
+                setTimeout(() => resultDiv.classList.remove('animate'), 300);
+            }
+
+            function deleteNameByIndex(indexToDelete) {
+                const current = localStorage.getItem(STORAGE_KEY) || '';
+                let names = current ? current.split('\n').map(name => name.trim()).filter(name => name !== '') : [];
+                if (indexToDelete >= 0 && indexToDelete < names.length) {
+                    names.splice(indexToDelete, 1);
+                    saveNames(names.join('\n'));
+                }
+            }
+
+            function showToast(message) {
+                const toast = document.getElementById('toast');
+                toast.textContent = message;
+                toast.classList.add('show');
+                setTimeout(() => toast.classList.remove('show'), 2000);
+            }
+
+            function startEditing(card, oldName, index) {
+                if (card.querySelector('input')) return;
+                const input = document.createElement('input');
+                input.type = 'text';
+                input.value = oldName;
+                input.className = 'edit-name-input';
+                input.style.width = '100%'; input.style.border = '2px solid #2196F3'; input.style.borderRadius = '8px';
+                input.style.padding = '6px'; input.style.fontSize = '16px'; input.style.textAlign = 'center';
+                input.style.userSelect = 'text'; input.style.webkitUserSelect = 'text';
+                card.textContent = '';
+                card.appendChild(input);
+                input.focus(); input.select();
+                function saveEdit() {
+                    const newName = input.value.trim();
+                    if (newName && newName !== oldName) {
+                        const current = localStorage.getItem(STORAGE_KEY) || '';
+                        const names = current ? current.split('\n').map(n => n.trim()).filter(n => n !== '') : [];
+                        if (names.includes(newName)) {
+                            openDuplicateModal('名称 "' + newName + '" 已存在');
+                            updateNamesCards(localStorage.getItem(STORAGE_KEY));
+                            return;
+                        }
+                        if (index >= 0 && index < names.length) {
+                            names[index] = newName;
+                            localStorage.setItem(STORAGE_KEY, names.join('\n'));
+                            updateNamesCards(localStorage.getItem(STORAGE_KEY));
+                        } else { updateNamesCards(localStorage.getItem(STORAGE_KEY)); }
+                    } else { updateNamesCards(localStorage.getItem(STORAGE_KEY)); }
+                }
+                input.onblur = saveEdit;
+                input.onkeypress = function(e) { if (e.key === 'Enter') { e.preventDefault(); saveEdit(); } };
+            }
+
+            function updateNamesCards(namesString) {
+                if (namesString === undefined) namesString = localStorage.getItem(STORAGE_KEY) || '';
+                const namesCards = document.getElementById('namesCards');
+                const namesCount = document.getElementById('namesCount');
+                const names = namesString ? namesString.split('\n').map(name => name.trim()).filter(name => name !== '') : [];
+                namesCount.textContent = names.length + ' 个名字';
+                namesCards.innerHTML = '';
+
+                const fragment = document.createDocumentFragment();
+                names.forEach((name, index) => {
+                    const card = document.createElement('div');
+                    card.className = 'name-card';
+                    card.textContent = name;
+                    if (isEditMode) {
+                        card.onclick = (e) => { e.stopPropagation(); startEditing(card, name, index); };
+                    } else if (isDeleteMode) {
+                        card.onclick = null;
+                        card.ondblclick = (e) => { e.stopPropagation(); deleteNameByIndex(index); };
+                        const deleteMark = document.createElement('span');
+                        deleteMark.className = 'delete-mark'; deleteMark.textContent = '-';
+                        card.appendChild(deleteMark);
+                    } else {
+                        card.onclick = () => previewName(name);
+                        card.ondblclick = null;
+                    }
+                    fragment.appendChild(card);
+                });
+                namesCards.appendChild(fragment);
+
+                const addCard = document.createElement('div');
+                addCard.className = 'add-card'; addCard.id = 'addCard'; addCard.textContent = '+'; addCard.isEditing = false;
+                addCard.onclick = function() {
+                    if (addCard.isEditing) return;
+                    addCard.isEditing = true; addCard.textContent = ''; addCard.classList.add('editing');
+                    const input = document.createElement('input');
+                    input.type = 'text'; input.placeholder = '输入新名字';
+                    input.style.width = '100%'; input.style.border = 'none'; input.style.background = 'transparent';
+                    input.style.color = '#333'; input.style.fontSize = '18px'; input.style.textAlign = 'center';
+                    input.style.outline = 'none'; input.style.padding = '0'; input.style.fontWeight = '500';
+                    input.style.userSelect = 'text';
+                    input.onblur = function() {
+                        const newName = input.value.trim();
+                        if (newName !== '') {
+                            const currentNames = localStorage.getItem(STORAGE_KEY) || '';
+                            const names = currentNames ? currentNames.split('\n').map(name => name.trim()).filter(name => name !== '') : [];
+                            if (names.includes(newName)) {
+                                openDuplicateModal('名称 "' + newName + '" 已存在');
+                                addCard.textContent = '+'; addCard.classList.remove('editing'); addCard.isEditing = false;
+                                return;
+                            }
+                            names.push(newName);
+                            localStorage.setItem(STORAGE_KEY, names.join('\n'));
+                            updateNamesCards(localStorage.getItem(STORAGE_KEY));
+                            updateMultipleCountMax();
+                        } else {
+                            addCard.textContent = '+'; addCard.classList.remove('editing'); addCard.isEditing = false;
+                        }
+                    };
+                    input.onkeypress = function(e) {
+                        if (e.key === 'Enter' && input.value.trim() !== '') {
+                            const newName = input.value.trim();
+                            const currentNames = localStorage.getItem(STORAGE_KEY) || '';
+                            const names = currentNames ? currentNames.split('\n').map(name => name.trim()).filter(name => name !== '') : [];
+                            if (names.includes(newName)) {
+                                openDuplicateModal('名称 "' + newName + '" 已存在');
+                                addCard.textContent = '+'; addCard.classList.remove('editing'); addCard.isEditing = false;
+                                return;
+                            }
+                            names.push(newName);
+                            localStorage.setItem(STORAGE_KEY, names.join('\n'));
+                            updateNamesCards(localStorage.getItem(STORAGE_KEY));
+                            updateMultipleCountMax();
+                        } else if (e.key === 'Enter') {
+                            addCard.textContent = '+'; addCard.classList.remove('editing'); addCard.isEditing = false;
+                        }
+                    };
+                    addCard.appendChild(input);
+                    input.focus();
+                };
+                namesCards.appendChild(addCard);
+            }
+
+            function toggleEditMode() {
+                if (isDeleteMode) { isDeleteMode = false; updateDeleteButtonStyle(); }
+                isEditMode = !isEditMode;
+                updateEditButtonStyle();
+                updateNamesCards();
+                if (isEditMode) showToast('点击名称进行修改');
+            }
+            function updateEditButtonStyle() {
+                const editBtn = document.getElementById('editBtn');
+                if (isEditMode) { editBtn.classList.add('active'); editBtn.innerHTML = '<i class="fas fa-check"></i> 完成'; }
+                else { editBtn.classList.remove('active'); editBtn.innerHTML = '<i class="fas fa-edit"></i> 编辑'; }
+            }
+            function toggleDeleteMode() {
+                if (isEditMode) { isEditMode = false; updateEditButtonStyle(); }
+                isDeleteMode = !isDeleteMode;
+                updateDeleteButtonStyle();
+                updateNamesCards();
+                if (isDeleteMode) showToast('双击名称卡片进行删除');
+            }
+            function updateDeleteButtonStyle() {
+                const deleteBtn = document.getElementById('deleteModeBtn');
+                if (isDeleteMode) { deleteBtn.classList.add('active'); deleteBtn.innerHTML = '<i class="fas fa-check"></i> 完成'; }
+                else { deleteBtn.classList.remove('active'); deleteBtn.innerHTML = '<i class="fas fa-trash"></i> 删除'; }
+            }
+
+            function clearNames() { document.getElementById('modalOverlay').classList.add('active'); }
+            function closeModal() { document.getElementById('modalOverlay').classList.remove('active'); }
+            function confirmClearNames() { saveNames(''); closeModal(); }
+
+            function toggleSidebar() {
+                const isCollapsed = !sidebar.classList.contains('collapsed');
+                sidebar.style.transition = 'none'; mainContent.style.transition = 'none';
+                requestAnimationFrame(() => {
+                    sidebar.style.transition = ''; mainContent.style.transition = '';
+                    sidebar.classList.toggle('collapsed'); toggleBtn.classList.toggle('collapsed');
+                    const icon = toggleBtn.querySelector('i');
+                    if (sidebar.classList.contains('collapsed')) { icon.className = 'fas fa-bars'; mainContent.style.marginLeft = '0'; }
+                    else { icon.className = 'fas fa-times'; mainContent.style.marginLeft = '200px'; }
+                });
+            }
+
+            function showPage(pageName) {
+                requestAnimationFrame(() => {
+                    window.scrollTo(0, 0);
+                    const pages = document.querySelectorAll('.page');
+                    const sidebarBtns = document.querySelectorAll('.sidebar-btn');
+                    pages.forEach(page => page.classList.remove('active'));
+                    sidebarBtns.forEach(btn => btn.classList.remove('active'));
+                    document.getElementById('page-' + pageName).classList.add('active');
+                    const activeBtnIndex = pageName === 'random' ? 0 : pageName === 'manage' ? 1 : 2;
+                    sidebarBtns[activeBtnIndex].classList.add('active');
+                    if (pageName === 'manage') { requestAnimationFrame(() => { updateNamesCards(); }); }
+                    if (pageName === 'random') { updateMultipleCountMax(); }
+                });
+            }
+
+            function randomPick() {
+                const resultDiv = document.getElementById('result');
+                const saved = localStorage.getItem(STORAGE_KEY) || '';
+                const names = saved ? saved.split('\n').map(name => name.trim()).filter(name => name !== '') : [];
+                if (names.length === 0) { resultDiv.className = 'result'; resultDiv.textContent = '请先添加名单'; return; }
+                let count = 0; const maxRolls = 15; const interval = 80; let lastTime = 0;
+                const roll = (timestamp) => {
+                    if (!lastTime) lastTime = timestamp;
+                    if (timestamp - lastTime >= interval) {
+                        const randomIndex = Math.floor(Math.random() * names.length);
+                        resultDiv.textContent = names[randomIndex];
+                        resultDiv.className = 'result animate';
+                        count++; lastTime = timestamp;
+                        if (count >= maxRolls) {
+                            const finalIndex = Math.floor(Math.random() * names.length);
+                            resultDiv.textContent = names[finalIndex];
+                            resultDiv.className = 'result animate';
+                            setTimeout(() => resultDiv.classList.remove('animate'), 300);
+                            return;
+                        }
+                    }
+                    requestAnimationFrame(roll);
+                };
+                requestAnimationFrame(roll);
+            }
+
+            function randomMultiple() {
+                const resultDiv = document.getElementById('result');
+                const saved = localStorage.getItem(STORAGE_KEY) || '';
+                let names = saved ? saved.split('\n').map(name => name.trim()).filter(name => name !== '') : [];
+                if (names.length === 0) {
+                    resultDiv.className = 'result';
+                    resultDiv.textContent = '名单为空';
+                    return;
+                }
+                let count = parseInt(document.getElementById('multipleCount').value, 10);
+                if (isNaN(count) || count < 1) count = 1;
+                if (count > names.length) count = names.length; 
+
+                const shuffled = [...names];
+                for (let i = shuffled.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+                }
+                const picked = shuffled.slice(0, count);
+                const htmlStr = picked.map(n => `<span class="result-item">${escapeHtml(n)}</span>`).join('');
+                resultDiv.className = 'result multiline';
+                resultDiv.innerHTML = htmlStr;
+                resultDiv.classList.add('animate');
+                setTimeout(() => resultDiv.classList.remove('animate'), 300);
+            }
+
+            function parseNamesFromString(str) {
+                return str.split(/[;；,，\s]+/).map(s => s.trim()).filter(s => s !== '');
+            }
+
+            function importNames() {
+                const fileInput = document.createElement('input');
+                fileInput.type = 'file';
+                fileInput.accept = '.txt,.csv,text/plain';
+                fileInput.onchange = function(e) {
+                    const file = e.target.files[0];
+                    if (!file) return;
+                    const reader = new FileReader();
+                    reader.onload = function(ev) {
+                        const content = ev.target.result;
+                        const newNames = parseNamesFromString(content);
+                        if (newNames.length === 0) {
+                            showToast('文件中无有效名字');
+                            return;
+                        }
+                        const currentRaw = localStorage.getItem(STORAGE_KEY) || '';
+                        const existingNames = currentRaw ? currentRaw.split('\n').map(n => n.trim()).filter(n => n !== '') : [];
+                        const combined = [...existingNames, ...newNames];
+                        const uniqueSet = new Set(combined);
+                        const uniqueNames = Array.from(uniqueSet);
+                        const addedCount = uniqueNames.length - existingNames.length;
+                        const duplicateCount = newNames.length - addedCount;
+                        saveNames(uniqueNames.join('\n'));
+                        showToast(`导入完成：新增 ${addedCount} 个，跳过 ${duplicateCount} 个重复`);
+                    };
+                    reader.readAsText(file, 'UTF-8');
+                    fileInput.remove();
+                };
+                fileInput.click();
+            }
+
+            function exportNames() {
+                const currentRaw = localStorage.getItem(STORAGE_KEY) || '';
+                const names = currentRaw ? currentRaw.split('\n').map(n => n.trim()).filter(n => n !== '') : [];
+                if (names.length === 0) {
+                    showToast('名单为空，无法导出');
+                    return;
+                }
+                const content = names.join('\n');
+                const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
+                const link = document.createElement('a');
+                link.href = URL.createObjectURL(blob);
+                link.download = '点名名单.txt';
+                link.click();
+                URL.revokeObjectURL(link.href);
+                showToast('导出成功');
+            }
+
+            function openBatchAddModal() { document.getElementById('batchAddModalOverlay').style.display = 'flex'; }
+            function closeBatchAddModal() { document.getElementById('batchAddModalOverlay').style.display = 'none'; document.getElementById('batchInput').value = ''; }
+            function confirmBatchAdd() {
+                const input = document.getElementById('batchInput').value;
+                if (!input.trim()) { closeBatchAddModal(); return; }
+                const newNames = parseNamesFromString(input);
+                if (newNames.length === 0) { closeBatchAddModal(); return; }
+                const newNameSet = new Set(newNames);
+                if (newNameSet.size < newNames.length) {
+                    const duplicateNames = newNames.filter((name, index) => newNames.indexOf(name) !== index);
+                    const uniqueDuplicates = [...new Set(duplicateNames)];
+                    openDuplicateModal('输入中包含重复名称：' + uniqueDuplicates.join('、'));
+                    return;
+                }
+                const currentNames = localStorage.getItem(STORAGE_KEY) || '';
+                const existingNames = currentNames ? currentNames.split('\n').map(name => name.trim()).filter(name => name !== '') : [];
+                const existingNameSet = new Set(existingNames);
+                const duplicateWithExisting = newNames.filter(name => existingNameSet.has(name));
+                if (duplicateWithExisting.length > 0) {
+                    const combinedNames = [...existingNames, ...newNames];
+                    const uniqueNames = [...new Set(combinedNames)];
+                    openDuplicateConfirmModal('以下名称已存在：' + duplicateWithExisting.join('、') + '\n将跳过添加', uniqueNames.join('\n'));
+                    return;
+                }
+                const combinedNames = [...existingNames, ...newNames];
+                const uniqueNames = [...new Set(combinedNames)];
+                saveNames(uniqueNames.join('\n'));
+                closeBatchAddModal();
+            }
+
+            function openDuplicateModal(message) { document.getElementById('duplicateMessage').textContent = message; document.getElementById('duplicateModalOverlay').style.display = 'flex'; }
+            function closeDuplicateModal() { document.getElementById('duplicateModalOverlay').style.display = 'none'; }
+            function openDuplicateConfirmModal(message, data) { document.getElementById('duplicateConfirmMessage').textContent = message; batchAddData = data; document.getElementById('duplicateConfirmModalOverlay').style.display = 'flex'; }
+            function closeDuplicateConfirmModal() { document.getElementById('duplicateConfirmModalOverlay').style.display = 'none'; batchAddData = null; }
+            function confirmDuplicateAdd() { if (batchAddData) { saveNames(batchAddData); } closeDuplicateConfirmModal(); closeBatchAddModal(); }
+
+            function checkFontAwesome() {
+                const link = document.getElementById('font-awesome-css');
+                link.onerror = fallbackToEmoji;
+                setTimeout(function() {
+                    const testIcon = document.createElement('i');
+                    testIcon.className = 'fas fa-test';
+                    testIcon.style.display = 'none';
+                    document.body.appendChild(testIcon);
+                    const computedStyle = window.getComputedStyle(testIcon);
+                    const fontLoaded = computedStyle.fontFamily.includes('Font Awesome');
+                    document.body.removeChild(testIcon);
+                    if (!fontLoaded) fallbackToEmoji();
+                }, 1000);
+            }
+            function fallbackToEmoji() {
+                const iconMap = { 'fa-bars': '☰', 'fa-times': '✕', 'fa-dice': '🎲', 'fa-list': '📋', 'fa-random': '🎲', 'fa-trash': '🗑️', 'fa-edit': '✏️', 'fa-check': '✔️', 'fa-minus': '➖', 'fa-exclamation-triangle': '⚠️', 'fa-upload': '📤', 'fa-download': '📥', 'fa-users': '👥', 'fa-hashtag': '#' };
+                document.querySelectorAll('.fas').forEach(icon => {
+                    const classes = icon.className.split(' ');
+                    let emoji = '';
+                    for (let i = 0; i < classes.length; i++) { if (iconMap[classes[i]]) { emoji = iconMap[classes[i]]; break; } }
+                    if (emoji) { icon.textContent = emoji; icon.className = ''; }
+                });
+            }
+
+            window.onload = function() {
+                loadNames();
+                checkFontAwesome();
+                if (sidebar.classList.contains('collapsed')) mainContent.style.marginLeft = '0';
+                else mainContent.style.marginLeft = '200px';
+            };
+
+            window.toggleSidebar = toggleSidebar;
+            window.showPage = showPage;
+            window.randomPick = randomPick;
+            window.randomMultiple = randomMultiple;
+            window.importNames = importNames;
+            window.exportNames = exportNames;
+            window.toggleEditMode = toggleEditMode;
+            window.toggleDeleteMode = toggleDeleteMode;
+            window.clearNames = clearNames;
+            window.closeModal = closeModal;
+            window.confirmClearNames = confirmClearNames;
+            window.openBatchAddModal = openBatchAddModal;
+            window.closeBatchAddModal = closeBatchAddModal;
+            window.confirmBatchAdd = confirmBatchAdd;
+            window.openDuplicateModal = openDuplicateModal;
+            window.closeDuplicateModal = closeDuplicateModal;
+            window.openDuplicateConfirmModal = openDuplicateConfirmModal;
+            window.closeDuplicateConfirmModal = closeDuplicateConfirmModal;
+            window.confirmDuplicateAdd = confirmDuplicateAdd;
+            window.showToast = showToast;
+        })();
+    </script>
+</body>
+</html>
