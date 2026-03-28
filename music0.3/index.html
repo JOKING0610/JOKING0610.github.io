@@ -2500,8 +2500,19 @@
                 if (song.pic) {
                     // 处理协议相对URL
                     let finalCoverUrl = song.pic;
+                    // 处理协议相对URL
                     if (finalCoverUrl.startsWith('//')) {
                         finalCoverUrl = 'https:' + finalCoverUrl;
+                    }
+                    // 处理相对路径
+                    else if (!finalCoverUrl.startsWith('http')) {
+                        // 如果是相对路径，使用一个默认的图片服务或占位符
+                        // 这里使用一个通用的音乐封面占位符
+                        finalCoverUrl = 'https://via.placeholder.com/100x100?text=Music';
+                    }
+                    // 确保使用HTTPS
+                    else if (finalCoverUrl.startsWith('http://')) {
+                        finalCoverUrl = finalCoverUrl.replace('http://', 'https://');
                     }
                     playerCover.innerHTML = `<img src="${finalCoverUrl}" alt="" onerror="this.parentElement.innerHTML='<i class=\'fas fa-disc-record\'></i>'">`;
                 } else {
@@ -3068,13 +3079,18 @@ biliLoadMoreBtn.addEventListener('click', () => {
                 await rateLimiter.checkLimit('bili');
             }
             
-            const queryParams = new URLSearchParams();
+            // 手动构建查询字符串，确保空格被正确编码
+            const queryParts = [];
             for (const [key, value] of Object.entries(params)) {
-                queryParams.append(key, value);
+                // 使用encodeURIComponent确保空格等特殊字符被正确编码
+                const encodedValue = encodeURIComponent(value);
+                queryParts.push(`${key}=${encodedValue}`);
             }
-            if (yunzhiToken) queryParams.append('token', yunzhiToken);
+            if (yunzhiToken) queryParts.push(`token=${encodeURIComponent(yunzhiToken)}`);
             
-            const response = await fetch(`${url}?${queryParams.toString()}`);
+            const queryString = queryParts.join('&');
+            
+            const response = await fetch(`${url}?${queryString}`);
             if (!response.ok) throw new Error(`请求失败: ${response.status}`);
             return await response.json();
         }
@@ -3444,8 +3460,19 @@ biliLoadMoreBtn.addEventListener('click', () => {
                 const placeholder = songItem.querySelector('.cover-placeholder');
                 if (img && placeholder) {
                     let coverUrl = songData.pic;
+                    // 处理协议相对URL
                     if (coverUrl && coverUrl.startsWith('//')) {
                         coverUrl = 'https:' + coverUrl;
+                    }
+                    // 处理相对路径
+                    else if (coverUrl && !coverUrl.startsWith('http')) {
+                        // 如果是相对路径，使用一个默认的图片服务或占位符
+                        // 这里使用一个通用的音乐封面占位符
+                        coverUrl = 'https://via.placeholder.com/100x100?text=Music';
+                    }
+                    // 确保使用HTTPS
+                    else if (coverUrl && coverUrl.startsWith('http://')) {
+                        coverUrl = coverUrl.replace('http://', 'https://');
                     }
                     loadAndCacheCover(img, coverUrl, placeholder);
                 }
