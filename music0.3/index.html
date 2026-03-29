@@ -4323,22 +4323,44 @@ biliLoadMoreBtn.addEventListener('click', () => {
             imgElement.style.display = 'block';
             if (placeholder) placeholder.style.display = 'none';
 
+            // 处理URL，确保在HTTPS环境下使用HTTPS
+            let processedUrl = coverUrl;
+            if (processedUrl.startsWith('//')) {
+                processedUrl = 'https:' + processedUrl;
+            } else if (processedUrl.startsWith('http://')) {
+                // 尝试将HTTP转换为HTTPS
+                processedUrl = processedUrl.replace('http://', 'https://');
+            }
+
             // 使用Image对象预加载
             const img = new Image();
+            img.crossOrigin = 'anonymous'; // 尝试跨域加载
+            
             img.onload = function() {
                 // 加载成功后设置到实际元素
-                imgElement.src = coverUrl;
+                imgElement.src = processedUrl;
                 currentLoads--;
                 processCoverQueue(); // 继续处理队列
             };
+            
             img.onerror = function() {
                 const retryCount = parseInt(imgElement.dataset.retryCount) || 0;
                 if (retryCount < 2 && imgElement.dataset.originalSrc) {
                     imgElement.dataset.retryCount = retryCount + 1;
                     setTimeout(() => {
-                        loadCoverWithRetry(imgElement, coverUrl + '&retry=' + retryCount, placeholder);
+                        // 重试时使用原始URL，尝试不同的处理方式
+                        let retryUrl = coverUrl;
+                        if (retryCount === 0 && coverUrl.startsWith('http://')) {
+                            // 第一次重试：尝试使用HTTP（如果HTTPS失败）
+                            retryUrl = coverUrl;
+                        } else if (retryCount === 1) {
+                            // 第二次重试：添加时间戳避免缓存
+                            retryUrl = coverUrl + (coverUrl.includes('?') ? '&' : '?') + 't=' + Date.now();
+                        }
+                        loadCoverWithRetry(imgElement, retryUrl, placeholder);
                     }, 1000);
                 } else {
+                    // 所有重试都失败，显示占位符
                     imgElement.style.display = 'none';
                     if (placeholder) {
                         placeholder.style.display = 'flex';
@@ -4348,7 +4370,8 @@ biliLoadMoreBtn.addEventListener('click', () => {
                     processCoverQueue(); // 继续处理队列
                 }
             };
-            img.src = coverUrl;
+            
+            img.src = processedUrl;
         }
 
         function renderSongList(songs, startIndex = 0, platform = currentPlatform) {
