@@ -4877,7 +4877,7 @@
                     showToast('音频链接已过期，正在重新获取...', 'warning');
                     // 延迟后重新播放
                     setTimeout(() => {
-                        playSong(currentSong.id, currentSong.platform, 0, true);
+                        playSong(currentSong.id, currentSong.platform);
                     }, 1500);
                     return;
                 }
@@ -4987,7 +4987,7 @@
                             delete songDetailsCache[cacheKey];
                             localStorage.setItem('songDetailsCache', JSON.stringify(songDetailsCache));
                             // 直接重试，不等待，传入 forceRefresh 参数
-                            playSong(song.id, song.platform, retryCount + 1, true);
+                            playSong(song.id, song.platform);
                         } else {
                             showToast('播放失败: ' + (err.message || '无法加载音频'), 'error');
                         }
@@ -5941,14 +5941,6 @@ biliLoadMoreBtn.addEventListener('click', () => {
         async function getSongDetail(songId, platform = null, skipCache = false) {
             // 使用传入的平台或当前平台
             const targetPlatform = platform || currentPlatform;
-            // 检查缓存中是否有歌曲详情
-            const cacheKey = `${targetPlatform}_${songId}`;
-            if (!skipCache && songDetailsCache[cacheKey]) {
-                return {
-                    code: 1,
-                    data: songDetailsCache[cacheKey]
-                };
-            }
             
             let result;
             if (targetPlatform === 'bili') {
@@ -5956,14 +5948,14 @@ biliLoadMoreBtn.addEventListener('click', () => {
                 result = await makeApiRequest('https://api.cenguigui.cn/api/bilibili/bilibili.php', {
                     action: 'media',
                     bvid: songId
-                }, !skipCache); // 如果跳过缓存，也不使用API缓存
+                }, false); // 不使用缓存
                 
                 // 如果bvid搜索失败，尝试使用aid搜索
                 if (!((result.code === 1 || result.code === 200) && result.data)) {
                     result = await makeApiRequest('https://api.cenguigui.cn/api/bilibili/bilibili.php', {
                         action: 'media',
                         aid: songId
-                    }, !skipCache); // 如果跳过缓存，也不使用API缓存
+                    }, false); // 不使用缓存
                 }
             } else {
                 // 检查是否设置了Token
@@ -5974,13 +5966,6 @@ biliLoadMoreBtn.addEventListener('click', () => {
                     id: songId,
                     type: targetPlatform
                 }, !skipCache); // 如果跳过缓存，也不使用API缓存
-            }
-            
-            // 缓存歌曲详情
-            if ((result.code === 1 || result.code === 200) && result.data) {
-                songDetailsCache[cacheKey] = result.data;
-                // 保存到本地存储
-                localStorage.setItem('songDetailsCache', JSON.stringify(songDetailsCache));
             }
             
             return result;
@@ -6610,8 +6595,40 @@ biliLoadMoreBtn.addEventListener('click', () => {
                         platform: platform || currentPlatform
                     };
                     
-                    // 使用播放器实例设置并播放歌曲
-                    player.setSong(song);
+                    // 直接设置音频源并播放
+                    player.audioElement.src = song.url;
+                    player.audioElement.load();
+                    player.audioElement.play();
+                    
+                    // 更新播放器信息
+                    player.playerTitle.textContent = song.name;
+                    player.playerArtist.textContent = song.artist;
+                    
+                    const playerCover = player.playerElement.querySelector('.player-cover');
+                    if (song.pic) {
+                        // 处理协议相对URL
+                        let finalCoverUrl = song.pic;
+                        if (finalCoverUrl.startsWith('//')) {
+                            finalCoverUrl = 'https:' + finalCoverUrl;
+                        }
+                        playerCover.innerHTML = `<img src="${finalCoverUrl}" alt="" onerror="this.parentElement.innerHTML='<i class=\'fas fa-disc-record\'></i>'">`;
+                    } else {
+                        playerCover.innerHTML = '<i class="fas fa-disc-record"></i>';
+                    }
+                    
+                    player.playerElement.classList.add('visible');
+                    player.playerElement.classList.remove('hidden');
+                    
+                    // 重置播放状态
+                    player.isPlaying = true;
+                    player.playBtn.innerHTML = '<i class="fas fa-pause"></i>';
+                    
+                    // 重置进度条
+                    player.progressFill.style.width = '0%';
+                    player.timeDisplay.textContent = '0:00 / 0:00';
+                    
+                    // 刷新滚动效果
+                    refreshMarquee();
                     
                     if (!playlist.find(s => String(s.id) === String(songId))) {
                         playlist.push(song);
