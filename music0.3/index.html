@@ -201,6 +201,9 @@
             margin: 0;
             padding: 0;
             box-sizing: border-box;
+            -webkit-user-select: none; /* Safari */
+            -ms-user-select: none; /* IE 10 and IE 11 */
+            user-select: none; /* Standard syntax */
         }
 
         body {
@@ -1223,6 +1226,51 @@
             outline: none;
             border-color: var(--primary);
             box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.04);
+        }
+
+        /* 开关样式 */
+        .toggle-switch {
+            position: relative;
+            width: 60px;
+            height: 30px;
+        }
+        
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        
+        .toggle-switch label {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: var(--border);
+            transition: .4s;
+            border-radius: 30px;
+        }
+        
+        .toggle-switch label:before {
+            position: absolute;
+            content: "";
+            height: 22px;
+            width: 22px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+        
+        .toggle-switch input:checked + label {
+            background-color: var(--primary);
+        }
+        
+        .toggle-switch input:checked + label:before {
+            transform: translateX(30px);
         }
 
         /* 自定义下拉选择组件样式 */
@@ -3643,7 +3691,7 @@
                     </button>
                     <div style="display: flex; gap: 8px; margin-top: 8px;">
                         <button class="login-action-btn" id="profileSyncBtn" onclick="syncUserData()" style="display: none;">
-                            <i class="fas fa-sync"></i> 同步数据
+                            <i class="fas fa-sync"></i> 数据上传
                         </button>
                         <button class="login-action-btn logout" id="profileLogoutBtn" onclick="logout()" style="display: none;">
                             <i class="fas fa-sign-out-alt"></i> 退出登录
@@ -3751,6 +3799,14 @@
                     <div class="settings-label">B站API搜索数量</div>
                     <input type="number" class="settings-input" id="biliPageSizeInput" min="1" max="50" value="20">
                     <p class="settings-hint">B站API每次搜索返回的歌曲数量，最大50</p>
+                </div>
+                <div class="settings-group">
+                    <div class="settings-label">导航栏显示文本</div>
+                    <div class="toggle-switch">
+                        <input type="checkbox" id="navbarTextToggle">
+                        <label for="navbarTextToggle"></label>
+                    </div>
+                    <p class="settings-hint">控制导航栏是否显示图标下方的文本</p>
                 </div>
                 <div class="settings-group">
                     <div class="settings-label">默认页面</div>
@@ -4477,6 +4533,21 @@
             switchPage('profile');
         }
 
+        // 导航栏文本显示控制
+        function updateNavbarTextVisibility() {
+            const showText = getStorageItem('navbarShowText', 'true') === 'true';
+            const navbarItems = document.querySelectorAll('.navbar-item span');
+            navbarItems.forEach(span => {
+                span.style.display = showText ? 'block' : 'none';
+            });
+            
+            // 更新开关状态
+            const navbarTextToggle = document.getElementById('navbarTextToggle');
+            if (navbarTextToggle) {
+                navbarTextToggle.checked = showText;
+            }
+        }
+
         // 绑定登录页面事件（在DOM加载完成后）
         document.addEventListener('DOMContentLoaded', function() {
             const toSignupBtn = document.getElementById('toSignup');
@@ -4508,6 +4579,20 @@
 
             // 初始化登录状态
             updateLoginStatus();
+            
+            // 初始化导航栏文本显示
+            updateNavbarTextVisibility();
+            
+            // 绑定导航栏文本开关事件
+            const navbarTextToggle = document.getElementById('navbarTextToggle');
+            if (navbarTextToggle) {
+                navbarTextToggle.addEventListener('change', function() {
+                    const showText = this.checked;
+                    setStorageItem('navbarShowText', showText.toString());
+                    updateNavbarTextVisibility();
+                    showToast('导航栏文本显示设置已保存', 'success');
+                });
+            }
             
             // 默认页面数据同步
             const isLoggedIn = localStorage.getItem('userLoggedIn') === 'true';
@@ -4888,13 +4973,17 @@
                 // 检查是否是 B 站的 .m4s 格式
                 const isBiliM4s = song.url.toLowerCase().includes('.m4s');
                 
-                // 对于 B 站的 .m4s 格式，尝试使用不同的方法处理
+                // 对于 B 站的 .m4s 格式，使用 CORS 代理
                 if (isBiliM4s) {
-                    // 尝试使用 Audio 对象直接加载
-                    const audio = new Audio(song.url);
+                    // 使用 CORS 代理服务器
+                    const proxyUrl = 'https://api.allorigins.win/raw?url=';
+                    const proxiedUrl = proxyUrl + encodeURIComponent(song.url);
+                    
+                    // 尝试使用代理加载
+                    const audio = new Audio(proxiedUrl);
                     audio.addEventListener('canplay', () => {
                         // 替换当前音频元素的 src
-                        this.audioElement.src = song.url;
+                        this.audioElement.src = proxiedUrl;
                         this.audioElement.load();
                         this.audioElement.play().catch(() => {
                             if (retryCount < 3) {
