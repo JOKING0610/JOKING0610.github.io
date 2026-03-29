@@ -19,14 +19,20 @@
           crossorigin="anonymous" 
           referrerpolicy="no-referrer">
     
+    <!-- Supabase JS SDK -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    
     <!-- Google Fonts with display=swap -->
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
     <script>
-        const savedTheme = localStorage.getItem('theme');
-        // 默认使用深色主题，除非用户明确选择了浅色
-        if (savedTheme !== 'light') {
-            document.documentElement.classList.add('dark-theme');
-        }
+        // 延迟获取主题，确保getStorageItem函数已定义
+        setTimeout(() => {
+            const savedTheme = getStorageItem('theme');
+            // 默认使用深色主题，除非用户明确选择了浅色
+            if (savedTheme !== 'light') {
+                document.documentElement.classList.add('dark-theme');
+            }
+        }, 100);
     </script>
     <style>
         :root {
@@ -1709,6 +1715,49 @@
             color: var(--text-secondary);
         }
 
+        .login-action-btn {
+            margin-top: 8px;
+            padding: 10px 24px;
+            background: var(--primary);
+            color: var(--bg);
+            border: none;
+            border-radius: 100px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.25s ease;
+            box-shadow: var(--shadow-md);
+        }
+
+        .login-action-btn:hover {
+            background: var(--primary-hover);
+            box-shadow: var(--shadow-lg);
+            transform: translateY(-2px);
+        }
+
+        .login-action-btn:active {
+            transform: translateY(0);
+        }
+
+        .login-action-btn.logout {
+            background: var(--surface);
+            color: var(--text);
+            border: 1px solid var(--border);
+        }
+
+        .login-action-btn.logout:hover {
+            background: var(--error);
+            color: white;
+            border-color: var(--error);
+        }
+
+
+
+
+
         .stats-section {
             margin-bottom: 32px;
         }
@@ -2807,6 +2856,436 @@
                 font-size: 12px;
             }
         }
+
+        /* ── 登录页面样式 ── */
+        .login-page {
+            position: fixed;
+            inset: 0;
+            background: var(--bg);
+            z-index: 200;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            overflow: auto;
+        }
+
+        .login-page.show {
+            display: flex;
+        }
+
+        .auth-box {
+            width: min(880px, 96vw);
+            height: clamp(400px, 80vh, 560px);
+            border-radius: clamp(16px, 2.5vw, 28px);
+            background: var(--surface);
+            border: 1px solid var(--border);
+            box-shadow: var(--shadow-lg);
+            overflow: hidden;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* 分割线跟随面板边界动画 */
+        .auth-box::after {
+            content: "";
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            left: 60%;
+            width: 1px;
+            background: var(--border);
+            z-index: 10;
+            pointer-events: none;
+            transition: left 0.72s cubic-bezier(0.65, 0, 0.35, 1);
+        }
+
+        .auth-box.signup-mode::after {
+            left: 40%;
+        }
+
+        /* 面板A：表单面板 60%（层级低） */
+        .panel {
+            position: absolute;
+            top: 0;
+            height: 100%;
+            transition: left 0.72s cubic-bezier(0.65, 0, 0.35, 1);
+        }
+
+        .pA {
+            left: 0;
+            width: 60%;
+            background: var(--surface);
+            box-shadow: inset -8px 0 24px rgba(0, 0, 0, 0.05);
+            z-index: 1;
+        }
+
+        .auth-box.signup-mode .pA {
+            left: 40%;
+        }
+
+        /* 面板B：覆盖层 40%（层级高，滑过时遮住 pA） */
+        .pB {
+            left: 60%;
+            width: 40%;
+            background: var(--surface-elevated);
+            z-index: 3;
+            overflow: hidden;
+        }
+
+        .auth-box.signup-mode .pB {
+            left: 0;
+        }
+
+        /* 拟态装饰圆 */
+        .d1 {
+            position: absolute;
+            width: 230px;
+            height: 230px;
+            border-radius: 50%;
+            background: var(--surface);
+            box-shadow: var(--shadow-md);
+            top: -95px;
+            right: -85px;
+            pointer-events: none;
+        }
+
+        .d2 {
+            position: absolute;
+            width: 210px;
+            height: 210px;
+            border-radius: 50%;
+            background: var(--surface);
+            box-shadow: var(--shadow-md);
+            bottom: -85px;
+            left: -75px;
+            pointer-events: none;
+        }
+
+        /* 面板内容 */
+        .p-inner {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: clamp(20px, 4.5vh, 48px) clamp(18px, 4.5vw, 52px);
+        }
+
+        .pA-reg {
+            display: none;
+        }
+
+        .pA.show-reg .pA-login {
+            display: none;
+        }
+
+        .pA.show-reg .pA-reg {
+            display: flex;
+        }
+
+        .pB-hello,
+        .pB-welcome {
+            text-align: center;
+            padding: clamp(20px, 4.5vh, 52px) clamp(14px, 3.5vw, 40px);
+            transition: opacity 0.18s ease;
+        }
+
+        .pB-welcome {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .pB.show-welcome .pB-hello {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .pB.show-welcome .pB-welcome {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        /* 表单元素 */
+        .fp-title {
+            font-size: clamp(17px, 2.6vw, 26px);
+            font-weight: 700;
+            color: var(--text);
+            letter-spacing: 0.18em;
+            margin-bottom: clamp(12px, 2.5vh, 22px);
+            white-space: nowrap;
+        }
+
+        .social-row {
+            display: flex;
+            gap: clamp(8px, 1.2vw, 14px);
+            margin-bottom: clamp(6px, 1vh, 10px);
+        }
+
+        .s-icon {
+            width: clamp(34px, 4.2vw, 44px);
+            height: clamp(34px, 4.2vw, 44px);
+            border-radius: 50%;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: var(--shadow-sm);
+            transition: all 0.22s;
+        }
+
+        .s-icon svg {
+            width: 20px;
+            height: 20px;
+            opacity: 0.4;
+            transition: opacity 0.22s;
+        }
+
+        .s-icon:hover {
+            box-shadow: var(--shadow-md);
+            transform: translateY(-2px);
+        }
+
+        .s-icon:hover svg {
+            opacity: 0.7;
+        }
+
+        .s-icon.active {
+            box-shadow: inset 2px 2px 5px rgba(0, 0, 0, 0.1);
+            border-color: var(--primary);
+        }
+
+        .s-icon.active svg {
+            opacity: 1;
+        }
+
+        .social-hint {
+            font-size: 11px;
+            color: var(--text-secondary);
+            letter-spacing: 0.05em;
+            margin-bottom: clamp(10px, 2vh, 20px);
+        }
+
+        .field {
+            width: 100%;
+            margin-bottom: clamp(6px, 1.3vh, 12px);
+        }
+
+        .field input {
+            width: 100%;
+            background: var(--bg);
+            border: 1.5px solid var(--border);
+            border-radius: 10px;
+            padding: clamp(9px, 1.8vh, 13px) 16px;
+            font-family: inherit;
+            font-size: clamp(13px, 1.5vw, 14px);
+            color: var(--text);
+            outline: none;
+            box-shadow: var(--shadow-sm);
+            transition: all 0.25s;
+        }
+
+        .field input::placeholder {
+            color: var(--text-tertiary);
+        }
+
+        .field input:focus {
+            border-color: var(--primary);
+            background: var(--surface);
+            box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.04);
+        }
+
+        .forgot {
+            font-size: 12px;
+            color: var(--text-secondary);
+            text-decoration: underline;
+            text-underline-offset: 3px;
+            cursor: pointer;
+            margin: 2px 0 clamp(12px, 2vh, 20px);
+            align-self: center;
+            transition: color 0.2s;
+        }
+
+        .forgot:hover {
+            color: var(--primary);
+        }
+
+        /* 拟态蓝色按钮 */
+        .btn-blue {
+            padding: clamp(10px, 1.8vh, 13px) clamp(22px, 3.5vw, 48px);
+            border-radius: 100px;
+            border: none;
+            cursor: pointer;
+            font-family: inherit;
+            font-size: 12px;
+            font-weight: 700;
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+            background: var(--primary);
+            color: var(--bg);
+            box-shadow: var(--shadow-md);
+            transition: all 0.25s;
+            position: relative;
+            z-index: 1;
+        }
+
+        .btn-blue:hover {
+            background: var(--primary-hover);
+            box-shadow: var(--shadow-lg);
+            transform: translateY(-1px);
+        }
+
+        .btn-blue:active {
+            transform: translateY(0);
+        }
+
+        .btn-full {
+            width: 100%;
+            text-align: center;
+        }
+
+        /* 覆盖层文字 */
+        .o-title {
+            font-size: clamp(17px, 2.6vw, 26px);
+            font-weight: 700;
+            color: var(--text);
+            letter-spacing: 0.02em;
+            margin-bottom: clamp(10px, 1.5vh, 14px);
+            position: relative;
+            z-index: 1;
+        }
+
+        .o-sub {
+            font-size: clamp(11px, 1.3vw, 13px);
+            color: var(--text-secondary);
+            line-height: 1.85;
+            margin-bottom: clamp(18px, 3.5vh, 36px);
+            max-width: 210px;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* 关闭按钮 */
+        .login-close {
+            position: absolute;
+            top: 16px;
+            right: 16px;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            color: var(--text-secondary);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+            z-index: 100;
+        }
+
+        .login-close:hover {
+            background: var(--border);
+            color: var(--text);
+        }
+
+        /* 移动端 */
+        .mobile-nav {
+            display: none;
+        }
+
+        @media (max-width: 640px) {
+            .login-page {
+                padding: 12px;
+            }
+
+            .auth-box {
+                height: auto;
+                border-radius: 20px;
+                overflow: visible;
+                width: 92vw;
+            }
+
+            .auth-box::after {
+                display: none;
+            }
+
+            .panel {
+                position: relative;
+                left: 0 !important;
+                width: 100% !important;
+                height: auto;
+                transition: none !important;
+                background: transparent !important;
+                box-shadow: none !important;
+            }
+
+            .p-inner {
+                position: relative;
+                inset: auto;
+                padding: 32px 24px;
+            }
+
+            .pB-hello,
+            .pB-welcome {
+                position: relative;
+                inset: auto;
+            }
+
+            .pB {
+                display: none !important;
+            }
+
+            .auth-box:not(.signup-mode) .pA-reg {
+                display: none !important;
+            }
+
+            .auth-box.signup-mode .pA-login {
+                display: none !important;
+            }
+
+            .auth-box.signup-mode .pA-reg {
+                display: flex !important;
+            }
+
+            /* 移动端顶部 Tab */
+            .mobile-nav {
+                display: flex;
+                background: var(--surface);
+                border-radius: 20px 20px 0 0;
+                overflow: hidden;
+                border-bottom: 1px solid var(--border);
+            }
+
+            .m-tab {
+                flex: 1;
+                padding: 14px;
+                text-align: center;
+                font-size: 13px;
+                font-weight: 700;
+                letter-spacing: 0.1em;
+                text-transform: uppercase;
+                color: var(--text-secondary);
+                cursor: pointer;
+                border-bottom: 2px solid transparent;
+                margin-bottom: -1px;
+                transition: all 0.2s;
+            }
+
+            .auth-box:not(.signup-mode) .m-tab-si,
+            .auth-box.signup-mode .m-tab-su {
+                color: var(--primary);
+                border-bottom-color: var(--primary);
+            }
+
+            .fp-title {
+                white-space: normal;
+                text-align: center;
+            }
+        }
     </style>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
@@ -2818,22 +3297,30 @@
         });
 
         // 为元素设置无缝滚动效果
+        // 修改 initMarquee 函数，增加可见性检测
         function initMarquee(element) {
             if (element._marqueeActive) return;
 
             const parent = element.parentElement;
             if (!parent) return;
 
+            // 关键：检查元素是否可见（display不为none且offsetParent不为null）
+            const isVisible = !!(element.offsetParent || element.getClientRects().length);
+            if (!isVisible) {
+                // 标记为待处理，等待页面显示后再初始化
+                element._pendingMarquee = true;
+                return;
+            }
+
             // 保存原始文本
             const originalText = element.textContent;
             
-            // 批量获取计算样式，减少重排
+            // 获取样式
             const computedStyle = window.getComputedStyle(element);
             const fontSize = computedStyle.fontSize;
             const fontFamily = computedStyle.fontFamily;
             const fontWeight = computedStyle.fontWeight;
             
-            // 先检查是否需要滚动（文本宽度是否超出容器）
             // 使用临时元素测量实际文本宽度
             const tempSpan = document.createElement('span');
             tempSpan.textContent = originalText;
@@ -2842,28 +3329,24 @@
             tempSpan.style.fontFamily = fontFamily;
             tempSpan.style.fontWeight = fontWeight;
             
-            // 使用DocumentFragment减少重排
-            const fragment = document.createDocumentFragment();
-            fragment.appendChild(tempSpan);
-            document.body.appendChild(fragment);
-            
+            document.body.appendChild(tempSpan);
             const textWidth = tempSpan.offsetWidth;
             document.body.removeChild(tempSpan);
             
-            // 获取父容器可用宽度
+            // 获取父容器可用宽度（确保容器可见）
             const containerWidth = parent.clientWidth;
             
             // 如果文本未超出容器，不启用滚动
             if (textWidth <= containerWidth) {
                 element._marqueeActive = true;
+                delete element._pendingMarquee;
                 return;
             }
             
-            // 创建容器和文本节点，使用DocumentFragment批量操作
+            // 创建滚动容器和文本节点
             const container = document.createElement('div');
             container.className = 'marquee-container';
             
-            // 创建两个文本节点
             const text1 = document.createElement('span');
             text1.textContent = originalText;
             text1.style.marginRight = '30px';
@@ -2871,38 +3354,34 @@
             const text2 = document.createElement('span');
             text2.textContent = originalText;
             
-            // 批量添加到容器
             container.appendChild(text1);
             container.appendChild(text2);
             
-            // 一次性清空并添加新内容
+            // 清空原元素并添加滚动容器
             element.innerHTML = '';
             element.appendChild(container);
 
-            // 计算滚动宽度（文本宽度 + 间距）
+            // 计算滚动宽度
             const contentWidth = textWidth + 30;
 
-            // 启动动画
             let scrollPos = 0;
-            const step = 0.5; 
+            const step = 0.5;
 
             function animate() {
                 scrollPos += step;
                 if (scrollPos >= contentWidth) {
-                    scrollPos = 0;      // 重置时无缝衔接
+                    scrollPos = 0;
                 }
                 container.style.transform = `translateX(-${scrollPos}px)`;
                 requestAnimationFrame(animate);
             }
 
-            // 自动启动动画
             requestAnimationFrame(animate);
-
-            // 标记元素为已处理
             element._marqueeActive = true;
+            delete element._pendingMarquee;
         }
 
-        // 初始化所有需要滚动的元素
+        // 修改 initAllMarquee，只处理可见元素
         function initAllMarquee() {
             const selectors = [
                 '.song-title', '.song-artist',
@@ -2911,11 +3390,18 @@
                 '.playlist-item-title', '.playlist-item-artist'
             ];
             document.querySelectorAll(selectors.join(',')).forEach(el => {
-                if (!el._marqueeActive) initMarquee(el);
+                // 如果已经初始化过且标记为活跃，则跳过
+                if (el._marqueeActive) return;
+                // 如果元素当前不可见，标记待处理，不初始化
+                if (!el.offsetParent && !el.getClientRects().length) {
+                    el._pendingMarquee = true;
+                    return;
+                }
+                initMarquee(el);
             });
         }
 
-        // 在动态添加内容后刷新滚动绑定
+        // 修改 refreshMarquee，增加清理和重试逻辑
         function refreshMarquee() {
             const selectors = [
                 '.song-title', '.song-artist',
@@ -2924,7 +3410,37 @@
                 '.playlist-item-title', '.playlist-item-artist'
             ];
             document.querySelectorAll(selectors.join(',')).forEach(el => {
+                // 如果之前有滚动容器，恢复原始内容
+                const container = el.querySelector('.marquee-container');
+                if (container) {
+                    const originalText = container.querySelector('span')?.textContent || el.textContent;
+                    el.innerHTML = originalText;
+                }
+                // 重置标记
                 delete el._marqueeActive;
+                delete el._pendingMarquee;
+                // 重新初始化（此时元素可能不可见，initMarquee会处理）
+                initMarquee(el);
+            });
+        }
+
+        // 新增：针对指定容器刷新滚动（用于页面切换后）
+        function refreshMarqueeInContainer(container) {
+            const selectors = [
+                '.song-title', '.song-artist',
+                '.player-title', '.player-artist',
+                '.recent-title', '.recent-artist',
+                '.playlist-item-title', '.playlist-item-artist'
+            ];
+            container.querySelectorAll(selectors.join(',')).forEach(el => {
+                // 如果之前有滚动容器，恢复原始内容
+                const containerDiv = el.querySelector('.marquee-container');
+                if (containerDiv) {
+                    const originalText = containerDiv.querySelector('span')?.textContent || el.textContent;
+                    el.innerHTML = originalText;
+                }
+                delete el._marqueeActive;
+                delete el._pendingMarquee;
                 initMarquee(el);
             });
         }
@@ -2935,7 +3451,10 @@
             // 防抖处理，避免频繁触发
             clearTimeout(resizeTimeout);
             resizeTimeout = setTimeout(() => {
-                // 获取所有可能的文本元素
+                // 优化：只处理可见页面的元素
+                const visiblePages = document.querySelectorAll('.page[style*="display: block"]');
+                if (visiblePages.length === 0) return;
+                
                 const selectors = [
                     '.song-title', '.song-artist',
                     '.player-title', '.player-artist',
@@ -2943,18 +3462,22 @@
                     '.playlist-item-title', '.playlist-item-artist'
                 ];
                 
-                document.querySelectorAll(selectors.join(',')).forEach(el => {
-                    // 恢复原始内容（如果之前有滚动容器）
-                    const container = el.querySelector('.marquee-container');
-                    if (container) {
-                        // 获取原始文本（第一个span的内容）
-                        const originalText = container.querySelector('span')?.textContent || el.textContent;
-                        el.innerHTML = originalText;
-                    }
-                    
-                    // 重置标记并重新初始化
-                    delete el._marqueeActive;
-                    initMarquee(el);
+                // 只处理可见页面内的元素
+                visiblePages.forEach(page => {
+                    page.querySelectorAll(selectors.join(',')).forEach(el => {
+                        // 恢复原始内容（如果之前有滚动容器）
+                        const container = el.querySelector('.marquee-container');
+                        if (container) {
+                            // 获取原始文本（第一个span的内容）
+                            const originalText = container.querySelector('span')?.textContent || el.textContent;
+                            el.innerHTML = originalText;
+                        }
+                        
+                        // 重置标记并重新初始化
+                        delete el._marqueeActive;
+                        delete el._pendingMarquee;
+                        initMarquee(el);
+                    });
                 });
             }, 250); // 250ms防抖延迟
         });
@@ -3000,7 +3523,7 @@
                         </div>
                         <h3 class="feature-title">个人中心</h3>
                         <p class="feature-description">查看播放历史和歌单</p>
-                        <button class="feature-btn" onclick="switchPage('profile')">进入</button>
+                        <button class="feature-btn" onclick="handleProfileClick(event)">进入</button>
                     </div>
                 </div>
             </div>
@@ -3110,11 +3633,22 @@
         <div class="page" id="profilePage" style="display: none;">
             <div class="profile-header">
                 <div class="profile-info">
-                    <div class="profile-avatar">
-                        <i class="fas fa-music"></i>
+                    <div class="profile-avatar" id="profileAvatar">
+                        <i class="fas fa-user"></i>
                     </div>
-                    <h2 class="profile-name">音乐旅人</h2>
-                    <p class="profile-desc">乐在其中 · 自有回响</p>
+                    <h2 class="profile-name" id="profileName">访客</h2>
+                    <p class="profile-desc" id="profileDesc">登录以同步您的音乐数据</p>
+                    <button class="login-action-btn" id="profileLoginBtn" onclick="openLoginPage()">
+                        <i class="fas fa-sign-in-alt"></i> 登录 / 注册
+                    </button>
+                    <div style="display: flex; gap: 8px; margin-top: 8px;">
+                        <button class="login-action-btn" id="profileSyncBtn" onclick="syncUserData()" style="display: none;">
+                            <i class="fas fa-sync"></i> 同步数据
+                        </button>
+                        <button class="login-action-btn logout" id="profileLogoutBtn" onclick="logout()" style="display: none;">
+                            <i class="fas fa-sign-out-alt"></i> 退出登录
+                        </button>
+                    </div>
                 </div>
             </div>
 
@@ -3158,36 +3692,11 @@
                 </div>
             </div>
 
-            <div class="section">
-                <div class="section-header">
-                    <h3 class="section-title"><i class="fas fa-music"></i> 我的歌单</h3>
-                    <a href="#" class="section-more">查看全部</a>
-                </div>
-                <div class="playlist-list" id="myPlaylistList">
-                    <div class="empty-state">
-                        <i class="fas fa-music"></i>
-                        <p>暂无歌单</p>
-                    </div>
-                </div>
-            </div>
 
-            <div class="section">
-                <div class="section-header">
-                    <h3 class="section-title">探索</h3>
-                </div>
-                <div class="settings-list">
-                    <div class="setting-item" id="goSettings">
-                        <i class="fas fa-cog setting-icon"></i>
-                        <span class="setting-label">偏好设置</span>
-                        <i class="fas fa-chevron-right setting-arrow"></i>
-                    </div>
-                    <div class="setting-item" id="aboutApp">
-                        <i class="fas fa-info-circle setting-icon"></i>
-                        <span class="setting-label">关于零柒零音乐</span>
-                        <i class="fas fa-chevron-right setting-arrow"></i>
-                    </div>
-                </div>
-            </div>
+
+
+
+
         </div>
 
         <!-- 设置页面 -->
@@ -3381,6 +3890,79 @@
 
     <audio id="audioPlayer"></audio>
 
+    <!-- 登录页面 -->
+    <div class="login-page" id="loginPage">
+        <div class="auth-box" id="authBox">
+            <button class="login-close" onclick="closeLoginPage()" title="关闭">
+                <i class="fas fa-times"></i>
+            </button>
+            <!-- 移动端 Tab -->
+            <div class="mobile-nav">
+                <div class="m-tab m-tab-si" id="mSi">登录</div>
+                <div class="m-tab m-tab-su" id="mSu">注册</div>
+            </div>
+
+            <!-- 面板A：表单面板 -->
+            <div class="panel pA" id="pA">
+                <!-- 登录表单 -->
+                <div class="p-inner pA-login">
+                    <div class="fp-title">登 入 账 号</div>
+
+
+                    <div class="field">
+                        <input type="text" id="loginUsername" placeholder="用户名" autocomplete="username">
+                    </div>
+                    <div class="field">
+                        <input type="password" id="loginPassword" placeholder="密码" autocomplete="current-password">
+                    </div>
+                    <span class="forgot">忘记密码?</span>
+                    <button class="btn-blue btn-full" onclick="handleLogin()">SIGN IN</button>
+                </div>
+
+                <!-- 注册表单 -->
+                <div class="p-inner pA-reg">
+                    <div class="fp-title">创 建 账 号</div>
+
+
+                    <div class="field">
+                        <input type="text" id="regUsername" placeholder="用户名" autocomplete="off">
+                    </div>
+                    <div class="field">
+                        <input type="password" id="regPassword" placeholder="密码 (至少6位)" autocomplete="new-password">
+                    </div>
+                    <div class="field">
+                        <input type="password" id="regConfirmPwd" placeholder="确认密码" autocomplete="off">
+                    </div>
+                    <button class="btn-blue btn-full" onclick="handleRegister()" style="margin-top: 6px">SIGN UP</button>
+                </div>
+            </div>
+
+            <!-- 面板B：覆盖层 -->
+            <div class="panel pB" id="pB">
+                <div class="d1"></div>
+                <div class="d2"></div>
+
+                <!-- Hello Friend（登录模式） -->
+                <div class="p-inner pB-hello">
+                    <div class="o-title">Hello Friend！</div>
+                    <div class="o-sub">
+                        去注册一个账号，成为尊贵的会员，享受数据同步服务！
+                    </div>
+                    <button class="btn-blue" id="toSignup">SIGN UP</button>
+                </div>
+
+                <!-- Welcome Back（注册模式） -->
+                <div class="p-inner pB-welcome">
+                    <div class="o-title">Welcome Back！</div>
+                    <div class="o-sub">
+                        已经有账号了嘛，去登入账号来进入奇妙世界吧！！！
+                    </div>
+                    <button class="btn-blue" id="toSignin">SIGN IN</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <div class="navbar" id="navbar">
         <div class="navbar-pill" id="navbarPill"></div>
         <a href="#" class="navbar-item" id="navHome" data-i="0">
@@ -3399,7 +3981,7 @@
                 <i class="fas fa-cog"></i>
                 <span>设置</span>
             </a>
-            <a href="#" class="navbar-item" id="navProfile" data-i="4">
+            <a href="#" class="navbar-item" id="navProfile" data-i="4" onclick="handleProfileClick(event)">
                 <i class="fas fa-user-astronaut"></i>
                 <span>我的</span>
             </a>
@@ -3407,10 +3989,575 @@
 
     <script>
         const API_BASE = 'https://yunzhiapi.cn/API';
+
+        // ── 登录页面功能 ──
+        const authBox = document.getElementById('authBox');
+        const pA = document.getElementById('pA');
+        const pB = document.getElementById('pB');
+
+        // ---------- Supabase 配置 ----------
+        const SUPABASE_URL = "https://yeogthpysbqgehjkayaf.supabase.co";
+        const SUPABASE_ANON_KEY = "sb_publishable_WoO50Mbz0Rhfy0nPugE3vA_5UP__SYX";
         
+        let supabaseClient = null;
+        let clientInitialized = false;
+
+        // 初始化 Supabase 客户端
+        function initSupabase() {
+            if (clientInitialized) return;
+            
+            try {
+                if (SUPABASE_URL && SUPABASE_URL !== "https://你的项目.supabase.co" && SUPABASE_ANON_KEY && SUPABASE_ANON_KEY !== "你的anon密钥") {
+                    // 配置 Supabase 客户端，禁用存储以避免跟踪防护阻止
+                    supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+                        auth: {
+                            storageKey: null, // 禁用存储
+                            autoRefreshToken: false, // 禁用自动刷新令牌
+                            persistSession: false, // 禁用会话持久化
+                        },
+                        global: {
+                            headers: {
+                                'X-Client-Info': 'zero-seven-zero-music'
+                            }
+                        }
+                    });
+                    clientInitialized = true;
+                } else {
+                    throw new Error("Supabase 未配置，请填写正确的URL和密钥");
+                }
+            } catch(e) {
+                console.error("Supabase 初始化失败", e);
+                throw e;
+            }
+        }
+
+        const STORAGE_KEY = "vipUser";  // 存储键名
+
+        function saveUser(user) {
+            if (user) {
+                localStorage.setItem(STORAGE_KEY, JSON.stringify({ id: user.id, username: user.username }));
+                localStorage.setItem('userLoggedIn', 'true');
+                localStorage.setItem('username', user.username);
+            } else {
+                localStorage.removeItem(STORAGE_KEY);
+                localStorage.removeItem('userLoggedIn');
+                localStorage.removeItem('username');
+            }
+            updateLoginStatus();
+        }
+
+        function getCurrentUser() {
+            const stored = localStorage.getItem(STORAGE_KEY);
+            if (stored) return JSON.parse(stored);
+            return null;
+        }
+
+        const DURATION = 720;
+        let busy = false, timer;
+
+        // 打开登录页面
+        function openLoginPage() {
+            document.getElementById('loginPage').classList.add('show');
+            document.body.style.overflow = 'hidden';
+        }
+
+        // ---------- 注册（调用 create_vip_user） ----------
+        async function vipSignup(username, password, confirmPwd) {
+            // 初始化 Supabase 客户端（仅在需要时）
+            initSupabase();
+            
+            const uname = username.trim();
+            if (!uname) throw new Error("用户名不能为空");
+            if (uname.length < 2) throw new Error("用户名至少2个字符");
+            if (!password) throw new Error("密码不能为空");
+            if (password.length < 6) throw new Error("密码长度至少6位");
+            if (password !== confirmPwd) throw new Error("两次输入的密码不一致");
+
+            const { data, error } = await supabaseClient.rpc('create_vip_user', {
+                _username: uname,
+                _password: password
+            });
+
+            if (error) throw new Error(error.message);
+            if (!data || !data.success) throw new Error(data.error || "注册失败");
+            return data;
+        }
+
+        // ---------- 登录（调用 verify_vip_user） ----------
+        async function vipLogin(username, password) {
+            // 初始化 Supabase 客户端（仅在需要时）
+            initSupabase();
+            
+            if (!username.trim() || !password.trim()) throw new Error("用户名和密码都不能为空");
+
+            const { data, error } = await supabaseClient.rpc('verify_vip_user', {
+                _username: username.trim(),
+                _password: password
+            });
+
+            if (error) throw new Error(error.message);
+            if (!data || !data.success) throw new Error(data.error || "登录失败");
+
+            // 存储用户信息
+            saveUser({ id: data.user_id, username: data.username });
+
+            // 获取用户的同步数据
+            try {
+                // 确保用户ID是字符串格式
+                const userIdStr = String(data.user_id);
+                const { data: syncResponse, error: syncError } = await supabaseClient.rpc('get_user_sync_data', {
+                    _user_id: userIdStr
+                });
+
+                if (!syncError && syncResponse && syncResponse.success && syncResponse.data) {
+                    const syncData = syncResponse.data;
+                    // 处理 token 数据
+                    if (syncData.token) {
+                        yunzhiToken = syncData.token;
+                        setStorageItem('yunzhi_token', yunzhiToken);
+                        showToast('已自动配置网易云API Token', 'success');
+                    }
+                    
+                    // 处理其他同步数据
+                    if (syncData.total_plays) {
+                        setStorageItem('playbackCount', syncData.total_plays);
+                    }
+                    if (syncData.play_history) {
+                        setStorageItem('playbackHistory', JSON.stringify(syncData.play_history));
+                    }
+                    if (syncData.search_history) {
+                        setStorageItem('searchHistory', JSON.stringify(syncData.search_history));
+                    }
+                    if (syncData.theme) {
+                        setStorageItem('theme', syncData.theme);
+                        document.documentElement.setAttribute('data-theme', syncData.theme);
+                    }
+                    if (syncData.total_play_time) {
+                        setStorageItem('playbackDuration', syncData.total_play_time);
+                    }
+                    if (syncData.wy_page_size) {
+                        setStorageItem('wyPageSize', syncData.wy_page_size);
+                    }
+                    if (syncData.bili_page_size) {
+                        setStorageItem('biliPageSize', syncData.bili_page_size);
+                    }
+                } else if (syncError) {
+                    console.error('获取同步数据失败:', syncError);
+                }
+            } catch (error) {
+                console.error('获取同步数据时出错:', error);
+                // 不影响登录流程，继续执行
+            }
+
+            return data;
+        }
+
+        // 关闭登录页面
+        function closeLoginPage() {
+            document.getElementById('loginPage').classList.remove('show');
+            document.body.style.overflow = '';
+        }
+
+        // 切换登录/注册面板
+        function go(toSignup) {
+            if (busy) return;
+            busy = true;
+            clearTimeout(timer);
+            authBox.classList.toggle('signup-mode', toSignup);
+            timer = setTimeout(() => {
+                pA.classList.toggle('show-reg', toSignup);
+                pB.classList.toggle('show-welcome', toSignup);
+            }, DURATION / 2);
+            setTimeout(() => {
+                busy = false;
+            }, DURATION);
+        }
+
+        // 登录功能
+        async function handleLogin() {
+            const username = document.getElementById('loginUsername').value.trim();
+            const password = document.getElementById('loginPassword').value.trim();
+
+            if (!username || !password) {
+                showToast('请输入用户名和密码', 'error');
+                return;
+            }
+
+            try {
+                await vipLogin(username, password);
+                showToast('登录成功！', 'success');
+                closeLoginPage();
+                updateLoginStatus();
+                // 登录成功后获取用户数据
+                fetchUserData();
+            } catch (error) {
+                showToast(error.message, 'error');
+            }
+        }
+
+        // 注册功能
+        async function handleRegister() {
+            const username = document.getElementById('regUsername').value.trim();
+            const password = document.getElementById('regPassword').value.trim();
+            const confirmPwd = document.getElementById('regConfirmPwd').value.trim();
+
+            if (!username || !password || !confirmPwd) {
+                showToast('请填写所有字段', 'error');
+                return;
+            }
+
+            if (password !== confirmPwd) {
+                showToast('两次输入的密码不一致', 'error');
+                return;
+            }
+
+            try {
+                await vipSignup(username, password, confirmPwd);
+                showToast('注册成功！请登录', 'success');
+                // 清空表单
+                document.getElementById('regUsername').value = '';
+                document.getElementById('regPassword').value = '';
+                document.getElementById('regConfirmPwd').value = '';
+                go(false); // 切换到登录面板
+            } catch (error) {
+                showToast(error.message, 'error');
+            }
+        }
+
+        // 更新登录状态显示
+        function updateLoginStatus() {
+            const isLoggedIn = localStorage.getItem('userLoggedIn') === 'true';
+            const username = localStorage.getItem('username');
+            const navProfile = document.getElementById('navProfile');
+
+            // 更新导航栏
+            if (navProfile) {
+                const span = navProfile.querySelector('span');
+                if (isLoggedIn && username) {
+                    span.textContent = username;
+                } else {
+                    span.textContent = '我的';
+                }
+            }
+
+            // 更新个人页面
+            const profileName = document.getElementById('profileName');
+            const profileDesc = document.getElementById('profileDesc');
+            const profileAvatar = document.getElementById('profileAvatar');
+            const profileLoginBtn = document.getElementById('profileLoginBtn');
+            const profileLogoutBtn = document.getElementById('profileLogoutBtn');
+
+            if (profileName) {
+                profileName.textContent = isLoggedIn && username ? username : '访客';
+            }
+            if (profileDesc) {
+                profileDesc.textContent = isLoggedIn ? '乐在其中 · 自有回响' : '登录以同步您的音乐数据';
+            }
+            if (profileAvatar) {
+                profileAvatar.innerHTML = isLoggedIn ? '<i class="fas fa-user-circle"></i>' : '<i class="fas fa-user"></i>';
+            }
+            if (profileLoginBtn && profileLogoutBtn) {
+                const profileSyncBtn = document.getElementById('profileSyncBtn');
+                if (isLoggedIn) {
+                    profileLoginBtn.style.display = 'none';
+                    profileLogoutBtn.style.display = 'flex';
+                    if (profileSyncBtn) {
+                        profileSyncBtn.style.display = 'flex';
+                    }
+                } else {
+                    profileLoginBtn.style.display = 'flex';
+                    profileLogoutBtn.style.display = 'none';
+                    if (profileSyncBtn) {
+                        profileSyncBtn.style.display = 'none';
+                    }
+                }
+            }
+        }
+
+        // 退出登录
+        async function logout() {
+            try {
+                // 登出前同步数据
+                await syncUserData();
+                // 清空本地数据
+                setStorageItem('playHistory', '[]');
+                setStorageItem('searchHistory', '[]');
+                localStorage.removeItem('totalPlayTime');
+                localStorage.removeItem('songDetailsCache');
+                setStorageItem('defaultPage', 'home');
+                localStorage.removeItem('wyPageSize');
+                localStorage.removeItem('biliPageSize');
+                setStorageItem('yunzhi_token', '');
+                localStorage.removeItem('theme');
+                // 重置应用数据
+                playHistory = [];
+                myPlaylists = [];
+                songDetailsCache = {};
+                defaultPage = 'home';
+                wyPageSize = 20;
+                biliPageSize = 20;
+                yunzhiToken = '';
+                currentTheme = 'dark';
+                // 保存用户状态
+                saveUser(null);
+                showToast('已退出登录并清空本地数据', 'success');
+                // 刷新页面
+                setTimeout(() => {
+                    location.reload();
+                }, 1500);
+            } catch (error) {
+                console.error('登出时出错:', error);
+                // 即使同步失败，也要继续登出流程
+                setStorageItem('playHistory', '[]');
+                setStorageItem('searchHistory', '[]');
+                localStorage.removeItem('totalPlayTime');
+                localStorage.removeItem('songDetailsCache');
+                setStorageItem('defaultPage', 'home');
+                localStorage.removeItem('wyPageSize');
+                localStorage.removeItem('biliPageSize');
+                setStorageItem('yunzhi_token', '');
+                localStorage.removeItem('theme');
+                playHistory = [];
+                myPlaylists = [];
+                songDetailsCache = {};
+                defaultPage = 'home';
+                wyPageSize = 20;
+                biliPageSize = 20;
+                yunzhiToken = '';
+                currentTheme = 'dark';
+                saveUser(null);
+                showToast('已退出登录并清空本地数据', 'success');
+                setTimeout(() => {
+                    location.reload();
+                }, 1500);
+            }
+        }
+
+        // 同步用户数据到服务器
+        async function syncUserData() {
+            try {
+                const user = getCurrentUser();
+                if (!user || !user.id) {
+                    return;
+                }
+
+                // 初始化 Supabase
+                initSupabase();
+
+                // 收集数据
+                const totalPlays = playHistory.length;
+                const totalPlayTime = parseInt(getStorageItem('totalPlayTime') || 0);
+                const theme = getStorageItem('theme') || 'dark';
+                const playHistoryData = playHistory;
+                const searchHistoryData = JSON.parse(getStorageItem('searchHistory', '[]') || '[]');
+                const wyPageSize = parseInt(getStorageItem('wyPageSize') || 20);
+                const biliPageSize = parseInt(getStorageItem('biliPageSize') || 20);
+                const token = getStorageItem('yunzhi_token') || '';
+
+                // 确保用户ID是字符串格式
+                const userIdStr = String(user.id);
+
+                const { data, error } = await supabaseClient.rpc('upsert_user_sync_data', {
+                    _user_id: userIdStr,
+                    _total_plays: totalPlays,
+                    _total_play_time: totalPlayTime,
+                    _theme: theme,
+                    _play_history: playHistoryData,
+                    _search_history: searchHistoryData,
+                    _wy_page_size: wyPageSize,
+                    _bili_page_size: biliPageSize,
+                    _token: token
+                });
+
+                if (error) {
+                    console.error('同步数据错误:', error);
+                    throw new Error(error.message || '同步数据失败');
+                }
+
+                if (data && data.success) {
+                    console.log('数据同步成功');
+                }
+            } catch (error) {
+                console.error('同步数据异常:', error);
+            }
+        }
+
+        // 从服务器获取用户数据
+        async function fetchUserData() {
+            try {
+                const user = getCurrentUser();
+                if (!user || !user.id) {
+                    return;
+                }
+
+                // 初始化 Supabase
+                initSupabase();
+
+                // 确保用户ID是字符串格式
+                const userIdStr = String(user.id);
+
+                const { data, error } = await supabaseClient.rpc('get_user_sync_data', {
+                    _user_id: userIdStr
+                });
+
+                if (error) {
+                    console.error('获取数据错误:', error);
+                    throw new Error(error.message || '获取数据失败');
+                }
+
+                if (data && data.success && data.data) {
+                    const syncData = data.data;
+
+                    // 更新本地数据
+                    if (syncData.total_play_time) {
+                        setStorageItem('totalPlayTime', syncData.total_play_time);
+                    }
+                    if (syncData.theme) {
+                        setStorageItem('theme', syncData.theme);
+                        currentTheme = syncData.theme;
+                        initTheme();
+                    }
+                    if (syncData.play_history && Array.isArray(syncData.play_history)) {
+                        playHistory = syncData.play_history;
+                        setStorageItem('playHistory', JSON.stringify(playHistory));
+                    }
+                    if (syncData.search_history && Array.isArray(syncData.search_history)) {
+                        setStorageItem('searchHistory', JSON.stringify(syncData.search_history));
+                    }
+                    if (syncData.wy_page_size) {
+                        setStorageItem('wyPageSize', syncData.wy_page_size);
+                        window.wyPageSize = syncData.wy_page_size;
+                        // 更新UI
+                        const wyPageSizeInput = document.getElementById('wyPageSizeInput');
+                        if (wyPageSizeInput) {
+                            wyPageSizeInput.value = syncData.wy_page_size;
+                        }
+                    }
+                    if (syncData.bili_page_size) {
+                        setStorageItem('biliPageSize', syncData.bili_page_size);
+                        window.biliPageSize = syncData.bili_page_size;
+                        // 更新UI
+                        const biliPageSizeInput = document.getElementById('biliPageSizeInput');
+                        if (biliPageSizeInput) {
+                            biliPageSizeInput.value = syncData.bili_page_size;
+                        }
+                    }
+                    if (syncData.token) {
+                        setStorageItem('yunzhi_token', syncData.token);
+                        window.yunzhiToken = syncData.token;
+                        // 更新UI
+                        const tokenInput = document.getElementById('tokenInput');
+                        if (tokenInput) {
+                            tokenInput.value = syncData.token;
+                        }
+                    }
+
+                    // 更新个人页面统计
+                    if (profilePage.style.display === 'block') {
+                        updateProfileStats();
+                        loadRecentPlays();
+                    }
+
+                    showToast('数据同步完成', 'success');
+                }
+            } catch (error) {
+                console.error('获取数据异常:', error);
+            }
+        }
+
+
+
+
+
+
+        // 处理"我的"按钮点击
+        function handleProfileClick(event) {
+            if (event) event.preventDefault();
+            // 直接切换到个人中心页面
+            switchPage('profile');
+        }
+
+        // 绑定登录页面事件（在DOM加载完成后）
+        document.addEventListener('DOMContentLoaded', function() {
+            const toSignupBtn = document.getElementById('toSignup');
+            const toSigninBtn = document.getElementById('toSignin');
+            const mSi = document.getElementById('mSi');
+            const mSu = document.getElementById('mSu');
+
+            if (toSignupBtn) {
+                toSignupBtn.addEventListener('click', () => showToast('联系管理员进行注册', 'info'));
+            }
+            if (toSigninBtn) {
+                toSigninBtn.addEventListener('click', () => go(false));
+            }
+            if (mSi) {
+                mSi.addEventListener('click', () => go(false));
+            }
+            if (mSu) {
+                mSu.addEventListener('click', () => showToast('联系管理员进行注册', 'info'));
+            }
+
+            // 绑定模态框事件
+            const modalOverlay = document.getElementById('modalOverlay');
+            if (modalOverlay) {
+                modalOverlay.addEventListener('click', () => {
+                    document.querySelectorAll('.modal.show').forEach(m => m.classList.remove('show'));
+                    modalOverlay.classList.remove('show');
+                });
+            }
+
+            // 初始化登录状态
+            updateLoginStatus();
+            
+            // 默认页面数据同步
+            const isLoggedIn = localStorage.getItem('userLoggedIn') === 'true';
+            if (isLoggedIn) {
+                // 延迟执行，确保页面完全加载
+                setTimeout(() => {
+                    fetchUserData();
+                }, 1000);
+            }
+            
+            // 每30秒自动上传一次数据
+            setInterval(() => {
+                const isLoggedIn = localStorage.getItem('userLoggedIn') === 'true';
+                if (isLoggedIn) {
+                    syncUserData();
+                }
+            }, 30000);
+        });
+
+        // ── 数据隔离功能 ──
+        // 获取隔离的localStorage键名
+        function getStorageKey(key) {
+            const isLoggedIn = localStorage.getItem('userLoggedIn') === 'true';
+            return isLoggedIn ? key : `guest_${key}`;
+        }
+        
+        // 安全的localStorage操作
+        function getStorageItem(key, defaultValue = null) {
+            try {
+                const storageKey = getStorageKey(key);
+                const value = localStorage.getItem(storageKey);
+                return value !== null ? value : defaultValue;
+            } catch (e) {
+                return defaultValue;
+            }
+        }
+        
+        function setStorageItem(key, value) {
+            try {
+                const storageKey = getStorageKey(key);
+                localStorage.setItem(storageKey, value);
+            } catch (e) {
+                console.error('localStorage设置失败:', e);
+            }
+        }
+        
+        // ── 原有功能 ──
         let currentPlatform = 'wy';
-        let yunzhiToken = localStorage.getItem('yunzhi_token') || '';
-        let searchHistory = JSON.parse(localStorage.getItem('searchHistory') || '[]');
+        let yunzhiToken = getStorageItem('yunzhi_token') || '';
+        let searchHistory = JSON.parse(getStorageItem('searchHistory', '[]') || '[]');
         let searchResults = {
             wy: [],
             bili: []
@@ -3422,14 +4569,14 @@
         let wyLoadMoreAttempts = 0; // 网易云加载更多尝试次数（当返回数量不足时）
         const MAX_WY_LOAD_MORE_ATTEMPTS = 2; // 最大尝试次数
         let isSearching = false; // 防止重复搜索请求
-        let wyPageSize = parseInt(localStorage.getItem('wyPageSize')) || 20;
-        let biliPageSize = parseInt(localStorage.getItem('biliPageSize')) || 20;
+        let wyPageSize = parseInt(getStorageItem('wyPageSize')) || 20;
+        let biliPageSize = parseInt(getStorageItem('biliPageSize')) || 20;
         let playlist = [];
-        let playHistory = JSON.parse(localStorage.getItem('playHistory') || '[]');
+        let playHistory = JSON.parse(getStorageItem('playHistory', '[]') || '[]');
         let myPlaylists = JSON.parse(localStorage.getItem('myPlaylists') || '[]');
         let songDetailsCache = JSON.parse(localStorage.getItem('songDetailsCache') || '{}');
-        let currentTheme = localStorage.getItem('theme') || 'dark';
-        let defaultPage = localStorage.getItem('defaultPage') || 'home';
+        let currentTheme = getStorageItem('theme') || 'dark';
+        let defaultPage = getStorageItem('defaultPage') || 'home';
         
         // API速率限制器
         const rateLimiter = {
@@ -4004,9 +5151,9 @@
         tokenInput.addEventListener('change', function() {
             yunzhiToken = this.value.trim();
             if (yunzhiToken) {
-                localStorage.setItem('yunzhi_token', yunzhiToken);
+                setStorageItem('yunzhi_token', yunzhiToken);
             } else {
-                localStorage.removeItem('yunzhi_token');
+                setStorageItem('yunzhi_token', '');
             }
             showToast('设置已保存', 'success');
         });
@@ -4018,7 +5165,7 @@
             if (value > 20) value = 20;
             this.value = value;
             wyPageSize = value;
-            localStorage.setItem('wyPageSize', value);
+            setStorageItem('wyPageSize', value);
             showToast('网易云搜索数量设置已保存', 'success');
         });
 
@@ -4029,7 +5176,7 @@
             if (value > 50) value = 50;
             this.value = value;
             biliPageSize = value;
-            localStorage.setItem('biliPageSize', value);
+            setStorageItem('biliPageSize', value);
             showToast('B站搜索数量设置已保存', 'success');
         });
 
@@ -4046,6 +5193,7 @@ biliPlaylistBtn.addEventListener('click', () => {
 });
 
         // 页面切换函数
+        // 修改 switchPage 函数，在页面显示后刷新该页面的滚动效果
         function switchPage(pageId) {
             // 隐藏所有页面
             homePage.style.display = 'none';
@@ -4054,21 +5202,26 @@ biliPlaylistBtn.addEventListener('click', () => {
             profilePage.style.display = 'none';
             settingsPage.style.display = 'none';
             
-            // 显示选中的页面
+            let activePage;
             if (pageId === 'home') {
                 homePage.style.display = 'block';
+                activePage = homePage;
             } else if (pageId === 'wy') {
                 wyPage.style.display = 'block';
+                activePage = wyPage;
             } else if (pageId === 'bili') {
                 biliPage.style.display = 'block';
+                activePage = biliPage;
             } else if (pageId === 'profile') {
                 profilePage.style.display = 'block';
+                activePage = profilePage;
                 updateProfileStats();
                 loadRecentPlays();
                 loadMyPlaylists();
+
             } else if (pageId === 'settings') {
                 settingsPage.style.display = 'block';
-                // 使用 requestAnimationFrame 确保 DOM 更新后再更新胶囊位置
+                activePage = settingsPage;
                 requestAnimationFrame(() => {
                     requestAnimationFrame(() => updateThemeToggleButtons());
                 });
@@ -4101,6 +5254,14 @@ biliPlaylistBtn.addEventListener('click', () => {
             // 更新胶囊滑块位置
             if (activeItem) {
                 moveNavbarPill(activeItem);
+            }
+            
+            // 页面显示后，刷新该页面内的滚动效果
+            if (activePage) {
+                // 使用 requestAnimationFrame 确保 DOM 渲染完成
+                requestAnimationFrame(() => {
+                    refreshMarqueeInContainer(activePage);
+                });
             }
         }
         
@@ -4163,9 +5324,12 @@ biliPlaylistBtn.addEventListener('click', () => {
         });
 
         // 个人页面设置链接
-        document.getElementById('goSettings').addEventListener('click', () => {
-            switchPage('settings');
-        });
+        const goSettingsBtn = document.getElementById('goSettings');
+        if (goSettingsBtn) {
+            goSettingsBtn.addEventListener('click', () => {
+                switchPage('settings');
+            });
+        }
 
         // 网易云搜索相关事件
 wySearchInput.addEventListener('input', function() {
@@ -4221,7 +5385,7 @@ biliSearchInput.addEventListener('keypress', (e) => {
 function loadSearchHistory(platform) {
     // 使用统一的历史记录key
     const historyKey = 'searchHistory';
-    const searchHistory = JSON.parse(localStorage.getItem(historyKey) || '[]');
+    const searchHistory = JSON.parse(getStorageItem(historyKey, '[]') || '[]');
     const historySection = platform === 'wy' ? wyHistorySection : biliHistorySection;
     const historyList = platform === 'wy' ? wyHistoryList : biliHistoryList;
     
@@ -4254,13 +5418,13 @@ function loadSearchHistory(platform) {
 function addSearchHistory(keyword, platform) {
     // 使用统一的历史记录key
     const historyKey = 'searchHistory';
-    let searchHistory = JSON.parse(localStorage.getItem(historyKey) || '[]');
+    let searchHistory = JSON.parse(getStorageItem(historyKey, '[]') || '[]');
     
     const index = searchHistory.indexOf(keyword);
     if (index > -1) searchHistory.splice(index, 1);
     searchHistory.unshift(keyword);
     if (searchHistory.length > 10) searchHistory.pop();
-    localStorage.setItem(historyKey, JSON.stringify(searchHistory));
+    setStorageItem(historyKey, JSON.stringify(searchHistory));
     // 刷新两个平台的历史记录显示
     loadSearchHistory('wy');
     loadSearchHistory('bili');
@@ -4269,7 +5433,7 @@ function addSearchHistory(keyword, platform) {
 // 清空搜索历史
 wyClearHistoryBtn.addEventListener('click', function() {
     showConfirm('确定要清空搜索历史吗？', function() {
-        localStorage.removeItem('searchHistory');
+        setStorageItem('searchHistory', '[]');
         loadSearchHistory('wy');
         loadSearchHistory('bili');
         showToast('历史记录已清空', 'success');
@@ -4278,7 +5442,7 @@ wyClearHistoryBtn.addEventListener('click', function() {
 
 biliClearHistoryBtn.addEventListener('click', function() {
     showConfirm('确定要清空搜索历史吗？', function() {
-        localStorage.removeItem('searchHistory');
+        setStorageItem('searchHistory', '[]');
         loadSearchHistory('wy');
         loadSearchHistory('bili');
         showToast('历史记录已清空', 'success');
@@ -4414,7 +5578,7 @@ biliLoadMoreBtn.addEventListener('click', () => {
                 
                 // 保存主题设置
                 currentTheme = theme;
-                localStorage.setItem('theme', theme);
+                setStorageItem('theme', theme);
                 
                 // 更新主题切换按钮状态
                 updateThemeToggleButtons();
@@ -4500,7 +5664,7 @@ biliLoadMoreBtn.addEventListener('click', () => {
             modalDefaultPageInput.value = defaultPage;
             modalDefaultPageInput.addEventListener('change', function() {
                 defaultPage = this.value;
-                localStorage.setItem('defaultPage', defaultPage);
+                setStorageItem('defaultPage', defaultPage);
                 updateDefaultPageInputs(defaultPage);
                 showToast('默认页面设置已保存', 'success');
             });
@@ -4562,7 +5726,7 @@ biliLoadMoreBtn.addEventListener('click', () => {
                 customSelect.addEventListener('change', (e) => {
                     const value = e.detail;
                     defaultPage = value;
-                    localStorage.setItem('defaultPage', defaultPage);
+                    setStorageItem('defaultPage', defaultPage);
                     updateDefaultPageInputs(defaultPage);
                     showToast('默认页面设置已保存', 'success');
                 });
@@ -4584,7 +5748,7 @@ biliLoadMoreBtn.addEventListener('click', () => {
             defaultPageInput.value = defaultPage;
             defaultPageInput.addEventListener('change', function() {
                 defaultPage = this.value;
-                localStorage.setItem('defaultPage', defaultPage);
+                setStorageItem('defaultPage', defaultPage);
                 updateDefaultPageInputs(defaultPage);
                 showToast('默认页面设置已保存', 'success');
             });
@@ -4992,7 +6156,8 @@ biliLoadMoreBtn.addEventListener('click', () => {
                     loadMoreContainer.style.display = 'block';
                 }
 
-                return Promise.reject(error);
+                // 不再返回reject，避免控制台显示Uncaught (in promise)错误
+                return Promise.resolve();
             } finally {
                 // 隐藏覆盖层
                 if (loadingOverlay) loadingOverlay.style.display = 'none';
@@ -5643,7 +6808,7 @@ biliLoadMoreBtn.addEventListener('click', () => {
                 playHistory = playHistory.slice(0, 50);
             }
             // 保存到本地存储
-            localStorage.setItem('playHistory', JSON.stringify(playHistory));
+            setStorageItem('playHistory', JSON.stringify(playHistory));
         }
 
         // 更新个人页面统计信息
@@ -5711,6 +6876,11 @@ biliLoadMoreBtn.addEventListener('click', () => {
         // 加载我的歌单
         function loadMyPlaylists() {
             const playlistList = document.getElementById('myPlaylistList');
+            
+            // 如果歌单列表元素不存在，直接返回
+            if (!playlistList) {
+                return;
+            }
             
             if (myPlaylists.length === 0) {
                 playlistList.innerHTML = `
@@ -5838,5 +7008,8 @@ biliLoadMoreBtn.addEventListener('click', () => {
         });
 
     </script>
+
+
+    <div class="modal-overlay" id="modalOverlay"></div>
 </body>
 </html>
