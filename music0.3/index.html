@@ -4970,89 +4970,41 @@
                 
                 this.currentSongId = song.id;
                 
-                // 检查是否是 B 站的 .m4s 格式
-                const isBiliM4s = song.url.toLowerCase().includes('.m4s');
+                // 直接使用音频URL，参考参考网站的实现方式
+                this.audioElement.src = song.url;
                 
-                // 对于 B 站的 .m4s 格式，使用 CORS 代理
-                if (isBiliM4s) {
-                    // 使用 CORS 代理服务器
-                    const proxyUrl = 'https://api.allorigins.win/raw?url=';
-                    const proxiedUrl = proxyUrl + encodeURIComponent(song.url);
-                    
-                    // 尝试使用代理加载
-                    const audio = new Audio(proxiedUrl);
-                    audio.addEventListener('canplay', () => {
-                        // 替换当前音频元素的 src
-                        this.audioElement.src = proxiedUrl;
-                        this.audioElement.load();
-                        this.audioElement.play().catch(() => {
-                            if (retryCount < 3) {
-                                // 清除缓存，确保重新获取
-                                const cacheKey = `${song.platform}_${song.id}`;
-                                delete songDetailsCache[cacheKey];
-                                localStorage.setItem('songDetailsCache', JSON.stringify(songDetailsCache));
-                                // 延迟一段时间后重试
-                                setTimeout(() => {
-                                    playSong(song.id, song.platform, retryCount + 1);
-                                }, 1000);
-                            } else {
-                                showToast('播放失败: B 站音频无法加载', 'error');
-                            }
-                        });
-                    });
-                    audio.addEventListener('error', () => {
-                        if (retryCount < 3) {
-                            // 清除缓存，确保重新获取
+                // 加载音频
+                this.audioElement.load();
+                
+                // 播放歌曲
+                const playAudio = () => {
+                    this.audioElement.play().catch((err) => {
+                        const isNetEase = song.url.includes('music.126.net') || song.url.includes('126.net');
+                        if ((isNetEase || err.name === 'NotSupportedError' || err.message.includes('403')) && retryCount < 3) {
+                            showToast('音频链接过期，重新获取中...', 'warning');
+                            // 清除该歌曲的缓存，并强制刷新 API 结果
                             const cacheKey = `${song.platform}_${song.id}`;
                             delete songDetailsCache[cacheKey];
                             localStorage.setItem('songDetailsCache', JSON.stringify(songDetailsCache));
-                            // 延迟一段时间后重试
-                            setTimeout(() => {
-                                playSong(song.id, song.platform, retryCount + 1);
-                            }, 1000);
+                            // 直接重试，不等待，传入 forceRefresh 参数
+                            playSong(song.id, song.platform, retryCount + 1, true);
                         } else {
-                            showToast('播放失败: B 站音频无法加载', 'error');
+                            showToast('播放失败: ' + (err.message || '无法加载音频'), 'error');
                         }
                     });
-                    // 开始加载
-                    audio.load();
+                };
+                
+                // 检查音频是否已经准备好
+                if (this.audioElement.readyState >= 2) {
+                    // 音频已经准备好，可以直接播放
+                    playAudio();
                 } else {
-                    // 普通音频格式，直接设置 src
-                    this.audioElement.src = song.url;
-                    
-                    // 加载音频
-                    this.audioElement.load();
-                    
-                    // 播放歌曲
-                    const playAudio = () => {
-                        this.audioElement.play().catch((err) => {
-                            const isNetEase = song.url.includes('music.126.net') || song.url.includes('126.net');
-                            if ((isNetEase || err.name === 'NotSupportedError' || err.message.includes('403')) && retryCount < 3) {
-                                showToast('音频链接过期，重新获取中...', 'warning');
-                                // 清除该歌曲的缓存，并强制刷新 API 结果
-                                const cacheKey = `${song.platform}_${song.id}`;
-                                delete songDetailsCache[cacheKey];
-                                localStorage.setItem('songDetailsCache', JSON.stringify(songDetailsCache));
-                                // 直接重试，不等待，传入 forceRefresh 参数
-                                playSong(song.id, song.platform, retryCount + 1, true);
-                            } else {
-                                showToast('播放失败: ' + (err.message || '无法加载音频'), 'error');
-                            }
-                        });
-                    };
-                    
-                    // 检查音频是否已经准备好
-                    if (this.audioElement.readyState >= 2) {
-                        // 音频已经准备好，可以直接播放
+                    // 音频还未准备好，添加事件监听器
+                    const canplayHandler = () => {
+                        this.audioElement.removeEventListener('canplay', canplayHandler);
                         playAudio();
-                    } else {
-                        // 音频还未准备好，添加事件监听器
-                        const canplayHandler = () => {
-                            this.audioElement.removeEventListener('canplay', canplayHandler);
-                            playAudio();
-                        };
-                        this.audioElement.addEventListener('canplay', canplayHandler);
-                    }
+                    };
+                    this.audioElement.addEventListener('canplay', canplayHandler);
                 }
                 
                 this.playerTitle.textContent = song.name;
