@@ -6558,7 +6558,7 @@ biliLoadMoreBtn.addEventListener('click', () => {
             }
         }
 
-        async function playSong(songId, platform = null, retryCount = 0, forceRefresh = false) {
+        async function playSong(songId, platform = null) {
             try {
                 // 先更新当前歌曲的播放时长
                 if (player.lastUpdateTime !== null) {
@@ -6592,85 +6592,26 @@ biliLoadMoreBtn.addEventListener('click', () => {
                     }
                 }
                 
-                // 如果不在搜索结果中，尝试从播放历史中获取
-                const historyResult = !searchResult ? playHistory.find(s => String(s.id) === String(songId)) : null;
-                
-                // 如果需要强制刷新，清除该歌曲的缓存
-                if (forceRefresh && platform) {
-                    const cacheKey = `${platform}_${songId}`;
-                    delete songDetailsCache[cacheKey];
-                    localStorage.setItem('songDetailsCache', JSON.stringify(songDetailsCache));
-                }
-                
                 // 使用指定的平台或当前平台获取歌曲详情
-                const result = await getSongDetail(songId, platform, forceRefresh);
+                const result = await getSongDetail(songId, platform);
                 
-                // 检查是否是 B 站 API 返回的数据结构
-                let audioUrl = null;
-                if (result.data?.url) {
-                    audioUrl = result.data.url;
-                } else if (result.data?.audio) {
-                    audioUrl = result.data.audio;
-                } else if (result.data?.play_url) {
-                    audioUrl = result.data.play_url;
-                } else if (result.data?.stream_url) {
-                    audioUrl = result.data.stream_url;
-                } else if (result.data?.audio_url) {
-                    audioUrl = result.data.audio_url;
-                } else if (result.data?.music_url) {
-                    audioUrl = result.data.music_url;
-                } else if (result.data?.data?.url) {
-                    // 检查嵌套的数据结构
-                    audioUrl = result.data.data.url;
-                } else if (result.data?.data?.audio) {
-                    audioUrl = result.data.data.audio;
-                } else if (result.data?.data?.play_url) {
-                    audioUrl = result.data.data.play_url;
-                } else if (result.data?.data?.stream_url) {
-                    audioUrl = result.data.data.stream_url;
-                } else if (result.data?.data?.audio_url) {
-                    audioUrl = result.data.data.audio_url;
-                } else if (result.data?.data?.music_url) {
-                    audioUrl = result.data.data.music_url;
-                }
-                
-                // 检查 audioUrl 是否是有效的URL
-                let validAudioUrl = null;
-                if (audioUrl) {
-                    try {
-                        // 尝试创建 URL 对象来验证
-                        new URL(audioUrl);
-                        validAudioUrl = audioUrl;
-                    } catch (e) {
-                        // 不是有效的 URL，检查是否是相对路径或其他格式
-                    }
-                }
-                
-                // 检查音频URL是否是支持的音频格式
-                const supportedFormats = ['.mp3', '.wav', '.ogg', '.flac', '.aac', '.m4a', '.m4s'];
-                let isSupportedFormat = false;
-                if (validAudioUrl) {
-                    const lowerUrl = validAudioUrl.toLowerCase();
-                    isSupportedFormat = supportedFormats.some(format => lowerUrl.includes(format));
-                }
-                
-                if ((result.code === 1 || result.code === 200) && result.data && validAudioUrl && isSupportedFormat) {
-                    // 优先使用搜索结果中的数据，其次是播放历史，最后是详情API返回的数据
-                    const songName = searchResult?.name || historyResult?.name || result.data.name || result.data.title || result.data.song_name || result.data.bvid || '未知歌曲';
-                    const songArtist = searchResult?.artist || historyResult?.artist || result.data.artist || result.data.owner || result.data.up || result.data.author || result.data.uploader || result.data.singer || '未知艺术家';
-                    const coverUrl = searchResult?.pic || historyResult?.pic || result.data.pic || result.data.cover || result.data.thumbnail || result.data.image || result.data.img || result.data.albumPic || result.data.album_pic || result.data.picUrl || result.data.pic_url;
+                if ((result.code === 1 || result.code === 200) && result.data && result.data.url) {
+                    // 优先使用搜索结果中的数据，如果没有则使用详情API返回的数据
+                    const songName = searchResult?.name || result.data.name || result.data.title || result.data.bvid || '未知歌曲';
+                    const songArtist = searchResult?.artist || result.data.artist || result.data.owner || result.data.up || result.data.author || result.data.uploader || result.data.singer || '未知艺术家';
+                    const coverUrl = searchResult?.pic || result.data.pic || result.data.cover || result.data.thumbnail || result.data.image || result.data.img || result.data.albumPic || result.data.album_pic || result.data.picUrl || result.data.pic_url;
                     
                     const song = {
                         id: songId,
                         name: songName,
                         artist: songArtist,
                         pic: coverUrl,
-                        url: validAudioUrl,
+                        url: result.data.url,
                         platform: platform || currentPlatform
                     };
                     
                     // 使用播放器实例设置并播放歌曲
-                    player.setSong(song, retryCount);
+                    player.setSong(song);
                     
                     if (!playlist.find(s => String(s.id) === String(songId))) {
                         playlist.push(song);
@@ -6688,46 +6629,10 @@ biliLoadMoreBtn.addEventListener('click', () => {
                     
                     showToast(`正在播放: ${songName}`, 'success');
                 } else {
-                    // 检查是否是服务器错误（500），如果是则不再重试
-                    if (result.code === 500) {
-                        const errorMsg = result.error || 'B站服务器暂时不可用';
-                        showToast(`B站API错误: ${errorMsg}`, 'error');
-                        return;
-                    }
-                    
-                    if (retryCount < 3) {
-                        // 重试次数小于3次，重新调用API
-                        // 清除缓存，确保重新获取
-                        const targetPlatform = platform || currentPlatform;
-                        const cacheKey = `${targetPlatform}_${songId}`;
-                        delete songDetailsCache[cacheKey];
-                        localStorage.setItem('songDetailsCache', JSON.stringify(songDetailsCache));
-                        // 延迟一段时间后重试
-                        setTimeout(() => {
-                            playSong(songId, platform, retryCount + 1);
-                        }, 1000);
-                    } else {
-                        // 重试次数超过3次，显示错误
-                        if (!validAudioUrl) {
-                            showToast('无法获取播放链接', 'error');
-                        } else if (!isSupportedFormat) {
-                            showToast('不支持的音频格式', 'error');
-                        } else {
-                            showToast('无法获取播放链接', 'error');
-                        }
-                    }
+                    showToast('无法获取播放链接', 'error');
                 }
             } catch (error) {
-                if (retryCount < 3) {
-                    // 重试次数小于3次，重新调用API
-                    // 延迟一段时间后重试
-                    setTimeout(() => {
-                        playSong(songId, platform, retryCount + 1);
-                    }, 1000);
-                } else {
-                    // 重试次数超过3次，显示错误
-                    showToast('播放失败: ' + error.message, 'error');
-                }
+                showToast('播放失败', 'error');
             }
         }
 
