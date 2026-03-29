@@ -814,29 +814,51 @@
         .player {
             position: fixed;
             bottom: 80px;
-            left: 16px;
-            right: 16px;
-            background: var(--surface);
-            border: 1px solid var(--border);
+            left: 50%;
+            right: auto;
+            transform: translateX(-50%) translateY(150%);
+            width: calc(100% - 32px);
+            max-width: 600px;
+            background: rgba(255, 255, 255, 0.04);
+            backdrop-filter: blur(2px);
+            -webkit-backdrop-filter: blur(2px);
+            border: 1px double rgba(51, 51, 51, 0.08);
             border-radius: var(--radius-xl);
             padding: 12px 20px;
-            box-shadow: 0 -4px 24px rgba(0, 0, 0, 0.12);
+            box-shadow:
+                inset 2px -2px 1px -1px rgba(255, 255, 255, 0.9),
+                inset -2px 2px 1px -1px rgba(255, 255, 255, 0.9),
+                inset 6px -6px 1px -6px rgba(255, 255, 255, 0.55),
+                inset -6px 6px 1px -6px rgba(255, 255, 255, 0.55),
+                inset 0 0 2px rgba(0, 0, 0, 0.8),
+                0 4px 8px rgba(0, 0, 0, 0.2);
             z-index: 100;
-            transform: translateY(150%);
             opacity: 0;
+            filter: brightness(0.9);
             transition: transform var(--transition-slow), opacity var(--transition-slow), background 0.6s ease, border 0.6s ease, box-shadow 0.6s ease;
-            max-width: 600px;
-            margin: 0 auto;
+        }
+
+        /* 深色主题下的播放器样式 */
+        html.dark-theme .player {
+            background: rgba(30, 30, 30, 0.04);
+            border: 1px double rgba(255, 255, 255, 0.08);
+            box-shadow:
+                inset 2px -2px 1px -1px rgba(255, 255, 255, 0.2),
+                inset -2px 2px 1px -1px rgba(255, 255, 255, 0.2),
+                inset 6px -6px 1px -6px rgba(255, 255, 255, 0.1),
+                inset -6px 6px 1px -6px rgba(255, 255, 255, 0.1),
+                inset 0 0 2px rgba(255, 255, 255, 0.3),
+                0 4px 8px rgba(0, 0, 0, 0.4);
         }
 
         .player.hidden {
-            transform: translateY(200%);
+            transform: translateX(-50%) translateY(200%);
             opacity: 0;
             pointer-events: none;
         }
 
         .player.visible {
-            transform: translateY(0);
+            transform: translateX(-50%) translateY(0);
             opacity: 1;
             pointer-events: auto;
         }
@@ -1419,20 +1441,39 @@
             bottom: 12px;
             left: 50%;
             transform: translateX(-50%);
-            background: var(--surface);
-            border: 1px solid var(--border);
+            background: rgba(255, 255, 255, 0.04);
+            backdrop-filter: blur(2px);
+            -webkit-backdrop-filter: blur(2px);
+            border: 1px double rgba(51, 51, 51, 0.08);
             border-radius: 100px;
             padding: 3.5px;
             display: flex;
             justify-content: center;
             align-items: center;
             gap: 1.4px;
-            box-shadow: 
-                inset 0 1px 2px rgba(0, 0, 0, 0.06),
-                inset 0 -1px 0 rgba(255, 255, 255, 0.6),
-                0 3px 14px rgba(0, 0, 0, 0.08);
+            box-shadow:
+                inset 2px -2px 1px -1px rgba(255, 255, 255, 0.9),
+                inset -2px 2px 1px -1px rgba(255, 255, 255, 0.9),
+                inset 6px -6px 1px -6px rgba(255, 255, 255, 0.55),
+                inset -6px 6px 1px -6px rgba(255, 255, 255, 0.55),
+                inset 0 0 2px rgba(0, 0, 0, 0.8),
+                0 4px 8px rgba(0, 0, 0, 0.2);
             z-index: 90;
+            filter: brightness(0.9);
             transition: all 0.6s ease;
+        }
+
+        /* 深色主题下的导航栏样式 */
+        html.dark-theme .navbar {
+            background: rgba(30, 30, 30, 0.04);
+            border: 1px double rgba(255, 255, 255, 0.08);
+            box-shadow:
+                inset 2px -2px 1px -1px rgba(255, 255, 255, 0.2),
+                inset -2px 2px 1px -1px rgba(255, 255, 255, 0.2),
+                inset 6px -6px 1px -6px rgba(255, 255, 255, 0.1),
+                inset -6px 6px 1px -6px rgba(255, 255, 255, 0.1),
+                inset 0 0 2px rgba(255, 255, 255, 0.3),
+                0 4px 8px rgba(0, 0, 0, 0.4);
         }
 
         .navbar-pill {
@@ -2018,6 +2059,7 @@
             .player {
                 bottom: 70px;
                 padding: 8px 12px;
+                width: calc(100% - 24px);
             }
             .player-cover {
                 width: 40px;
@@ -2157,11 +2199,18 @@
             }
             .player {
                 bottom: 100px;
-                left: auto;
+                left: 50%;
                 right: auto;
                 width: 1000px;
-                margin-left: auto;
-                margin-right: auto;
+                transform: translateX(-50%) translateY(150%);
+            }
+            
+            .player.visible {
+                transform: translateX(-50%) translateY(0);
+            }
+            
+            .player.hidden {
+                transform: translateX(-50%) translateY(200%);
             }
             .navbar {
                 bottom: 28px;
@@ -4306,12 +4355,10 @@ biliLoadMoreBtn.addEventListener('click', () => {
                 placeholder
             });
 
-            // 处理队列
             processCoverQueue();
         }
 
         function processCoverQueue() {
-            // 如果当前加载数量未达到上限且队列不为空，继续处理
             if (currentLoads < MAX_CONCURRENT_LOADS && coverLoadQueue.length > 0) {
                 const task = coverLoadQueue.shift();
                 currentLoads++;
@@ -4380,6 +4427,11 @@ biliLoadMoreBtn.addEventListener('click', () => {
                     processCoverQueue(); // 继续处理队列
                 }
             };
+            
+            // 对于B站图片，尝试通过添加referrerPolicy来解决403问题
+            if (isBiliPic) {
+                img.referrerPolicy = 'no-referrer';
+            }
             
             img.src = processedUrl;
         }
