@@ -23,7 +23,8 @@
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
     <script>
         const savedTheme = localStorage.getItem('theme');
-        if (savedTheme === 'dark') {
+        // 默认使用深色主题，除非用户明确选择了浅色
+        if (savedTheme !== 'light') {
             document.documentElement.classList.add('dark-theme');
         }
     </script>
@@ -830,8 +831,8 @@
                 inset -2px 2px 1px -1px rgba(255, 255, 255, 0.9),
                 inset 6px -6px 1px -6px rgba(255, 255, 255, 0.55),
                 inset -6px 6px 1px -6px rgba(255, 255, 255, 0.55),
-                inset 0 0 2px rgba(0, 0, 0, 0.8),
-                0 4px 8px rgba(0, 0, 0, 0.2);
+                inset 0 0 2px rgba(0, 0, 0, 0.1),
+                0 4px 8px rgba(0, 0, 0, 0.08);
             z-index: 100;
             opacity: 0;
             filter: brightness(0.9);
@@ -1456,8 +1457,8 @@
                 inset -2px 2px 1px -1px rgba(255, 255, 255, 0.9),
                 inset 6px -6px 1px -6px rgba(255, 255, 255, 0.55),
                 inset -6px 6px 1px -6px rgba(255, 255, 255, 0.55),
-                inset 0 0 2px rgba(0, 0, 0, 0.8),
-                0 4px 8px rgba(0, 0, 0, 0.2);
+                inset 0 0 2px rgba(0, 0, 0, 0.1),
+                0 4px 8px rgba(0, 0, 0, 0.08);
             z-index: 90;
             filter: brightness(0.9);
             transition: all 0.6s ease;
@@ -2937,7 +2938,7 @@
         let playHistory = JSON.parse(localStorage.getItem('playHistory') || '[]');
         let myPlaylists = JSON.parse(localStorage.getItem('myPlaylists') || '[]');
         let songDetailsCache = JSON.parse(localStorage.getItem('songDetailsCache') || '{}');
-        let currentTheme = localStorage.getItem('theme') || 'light';
+        let currentTheme = localStorage.getItem('theme') || 'dark';
         
         // API速率限制器
         const rateLimiter = {
@@ -3571,10 +3572,10 @@ biliPlaylistBtn.addEventListener('click', () => {
                 loadMyPlaylists();
             } else if (pageId === 'settings') {
                 settingsPage.style.display = 'block';
-                // 当设置页面显示时，重新初始化主题切换按钮状态
-                setTimeout(() => {
-                    updateThemeToggleButtons();
-                }, 100);
+                // 使用 requestAnimationFrame 确保 DOM 更新后再更新胶囊位置
+                requestAnimationFrame(() => {
+                    requestAnimationFrame(() => updateThemeToggleButtons());
+                });
             }
             
             // 更新导航栏状态
@@ -3814,9 +3815,16 @@ biliLoadMoreBtn.addEventListener('click', () => {
         
         // 初始化主题
         function initTheme() {
+            // 确保currentTheme有值，默认为dark
+            if (!currentTheme) {
+                currentTheme = 'dark';
+            }
+            
             // 应用当前主题
             if (currentTheme === 'dark') {
                 document.documentElement.classList.add('dark-theme');
+            } else {
+                document.documentElement.classList.remove('dark-theme');
             }
             
             // 初始化主题切换按钮状态
@@ -3828,23 +3836,27 @@ biliLoadMoreBtn.addEventListener('click', () => {
             const themeTogglePill = document.getElementById('themeTogglePill');
             const themeToggleBtns = document.querySelectorAll('.theme-toggle-btn');
             
-            if (themeTogglePill && themeToggleBtns.length > 0) {
-                let activeBtn = null;
-                themeToggleBtns.forEach(btn => {
-                    btn.classList.remove('active');
-                    if (btn.dataset.theme === currentTheme) {
-                        btn.classList.add('active');
-                        activeBtn = btn;
-                    }
-                });
+            if (!themeTogglePill || themeToggleBtns.length === 0) return;
+
+            let activeBtn = null;
+            themeToggleBtns.forEach(btn => {
+                btn.classList.remove('active');
+                if (btn.dataset.theme === currentTheme) {
+                    btn.classList.add('active');
+                    activeBtn = btn;
+                }
+            });
+
+            if (activeBtn) {
+                const rect = activeBtn.getBoundingClientRect();
+                const parentRect = activeBtn.parentElement.getBoundingClientRect();
                 
-                // 找到当前选中的按钮并设置胶囊位置
-                if (activeBtn) {
-                    // 即使元素隐藏，也可以使用getBoundingClientRect()获取位置和大小
-                    const rect = activeBtn.getBoundingClientRect();
-                    const parentRect = activeBtn.parentElement.getBoundingClientRect();
+                if (rect.width > 0 && parentRect.width > 0) {
                     themeTogglePill.style.left = (rect.left - parentRect.left) + 'px';
                     themeTogglePill.style.width = rect.width + 'px';
+                } else {
+                    // 元素不可见时，延迟重试
+                    setTimeout(() => updateThemeToggleButtons(), 100);
                 }
             }
         }
@@ -3959,17 +3971,30 @@ biliLoadMoreBtn.addEventListener('click', () => {
             initNavbarPill();
             // 初始化页面显示
             switchPage('wy');
-            // 初始化主题
-            initTheme();
             // 初始化滚动效果
             initAllMarquee();
         }, 100);
+        
+        // 初始化主题（在DOM加载完成后立即执行）
+        initTheme();
         
         // 主题切换按钮事件
         document.addEventListener('click', (e) => {
             const themeBtn = e.target.closest('.theme-toggle-btn');
             if (themeBtn) {
                 switchTheme(themeBtn.dataset.theme, themeBtn);
+            }
+        });
+
+        // 页面完全加载后再次更新主题按钮状态
+        window.addEventListener('load', () => {
+            updateThemeToggleButtons();
+        });
+
+        // 监听窗口大小变化，更新胶囊位置（仅当设置页面可见时）
+        window.addEventListener('resize', () => {
+            if (settingsPage.style.display === 'block') {
+                updateThemeToggleButtons();
             }
         });
 
