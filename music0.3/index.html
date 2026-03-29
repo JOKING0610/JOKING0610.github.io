@@ -2094,8 +2094,11 @@
             }
             .player {
                 bottom: 90px;
-                left: 24px;
-                right: 24px;
+                left: 50%;
+                right: auto;
+                transform: translateX(-50%);
+                width: calc(100% - 48px);
+                max-width: 720px;
             }
             .navbar {
                 bottom: 20px;
@@ -4332,9 +4335,16 @@ biliLoadMoreBtn.addEventListener('click', () => {
                 processedUrl = processedUrl.replace('http://', 'https://');
             }
 
+            // 检查是否是B站图片域名
+            const isBiliPic = processedUrl.includes('hdslb.com') || processedUrl.includes('bilibili.com');
+
             // 使用Image对象预加载
             const img = new Image();
-            img.crossOrigin = 'anonymous'; // 尝试跨域加载
+            
+            // 对非B站图片尝试跨域加载，B站图片不设置crossOrigin以避免跨域问题
+            if (!isBiliPic) {
+                img.crossOrigin = 'anonymous';
+            }
             
             img.onload = function() {
                 // 加载成功后设置到实际元素
