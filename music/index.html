@@ -7076,7 +7076,7 @@ biliLoadMoreBtn.addEventListener('click', () => {
             playlistContent.innerHTML = playlist.map(song => `
                 <div class="playlist-item ${String(song.id) === String(player.currentSongId) ? 'active' : ''}" data-id="${song.id}" data-platform="${song.platform || 'wy'}">
                     <div class="playlist-item-cover">
-                        ${song.pic ? `<img src="${song.pic}" alt="">` : '<i class="fas fa-music"></i>'}
+                        ${song.pic ? `<img src="${song.pic.startsWith('http') ? (song.pic.startsWith('https') ? song.pic : song.pic.replace('http://', 'https://')) : 'https://via.placeholder.com/100x100?text=Music'}" alt="" onerror="this.onerror=null;this.parentElement.innerHTML='<i class=\'fas fa-music\'></i>';">` : '<i class="fas fa-music"></i>'}
                     </div>
                     <div class="playlist-item-info">
                         <div class="playlist-item-title">${escapeHTML(song.name)}</div>
@@ -7242,7 +7242,7 @@ biliLoadMoreBtn.addEventListener('click', () => {
             recentList.innerHTML = recentSongs.map((song, index) => `
                 <div class="recent-item" data-id="${song.id}" data-platform="${song.platform || 'wy'}" data-index="${index}">
                     <div class="recent-cover">
-                        ${song.pic ? `<img src="${song.pic}" alt="">` : '<i class="fas fa-music"></i>'}
+                        ${song.pic ? `<img src="${song.pic.startsWith('http') ? (song.pic.startsWith('https') ? song.pic : song.pic.replace('http://', 'https://')) : 'https://via.placeholder.com/100x100?text=Music'}" alt="" onerror="this.onerror=null;this.parentElement.innerHTML='<i class=\'fas fa-music\'></i>';">` : '<i class="fas fa-music"></i>'}
                     </div>
                     <div class="recent-info">
                         <div class="recent-title">${escapeHTML(song.name)}</div>
@@ -7291,7 +7291,7 @@ biliLoadMoreBtn.addEventListener('click', () => {
             playlistList.innerHTML = myPlaylists.map(playlist => `
                 <div class="my-playlist-item" data-id="${playlist.id}">
                     <div class="playlist-cover">
-                        ${playlist.cover ? `<img src="${playlist.cover}" alt="">` : '<i class="fas fa-playlist"></i>'}
+                        ${playlist.cover ? `<img src="${playlist.cover.startsWith('http') ? (playlist.cover.startsWith('https') ? playlist.cover : playlist.cover.replace('http://', 'https://')) : 'https://via.placeholder.com/100x100?text=Playlist'}" alt="" onerror="this.onerror=null;this.parentElement.innerHTML='<i class=\'fas fa-playlist\'></i>';">` : '<i class="fas fa-playlist"></i>'}
                     </div>
                     <div class="playlist-info">
                         <div class="playlist-title">${escapeHTML(playlist.name)}</div>
