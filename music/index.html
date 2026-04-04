@@ -20,7 +20,7 @@
           referrerpolicy="no-referrer">
     
     <!-- Supabase JS SDK -->
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.0"></script>
     
     <!-- Google Fonts with display=swap -->
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -1289,11 +1289,12 @@
         }
         
         .toggle-switch input:checked + label {
-            background-color: var(--primary);
+            background-color: #333333;
         }
         
         .toggle-switch input:checked + label:before {
             transform: translateX(30px);
+            background-color: white;
         }
 
         /* 自定义下拉选择组件样式 */
@@ -1731,6 +1732,20 @@
 
         html.dark-theme .navbar-item.active {
             color: black;
+        }
+
+        /* 深色主题下的 toggle-switch label 样式 */
+        html.dark-theme .toggle-switch label {
+            background-color: #333333;
+        }
+        
+        /* 深色主题下的开关开启状态样式 */
+        html.dark-theme .toggle-switch input:checked + label {
+            background-color: white;
+        }
+        
+        html.dark-theme .toggle-switch input:checked + label:before {
+            background-color: black;
         }
 
         .navbar-item i {
@@ -3705,7 +3720,7 @@
             <div class="profile-header">
                 <div class="profile-info">
                     <div class="profile-avatar" id="profileAvatar">
-                        <i class="fas fa-user-circle"></i>
+                        <i class="fas fa-user"></i>
                     </div>
                     <h2 class="profile-name" id="profileName">访客</h2>
                     <p class="profile-desc" id="profileDesc">登录以同步您的音乐数据</p>
@@ -3714,8 +3729,11 @@
                     </button>
                     <div style="display: flex; gap: 8px; margin-top: 8px;">
                         <button class="login-action-btn" id="profileSyncBtn" onclick="syncUserData()" style="display: none;">
-                        <i class="fas fa-cloud-upload-alt"></i> 数据上传
-                    </button>
+                            <i class="fas fa-sync"></i> 数据上传
+                        </button>
+                        <button class="login-action-btn" id="editAvatarBtn" style="display: none;">
+                            <i class="fas fa-camera"></i> 更换头像
+                        </button>
                         <button class="login-action-btn logout" id="profileLogoutBtn" onclick="logout()" style="display: none;">
                             <i class="fas fa-sign-out-alt"></i> 退出登录
                         </button>
@@ -3740,12 +3758,22 @@
                         <div class="stat-value" id="totalPlayTime">0</div>
                         <div class="stat-label">播放时长</div>
                     </div>
-                    <div class="stat-item">
+                    <div class="stat-item" style="display: none;">
                         <div class="stat-icon">
                             <i class="fas fa-list"></i>
                         </div>
                         <div class="stat-value" id="totalPlaylists">0</div>
                         <div class="stat-label">自建歌单</div>
+                    </div>
+                    <div class="stat-item" style="display: none;">
+                        <div class="stat-icon"><i class="fas fa-sign-in-alt"></i></div>
+                        <div class="stat-value" id="loginCountDisplay">0</div>
+                        <div class="stat-label">登录次数</div>
+                    </div>
+                    <div class="stat-item" style="display: none;">
+                        <div class="stat-icon"><i class="fas fa-clock"></i></div>
+                        <div class="stat-value" id="lastLoginDisplay">-</div>
+                        <div class="stat-label">上次登录</div>
                     </div>
                 </div>
             </div>
@@ -4114,20 +4142,32 @@
 
         function saveUser(user) {
             if (user) {
-                localStorage.setItem(STORAGE_KEY, JSON.stringify({ id: user.id, username: user.username }));
+                localStorage.setItem(STORAGE_KEY, JSON.stringify({ 
+                    id: user.id, 
+                    username: user.username,
+                    avatar_url: user.avatar_url || '' 
+                }));
                 localStorage.setItem('userLoggedIn', 'true');
                 localStorage.setItem('username', user.username);
+                if (user.avatar_url) {
+                    localStorage.setItem('userAvatar', user.avatar_url);
+                }
             } else {
                 localStorage.removeItem(STORAGE_KEY);
                 localStorage.removeItem('userLoggedIn');
                 localStorage.removeItem('username');
+                localStorage.removeItem('userAvatar');
             }
             updateLoginStatus();
         }
 
         function getCurrentUser() {
             const stored = localStorage.getItem(STORAGE_KEY);
-            if (stored) return JSON.parse(stored);
+            if (stored) {
+                const user = JSON.parse(stored);
+                user.avatar_url = localStorage.getItem('userAvatar') || '';
+                return user;
+            }
             return null;
         }
 
@@ -4178,7 +4218,18 @@
             if (!data || !data.success) throw new Error(data.error || "登录失败");
 
             // 存储用户信息
-            saveUser({ id: data.user_id, username: data.username });
+            saveUser({ 
+                id: data.user_id, 
+                username: data.username,
+                avatar_url: data.avatar_url || ''
+            });
+
+            // 记录登录日志（新增）
+            try {
+                await supabaseClient.rpc('record_user_login', { _user_id: String(data.user_id) });
+            } catch (logErr) {
+                console.warn('记录登录日志失败', logErr);
+            }
 
             // 获取用户的同步数据
             try {
@@ -4267,8 +4318,15 @@
                 showToast('登录成功！', 'success');
                 closeLoginPage();
                 updateLoginStatus();
-                // 登录成功后获取用户数据
-                fetchUserData();
+                // 登录成功后获取用户数据并同步本地数据到服务器
+                await fetchUserData();
+                await syncUserData(false);
+                // 刷新搜索历史记录显示
+                loadSearchHistory('wy');
+                loadSearchHistory('bili');
+                // 不再刷新页面，直接更新UI以应用所有设置
+                updateUserStatsDisplay();
+                updateProfileStats();
             } catch (error) {
                 showToast(error.message, 'error');
             }
@@ -4307,6 +4365,7 @@
         function updateLoginStatus() {
             const isLoggedIn = localStorage.getItem('userLoggedIn') === 'true';
             const username = localStorage.getItem('username');
+            const userAvatar = localStorage.getItem('userAvatar');
             const navProfile = document.getElementById('navProfile');
 
             // 更新导航栏
@@ -4333,31 +4392,94 @@
                 profileDesc.textContent = isLoggedIn ? '乐在其中 · 自有回响' : '登录以同步您的音乐数据';
             }
             if (profileAvatar) {
-                profileAvatar.innerHTML = isLoggedIn ? '<i class="fas fa-user-circle"></i>' : '<i class="fas fa-user-circle"></i>';
+                if (isLoggedIn && userAvatar) {
+                    profileAvatar.innerHTML = `<img src="${userAvatar}" style="width:100%;height:100%;border-radius:50%;object-fit:cover;" onerror="this.onerror=null;this.parentElement.innerHTML='<i class=\'fas fa-user-circle\'></i>';">`;
+                } else {
+                    profileAvatar.innerHTML = isLoggedIn ? '<i class="fas fa-user-circle"></i>' : '<i class="fas fa-user"></i>';
+                }
             }
             if (profileLoginBtn && profileLogoutBtn) {
                 const profileSyncBtn = document.getElementById('profileSyncBtn');
+                const editAvatarBtn = document.getElementById('editAvatarBtn');
                 if (isLoggedIn) {
                     profileLoginBtn.style.display = 'none';
                     profileLogoutBtn.style.display = 'flex';
                     if (profileSyncBtn) {
                         profileSyncBtn.style.display = 'flex';
                     }
+                    // 移除更换头像按钮的显示
+                    // if (editAvatarBtn) {
+                    //     editAvatarBtn.style.display = 'flex';
+                    //     // 移除旧监听避免重复绑定
+                    //     const newBtn = editAvatarBtn.cloneNode(true);
+                    //     editAvatarBtn.parentNode.replaceChild(newBtn, editAvatarBtn);
+                    //     newBtn.addEventListener('click', async () => {
+                    //         const newAvatarUrl = prompt('请输入新的头像图片 URL（支持 http/https）：');
+                    //         if (newAvatarUrl && (newAvatarUrl.startsWith('http://') || newAvatarUrl.startsWith('https://'))) {
+                    //             await updateUserAvatar(newAvatarUrl);
+                    //         } else if (newAvatarUrl) {
+                    //             showToast('请输入有效的图片 URL', 'error');
+                    //         }
+                    //     });
+                    // }
                 } else {
                     profileLoginBtn.style.display = 'flex';
                     profileLogoutBtn.style.display = 'none';
                     if (profileSyncBtn) {
                         profileSyncBtn.style.display = 'none';
                     }
+                    if (editAvatarBtn) {
+                        editAvatarBtn.style.display = 'none';
+                    }
                 }
+            }
+        }
+
+        // 更新用户头像
+        async function updateUserAvatar(avatarUrl) {
+            const user = getCurrentUser();
+            if (!user || !user.id) {
+                showToast('请先登录', 'error');
+                return;
+            }
+            try {
+                initSupabase();
+                const { data, error } = await supabaseClient.rpc('update_user_avatar', {
+                    _user_id: String(user.id),
+                    _avatar_url: avatarUrl
+                });
+                if (error) throw error;
+                if (data && data.success) {
+                    // 更新本地存储
+                    localStorage.setItem('userAvatar', avatarUrl);
+                    const storedUser = getCurrentUser();
+                    if (storedUser) {
+                        storedUser.avatar_url = avatarUrl;
+                        saveUser(storedUser);
+                    }
+                    // 刷新页面显示
+                    updateLoginStatus();
+                    showToast('头像更新成功', 'success');
+                    // 可选：同步其他数据（如果需要）
+                    await syncUserData(false);
+                } else {
+                    throw new Error(data?.error || '更新失败');
+                }
+            } catch (err) {
+                showToast('更新头像失败：' + err.message, 'error');
             }
         }
 
         // 退出登录
         async function logout() {
             try {
-                // 登出前同步数据
-                await syncUserData();
+                // 登出前同步数据（即使失败也继续登出）
+                try {
+                    await syncUserData();
+                } catch (syncError) {
+                    console.error('登出时同步数据失败:', syncError);
+                    // 继续执行登出流程
+                }
                 // 清空本地数据
                 setStorageItem('playHistory', '[]');
                 setStorageItem('searchHistory', '[]');
@@ -4368,6 +4490,9 @@
                 localStorage.removeItem('biliPageSize');
                 setStorageItem('yunzhi_token', '');
                 localStorage.removeItem('theme');
+                // 重置导航栏文本显示状态
+                setStorageItem('navbarShowText', 'true');
+                updateNavbarTextVisibility();
                 // 重置应用数据
                 playHistory = [];
                 myPlaylists = [];
@@ -4396,6 +4521,9 @@
                 localStorage.removeItem('biliPageSize');
                 setStorageItem('yunzhi_token', '');
                 localStorage.removeItem('theme');
+                // 重置导航栏文本显示状态
+                setStorageItem('navbarShowText', 'true');
+                updateNavbarTextVisibility();
                 playHistory = [];
                 myPlaylists = [];
                 songDetailsCache = {};
@@ -4413,30 +4541,41 @@
         }
 
         // 同步用户数据到服务器
-        async function syncUserData() {
+        async function syncUserData(showNotifications = true) {
             try {
                 const user = getCurrentUser();
                 if (!user || !user.id) {
+                    if (showNotifications) {
+                        showToast('请先登录', 'error');
+                    }
                     return;
+                }
+
+                // 显示上传中提示
+                if (showNotifications) {
+                    showToast('正在上传数据，请稍候...', 'warning');
                 }
 
                 // 初始化 Supabase
                 initSupabase();
 
                 // 收集数据
-                const totalPlays = playHistory.length;
+                const totalPlays = JSON.parse(getStorageItem('playHistory', '[]') || '[]').length;
                 const totalPlayTime = parseInt(getStorageItem('totalPlayTime') || 0);
                 const theme = getStorageItem('theme') || 'dark';
-                const playHistoryData = playHistory;
+                const playHistoryData = JSON.parse(getStorageItem('playHistory', '[]') || '[]');
                 const searchHistoryData = JSON.parse(getStorageItem('searchHistory', '[]') || '[]');
                 const wyPageSize = parseInt(getStorageItem('wyPageSize') || 20);
                 const biliPageSize = parseInt(getStorageItem('biliPageSize') || 20);
                 const token = getStorageItem('yunzhi_token') || '';
+                const navbarShowText = getStorageItem('navbarShowText', 'true') === 'true';
+                const defaultPage = getStorageItem('defaultPage') || 'home';
 
                 // 确保用户ID是字符串格式
                 const userIdStr = String(user.id);
 
-                const { data, error } = await supabaseClient.rpc('upsert_user_sync_data', {
+                // 构建 RPC 参数（根据数据库函数支持的参数）
+                const rpcParams = {
                     _user_id: userIdStr,
                     _total_plays: totalPlays,
                     _total_play_time: totalPlayTime,
@@ -4445,8 +4584,13 @@
                     _search_history: searchHistoryData,
                     _wy_page_size: wyPageSize,
                     _bili_page_size: biliPageSize,
-                    _token: token
-                });
+                    _token: token,
+                    _navbar_show_text: navbarShowText,
+                    _default_page: defaultPage
+                    // 不再包含 _open_count 和 _last_open_time
+                };
+
+                const { data, error } = await supabaseClient.rpc('upsert_user_sync_data', rpcParams);
 
                 if (error) {
                     console.error('同步数据错误:', error);
@@ -4455,9 +4599,15 @@
 
                 if (data && data.success) {
                     console.log('数据同步成功');
+                    if (showNotifications) {
+                        showToast('数据上传成功！', 'success');
+                    }
                 }
             } catch (error) {
                 console.error('同步数据异常:', error);
+                if (showNotifications) {
+                    showToast('数据上传失败，请重试', 'error');
+                }
             }
         }
 
@@ -4530,6 +4680,38 @@
                             tokenInput.value = syncData.token;
                         }
                     }
+                    if (syncData.navbar_show_text !== undefined) {
+                        setStorageItem('navbarShowText', syncData.navbar_show_text.toString());
+                        // 刷新导航栏显示
+                        updateNavbarTextVisibility();
+                        // 同步设置页面的开关状态
+                        const navbarTextToggle = document.getElementById('navbarTextToggle');
+                        if (navbarTextToggle) {
+                            navbarTextToggle.checked = syncData.navbar_show_text;
+                        }
+                    }
+                    // 注意：不更新 openCount 和 lastOpenTime，保持本地的值
+                    // 处理默认页面（如果服务器返回）
+                    if (syncData.default_page) {
+                        setStorageItem('defaultPage', syncData.default_page);
+                        window.defaultPage = syncData.default_page;
+                        // 更新UI
+                        const defaultPageSelect = document.getElementById('defaultPageSelect');
+                        if (defaultPageSelect) {
+                            defaultPageSelect.value = syncData.default_page;
+                        }
+                    }
+                    // 处理头像URL
+                    if (syncData.avatar_url !== undefined) {
+                        localStorage.setItem('userAvatar', syncData.avatar_url || '');
+                        const storedUser = getCurrentUser();
+                        if (storedUser) {
+                            storedUser.avatar_url = syncData.avatar_url || '';
+                            saveUser(storedUser);
+                        }
+                        // 刷新头像显示
+                        updateLoginStatus();
+                    }
 
                     // 更新个人页面统计
                     if (profilePage.style.display === 'block') {
@@ -4572,6 +4754,81 @@
         }
 
         // 绑定登录页面事件（在DOM加载完成后）
+        // 自动登录验证
+        async function autoLogin() {
+            const isLoggedIn = localStorage.getItem('userLoggedIn') === 'true';
+            const storedUser = getCurrentUser();
+            
+            if (!isLoggedIn || !storedUser || !storedUser.id) {
+                return; // 无本地登录信息，跳过
+            }
+
+            try {
+                initSupabase();
+                const { data, error } = await supabaseClient.rpc('check_user_exists', {
+                    _user_id: String(storedUser.id)
+                });
+                
+                if (error || !data) {
+                    throw new Error('用户不存在或验证失败');
+                }
+                
+                // 自动登录成功：记录登录次数和更新时间
+                try {
+                    await supabaseClient.rpc('record_user_login', { _user_id: String(storedUser.id) });
+                } catch (logErr) {
+                    console.warn('自动登录记录失败', logErr);
+                }
+                
+                // 验证通过，恢复登录状态
+                console.log('自动登录成功，用户:', storedUser.username);
+                updateLoginStatus();          // 更新界面显示
+                await fetchUserData();        // 同步服务器数据
+                await syncUserData(false);    // 可选：上传本地数据
+                // 刷新搜索历史记录显示
+                loadSearchHistory('wy');
+                loadSearchHistory('bili');
+                // 可在此处刷新个人页面统计等
+                if (profilePage.style.display === 'block') {
+                    updateProfileStats();
+                    loadRecentPlays();
+                }
+                
+                // 更新登录统计显示（无论是否在个人页面，都刷新缓存）
+                await updateUserStatsDisplay();
+            } catch (err) {
+                console.warn('自动登录失败，清除本地信息', err);
+                // 清除本地存储的用户信息（使用saveUser(null)确保完全清除）
+                saveUser(null);
+                // 重置登录用户的应用状态（使用原始localStorage键，不使用guest_前缀）
+                localStorage.removeItem('playHistory');
+                localStorage.removeItem('searchHistory');
+                localStorage.removeItem('totalPlayTime');
+                localStorage.removeItem('songDetailsCache');
+                localStorage.removeItem('defaultPage');
+                localStorage.removeItem('wyPageSize');
+                localStorage.removeItem('biliPageSize');
+                localStorage.removeItem('yunzhi_token');
+                localStorage.removeItem('theme');
+                localStorage.removeItem('navbarShowText');
+                
+                // 重置内存中的状态
+                playHistory = [];
+                myPlaylists = [];
+                songDetailsCache = {};
+                defaultPage = 'home';
+                wyPageSize = 20;
+                biliPageSize = 20;
+                yunzhiToken = '';
+                currentTheme = 'dark';
+                
+                // 显示弹窗提示，用户点击确定后刷新页面
+                showAlert('账号验证失败，请重新登录', () => {
+                    location.reload();
+                });
+            }
+        }
+
         document.addEventListener('DOMContentLoaded', function() {
             const toSignupBtn = document.getElementById('toSignup');
             const toSigninBtn = document.getElementById('toSignin');
@@ -4606,14 +4863,24 @@
             // 初始化导航栏文本显示
             updateNavbarTextVisibility();
             
+            // 添加自动登录验证
+            autoLogin();
+            
             // 绑定导航栏文本开关事件
             const navbarTextToggle = document.getElementById('navbarTextToggle');
             if (navbarTextToggle) {
-                navbarTextToggle.addEventListener('change', function() {
+                navbarTextToggle.addEventListener('change', async function() {
                     const showText = this.checked;
                     setStorageItem('navbarShowText', showText.toString());
                     updateNavbarTextVisibility();
-                    showToast('导航栏文本显示设置已保存', 'success');
+
+                    // 登录状态下自动上传
+                    const isLoggedIn = localStorage.getItem('userLoggedIn') === 'true';
+                    if (isLoggedIn) {
+                        await syncUserData(true);   // 显示上传提示
+                    } else {
+                        showToast('导航栏文本显示设置已保存（未登录）', 'success');
+                    }
                 });
             }
             
@@ -4630,7 +4897,7 @@
             setInterval(() => {
                 const isLoggedIn = localStorage.getItem('userLoggedIn') === 'true';
                 if (isLoggedIn) {
-                    syncUserData();
+                    syncUserData(false); // 自动上传时不显示通知
                 }
             }, 30000);
         });
@@ -4688,40 +4955,42 @@
         
         // API速率限制器
         const rateLimiter = {
+            // 存储API调用时间戳
             callTimes: new Map(),
+            // 配置不同API的速率限制
             limits: {
-                'bili': { maxCalls: 5, timeWindow: 3000 }
+                'bili': {
+                    maxCalls: 5,
+                    timeWindow: 3000 // 3秒
+                }
             },
-            // 添加等待队列计数器，用于弹窗提示
-            waitingPromises: new Map(),
             
-            async checkLimit(apiKey, onWaitCallback = null) {
+            // 检查是否可以调用API
+            async checkLimit(apiKey) {
                 const limit = this.limits[apiKey];
-                if (!limit) return true;
+                if (!limit) return true; // 没有限制的API直接通过
                 
                 const now = Date.now();
-                let calls = this.callTimes.get(apiKey) || [];
-                calls = calls.filter(time => now - time < limit.timeWindow);
+                const calls = this.callTimes.get(apiKey) || [];
                 
-                if (calls.length >= limit.maxCalls) {
-                    const oldestCall = calls[0];
-                    const waitTime = limit.timeWindow - (now - oldestCall);
-                    if (waitTime > 0) {
-                        if (onWaitCallback) onWaitCallback(waitTime);
-                        await new Promise(resolve => setTimeout(resolve, waitTime));
-                        // 等待后重新检查
-                        return this.checkLimit(apiKey, onWaitCallback);
+                // 过滤掉时间窗口外的调用记录
+                const recentCalls = calls.filter(time => now - time < limit.timeWindow);
+                
+                if (recentCalls.length >= limit.maxCalls) {
+                        // 计算需要等待的时间
+                        const oldestCall = recentCalls[0];
+                        const waitTime = limit.timeWindow - (now - oldestCall);
+                        if (waitTime > 0) {
+                            await new Promise(resolve => setTimeout(resolve, waitTime));
+                        }
                     }
-                }
                 
-                calls.push(Date.now());
-                this.callTimes.set(apiKey, calls);
+                // 更新调用记录
+                recentCalls.push(Date.now());
+                this.callTimes.set(apiKey, recentCalls);
                 return true;
             }
         };
-
-        let currentPlayToken = null;      // 当前播放任务的唯一标识
-        let currentRetryTimer = null;     // 当前重试定时器
         
         // 播放器类
         class Player {
@@ -4886,7 +5155,23 @@
                 const currentSong = playlist.find(s => String(s.id) === String(this.currentSongId));
                 const audioSrc = this.audioElement.src;
                 
-                // 只做错误提示，不再主动调用 playSong 重试（重试由 playSong 统一管理）
+                // 检查是否是网易云音乐链接（无论错误类型）
+                if (currentSong && currentSong.platform !== 'bili' && audioSrc.includes('music.126.net')) {
+                    // 清除缓存并重新获取歌曲详情
+                    const cacheKey = `${currentSong.platform}_${currentSong.id}`;
+                    delete songDetailsCache[cacheKey];
+                    localStorage.setItem('songDetailsCache', JSON.stringify(songDetailsCache));
+                    // 清除API缓存
+                    ApiCache.clear();
+                    
+                    showToast('音频链接已过期，正在重新获取...', 'warning');
+                    // 延迟后重新播放
+                    setTimeout(() => {
+                        playSong(currentSong.id, currentSong.platform);
+                    }, 1500);
+                    return;
+                }
+                
                 switch (this.audioElement.error?.code) {
                     case MediaError.MEDIA_ERR_ABORTED:
                         errorMessage = '播放失败: 音频加载被中止';
@@ -4901,7 +5186,7 @@
                         errorMessage = '播放失败: 不支持的音频格式或无效的音频源';
                         break;
                 }
-                // 显示错误，但重试工作已由 playSong 中的 error 监听器完成，这里不再额外处理
+                
                 showToast(errorMessage, 'error');
             }
             
@@ -5188,6 +5473,68 @@
             openModal('confirmModal');
         }
 
+        // 简单的提示弹窗（只有一个确定按钮）
+        function showAlert(message, onClose) {
+            const confirmModal = document.getElementById('confirmModal');
+            const confirmMessage = document.getElementById('confirmMessage');
+            const confirmBtn = document.getElementById('confirmBtn');
+            const cancelBtn = confirmModal.querySelector('.modal-btn-cancel');
+            const modalTitle = confirmModal.querySelector('.modal-title');
+            const closeBtn = confirmModal.querySelector('.modal-close');
+            
+            confirmMessage.textContent = message;
+            modalTitle.textContent = '提示';
+            
+            // 隐藏取消按钮
+            if (cancelBtn) {
+                cancelBtn.style.display = 'none';
+            }
+            
+            // 禁用点击空白处关闭弹窗的功能
+            modalOverlay.style.pointerEvents = 'none';
+            confirmModal.style.pointerEvents = 'auto';
+            
+            // 移除旧的事件监听器并添加新的
+            const newConfirmBtn = confirmBtn.cloneNode(true);
+            confirmBtn.parentNode.replaceChild(newConfirmBtn, confirmBtn);
+            
+            // 处理关闭按钮点击事件
+            const newCloseBtn = closeBtn.cloneNode(true);
+            closeBtn.parentNode.replaceChild(newCloseBtn, closeBtn);
+            newCloseBtn.addEventListener('click', () => {
+                closeModal('confirmModal');
+                // 恢复取消按钮显示
+                if (cancelBtn) {
+                    cancelBtn.style.display = '';
+                }
+                // 恢复点击空白处关闭弹窗的功能
+                modalOverlay.style.pointerEvents = '';
+                confirmModal.style.pointerEvents = '';
+                modalTitle.textContent = '确认操作';
+                if (onClose) {
+                    onClose();
+                }
+            });
+            
+            newConfirmBtn.textContent = '确定';
+            newConfirmBtn.addEventListener('click', () => {
+                closeModal('confirmModal');
+                // 恢复取消按钮显示
+                if (cancelBtn) {
+                    cancelBtn.style.display = '';
+                }
+                // 恢复点击空白处关闭弹窗的功能
+                modalOverlay.style.pointerEvents = '';
+                confirmModal.style.pointerEvents = '';
+                modalTitle.textContent = '确认操作';
+                if (onClose) {
+                    onClose();
+                }
+            });
+            
+            openModal('confirmModal');
+        }
+
         modalOverlay.addEventListener('click', () => {
             document.querySelectorAll('.modal.show').forEach(m => m.classList.remove('show'));
             modalOverlay.classList.remove('show');
@@ -5264,6 +5611,9 @@ biliPlaylistBtn.addEventListener('click', () => {
                 updateProfileStats();
                 loadRecentPlays();
                 loadMyPlaylists();
+
+                // 更新显示统计
+                updateUserStatsDisplay();
 
             } else if (pageId === 'settings') {
                 settingsPage.style.display = 'block';
@@ -5944,34 +6294,36 @@ biliLoadMoreBtn.addEventListener('click', () => {
         }
 
         async function getSongDetail(songId, platform = null, skipCache = false) {
+            // 使用传入的平台或当前平台
             const targetPlatform = platform || currentPlatform;
+            
+            let result;
             if (targetPlatform === 'bili') {
-                // 增加速率限制等待时的用户提示
-                let waitToastTimer = null;
-                const onWait = (waitMs) => {
-                    waitToastTimer = setTimeout(() => {
-                        showToast(`API繁忙，等待${Math.ceil(waitMs/1000)}秒后自动重试...`, 'warning');
-                    }, 100);
-                };
-                await rateLimiter.checkLimit('bili', onWait);
-                if (waitToastTimer) clearTimeout(waitToastTimer);
-                
-                let result = await makeApiRequest('https://api.cenguigui.cn/api/bilibili/bilibili.php', {
+                // 先尝试使用bvid搜索
+                result = await makeApiRequest('https://api.cenguigui.cn/api/bilibili/bilibili.php', {
                     action: 'media',
                     bvid: songId
-                }, !skipCache);
+                }, false); // 不使用缓存
+                
+                // 如果bvid搜索失败，尝试使用aid搜索
                 if (!((result.code === 1 || result.code === 200) && result.data)) {
                     result = await makeApiRequest('https://api.cenguigui.cn/api/bilibili/bilibili.php', {
                         action: 'media',
                         aid: songId
-                    }, !skipCache);
+                    }, false); // 不使用缓存
                 }
-                return result;
             } else {
-                // 网易云逻辑不变
-                if (!yunzhiToken) throw new Error('未设置Token');
-                return makeApiRequest(`${API_BASE}/yyjhss.php`, { id: songId, type: targetPlatform }, !skipCache);
+                // 检查是否设置了Token
+                if (!yunzhiToken) {
+                    throw new Error('未设置Token，请前往设置配置云智API Token，或切换到B站API使用');
+                }
+                result = await makeApiRequest(`${API_BASE}/yyjhss.php`, {
+                    id: songId,
+                    type: targetPlatform
+                }, !skipCache); // 如果跳过缓存，也不使用API缓存
             }
+            
+            return result;
         }
 
         async function performSearch(platform, page = 1) {
@@ -6433,22 +6785,66 @@ biliLoadMoreBtn.addEventListener('click', () => {
         }
 
         async function loadSongDetailForLazyLoading(songId) {
-            // 仅从现有搜索结果中获取封面，不发起API请求获取音频URL
-            let songData = searchResults[currentPlatform]?.find(s => String(s.id) === String(songId));
-            if (!songData) {
-                const otherPlatform = currentPlatform === 'wy' ? 'bili' : 'wy';
-                songData = searchResults[otherPlatform]?.find(s => String(s.id) === String(songId));
-            }
-            
-            if (songData && songData.pic) {
-                const songItem = document.querySelector(`.song-item[data-id="${songId}"]`);
-                if (songItem) {
-                    const img = songItem.querySelector('img');
-                    const placeholder = songItem.querySelector('.cover-placeholder');
-                    let coverUrl = songData.pic;
-                    if (coverUrl && coverUrl.startsWith('//')) coverUrl = 'https:' + coverUrl;
-                    if (coverUrl && img) loadAndCacheCover(img, coverUrl, placeholder);
+            try {
+                // 检查缓存中是否有歌曲详情
+                const cacheKey = `${currentPlatform}_${songId}`;
+                let result;
+                
+                if (songDetailsCache[cacheKey]) {
+                    result = {
+                        code: 1,
+                        data: songDetailsCache[cacheKey]
+                    };
+                } else {
+                    result = await getSongDetail(songId, currentPlatform);
                 }
+                
+                if ((result.code === 1 || result.code === 200) && result.data) {
+                    // 更新歌曲数据
+                    // 尝试从当前平台的搜索结果中查找
+                    let songData = searchResults[currentPlatform].find(s => String(s.id) === String(songId));
+                    
+                    // 如果没找到，尝试从另一个平台的搜索结果中查找
+                    if (!songData) {
+                        const otherPlatform = currentPlatform === 'wy' ? 'bili' : 'wy';
+                        songData = searchResults[otherPlatform].find(s => String(s.id) === String(songId));
+                    }
+                    
+                    if (songData) {
+                        // 获取音频URL（支持多个可能的字段名）
+                        songData.url = result.data.url || result.data.audio || result.data.play_url || result.data.stream_url;
+                        songData.album = result.data.album;
+                        // 支持多个可能的字段名（包括B站API可能的字段名）
+                        if (result.data.name || result.data.title) songData.name = result.data.name || result.data.title;
+                        if (result.data.artist || result.data.owner || result.data.up || result.data.author || result.data.uploader) {
+                            songData.artist = result.data.artist || result.data.owner || result.data.up || result.data.author || result.data.uploader;
+                        }
+                        if (result.data.pic || result.data.cover || result.data.thumbnail || result.data.image || result.data.img) {
+                            songData.pic = result.data.pic || result.data.cover || result.data.thumbnail || result.data.image || result.data.img;
+                        }
+                    }
+                    
+                    // 更新封面
+                    const songItem = document.querySelector(`.song-item[data-id="${songId}"]`);
+                    if (songItem) {
+                        const img = songItem.querySelector('img');
+                        const placeholder = songItem.querySelector('.cover-placeholder');
+                        let coverUrl = null;
+                        if (result.data) {
+                            // 支持多个可能的封面字段名（包括B站API可能的字段名）
+                            coverUrl = result.data.pic || result.data.cover || result.data.thumbnail || result.data.image || result.data.img || result.data.albumPic || result.data.album_pic || result.data.picUrl || result.data.pic_url;
+                        }
+                        
+                        if (coverUrl && coverUrl.startsWith('//')) {
+                            coverUrl = 'https:' + coverUrl;
+                        }
+                        
+                        if (coverUrl && img) {
+                            loadAndCacheCover(img, coverUrl, placeholder);
+                        }
+                    }
+                }
+            } catch (error) {
             }
         }
 
@@ -6502,200 +6898,116 @@ biliLoadMoreBtn.addEventListener('click', () => {
             }
         }
 
-        async function playSong(songId, platform = null, retryCount = 0, playToken = null) {
-            const MAX_RETRIES = 5;
-            const RETRY_DELAY_BASE = 1000;
-
-            // 生成或使用传入的 token
-            const isNewRequest = (playToken === null);
-            const thisPlayToken = isNewRequest ? Symbol('play') : playToken;
-
-            if (isNewRequest) {
-                // 新请求：取消之前的重试定时器，并更新全局 token
-                if (currentRetryTimer) {
-                    clearTimeout(currentRetryTimer);
-                    currentRetryTimer = null;
-                }
-                currentPlayToken = thisPlayToken;
-            } else {
-                // 重试请求：检查 token 是否仍然是最新的，如果不是则放弃本次重试
-                if (currentPlayToken !== thisPlayToken) {
-                    console.log('播放任务已被新请求取代，放弃重试');
-                    return;
-                }
-            }
-
-            // 更新当前歌曲的播放时长（原有逻辑保留）
-            if (player.lastUpdateTime !== null) {
-                const now = Date.now();
-                const delta = now - player.lastUpdateTime;
-                if (delta > 0) {
-                    const totalPlayTime = parseInt(localStorage.getItem('totalPlayTime') || 0) + delta;
-                    localStorage.setItem('totalPlayTime', totalPlayTime);
-                    if (profilePage.style.display === 'block') updateProfileStats();
-                }
-                player.lastUpdateTime = null;
-            }
-
-            const targetPlatform = platform || currentPlatform;
-
-            // 显示加载提示（仅B站显示详细，网易云简单提示）
-            let loadingTimer = null;
-            const showLoadingMsg = () => {
-                const toast = document.getElementById('toast');
-                const toastMsg = document.getElementById('toastMessage');
-                toast.className = 'toast loading-toast';
-                toastMsg.textContent = retryCount > 0 ? `重试中 (${retryCount}/${MAX_RETRIES})...` : '正在获取音频链接...';
-                toast.querySelector('i').className = 'fas fa-spinner fa-pulse';
-                toast.classList.add('show');
-                return setTimeout(() => {
-                    if (toast.classList.contains('show') && toastMsg.textContent.includes('获取')) {
-                        toast.classList.remove('show');
-                    }
-                }, 8000);
-            };
-
-            if (targetPlatform === 'bili') {
-                loadingTimer = showLoadingMsg();
-            } else {
-                showToast('正在获取播放链接...', 'info');
-            }
-
+        async function playSong(songId, platform = null, songInfo = null) {
             try {
-                // 从搜索结果获取基础信息
-                let searchResult = null;
-                if (targetPlatform) {
-                    searchResult = searchResults[targetPlatform]?.find(s => String(s.id) === String(songId));
+                // 先更新当前歌曲的播放时长
+                if (player.lastUpdateTime !== null) {
+                    const now = Date.now();
+                    const delta = now - player.lastUpdateTime;
+                    if (delta > 0) {
+                        const totalPlayTime = parseInt(localStorage.getItem('totalPlayTime') || 0) + delta;
+                        localStorage.setItem('totalPlayTime', totalPlayTime);
+                        // 如果当前在个人页面，更新显示
+                        if (profilePage.style.display === 'block') {
+                            updateProfileStats();
+                        }
+                    }
+                    player.lastUpdateTime = null;
                 }
+                
+                // 首先从提供的歌曲信息或搜索结果中获取歌曲信息
+                let searchResult = songInfo;
+                
+                // 如果没有提供歌曲信息，尝试从搜索结果中查找
                 if (!searchResult) {
-                    const other = targetPlatform === 'wy' ? 'bili' : 'wy';
-                    searchResult = searchResults[other]?.find(s => String(s.id) === String(songId));
+                    // 尝试从指定平台的搜索结果中查找
+                    if (platform) {
+                        searchResult = searchResults[platform].find(s => String(s.id) === String(songId));
+                    } else {
+                        // 尝试从当前平台的搜索结果中查找
+                        searchResult = searchResults[currentPlatform].find(s => String(s.id) === String(songId));
+                        
+                        // 如果没找到，尝试从另一个平台的搜索结果中查找
+                        if (!searchResult) {
+                            const otherPlatform = currentPlatform === 'wy' ? 'bili' : 'wy';
+                            searchResult = searchResults[otherPlatform].find(s => String(s.id) === String(songId));
+                        }
+                    }
                 }
-
-                // 获取音频URL
-                const result = await getSongDetail(songId, targetPlatform, false);
-
-                if (loadingTimer) clearTimeout(loadingTimer);
-                const currentToast = document.getElementById('toast');
-                if (currentToast.classList.contains('show')) currentToast.classList.remove('show');
-
-                // 异步操作后再次检查 token 是否仍然有效
-                if (currentPlayToken !== thisPlayToken) {
-                    console.log('播放任务已被新请求取代，放弃播放');
-                    return;
-                }
-
+                
+                // 使用指定的平台或当前平台获取歌曲详情
+                const result = await getSongDetail(songId, platform);
+                
                 if ((result.code === 1 || result.code === 200) && result.data && result.data.url) {
-                    const songName = searchResult?.name || result.data.name || result.data.title || '未知歌曲';
-                    const songArtist = searchResult?.artist || result.data.artist || result.data.owner || result.data.up || '未知艺术家';
-                    const coverUrl = searchResult?.pic || result.data.pic || result.data.cover || null;
-
+                    // 优先使用提供的歌曲信息或搜索结果中的数据，如果没有则使用详情API返回的数据
+                    const songName = searchResult?.name || result.data.name || result.data.title || result.data.bvid || '未知歌曲';
+                    const songArtist = searchResult?.artist || result.data.artist || result.data.owner || result.data.up || result.data.author || result.data.uploader || result.data.singer || '未知艺术家';
+                    const coverUrl = searchResult?.pic || result.data.pic || result.data.cover || result.data.thumbnail || result.data.image || result.data.img || result.data.albumPic || result.data.album_pic || result.data.picUrl || result.data.pic_url;
+                    
                     const song = {
                         id: songId,
                         name: songName,
                         artist: songArtist,
                         pic: coverUrl,
                         url: result.data.url,
-                        platform: targetPlatform
+                        platform: platform || currentPlatform
                     };
-
+                    
+                    // 直接设置音频源并播放
                     player.audioElement.src = song.url;
                     player.audioElement.load();
-
-                    // 错误处理函数（播放过程中出错，触发重试）
-                    const errorHandler = async (e) => {
-                        player.audioElement.removeEventListener('error', errorHandler);
-                        if (currentPlayToken !== thisPlayToken) return;
-                        if (retryCount < MAX_RETRIES) {
-                            const delay = RETRY_DELAY_BASE * Math.pow(2, retryCount);
-                            showToast(`播放失败，${delay/1000}秒后自动重试 (${retryCount+1}/${MAX_RETRIES})`, 'warning');
-                            const cacheKey = `${targetPlatform}_${songId}`;
-                            delete songDetailsCache[cacheKey];
-                            localStorage.setItem('songDetailsCache', JSON.stringify(songDetailsCache));
-                            ApiCache.clear();
-                            if (currentRetryTimer) clearTimeout(currentRetryTimer);
-                            currentRetryTimer = setTimeout(() => {
-                                currentRetryTimer = null;
-                                playSong(songId, targetPlatform, retryCount + 1, thisPlayToken);
-                            }, delay);
-                        } else {
-                            showToast('多次重试失败，请稍后再试', 'error');
-                        }
-                    };
-                    player.audioElement.addEventListener('error', errorHandler, { once: true });
-
-                    // 尝试播放
-                    player.audioElement.play().catch(async (err) => {
-                        player.audioElement.removeEventListener('error', errorHandler);
-                        if (currentPlayToken !== thisPlayToken) return;
-                        if (retryCount < MAX_RETRIES) {
-                            const delay = RETRY_DELAY_BASE * Math.pow(2, retryCount);
-                            showToast(`播放失败: ${err.message}，${delay/1000}秒后重试`, 'warning');
-                            const cacheKey = `${targetPlatform}_${songId}`;
-                            delete songDetailsCache[cacheKey];
-                            localStorage.setItem('songDetailsCache', JSON.stringify(songDetailsCache));
-                            ApiCache.clear();
-                            if (currentRetryTimer) clearTimeout(currentRetryTimer);
-                            currentRetryTimer = setTimeout(() => {
-                                currentRetryTimer = null;
-                                playSong(songId, targetPlatform, retryCount + 1, thisPlayToken);
-                            }, delay);
-                        } else {
-                            showToast(`播放失败: ${err.message}`, 'error');
-                        }
-                    });
-
-                    // 更新播放器UI
+                    player.audioElement.play();
+                    
+                    // 更新播放器信息
                     player.playerTitle.textContent = song.name;
                     player.playerArtist.textContent = song.artist;
+                    
                     const playerCover = player.playerElement.querySelector('.player-cover');
                     if (song.pic) {
-                        let finalCover = song.pic.startsWith('//') ? 'https:' + song.pic : song.pic;
-                        playerCover.innerHTML = `<img src="${finalCover}" onerror="this.parentElement.innerHTML='<i class=\'fas fa-disc-record\'></i>'">`;
+                        // 处理协议相对URL
+                        let finalCoverUrl = song.pic;
+                        if (finalCoverUrl.startsWith('//')) {
+                            finalCoverUrl = 'https:' + finalCoverUrl;
+                        }
+                        playerCover.innerHTML = `<img src="${finalCoverUrl}" alt="" onerror="this.parentElement.innerHTML='<i class=\'fas fa-disc-record\'></i>'">`;
                     } else {
                         playerCover.innerHTML = '<i class="fas fa-disc-record"></i>';
                     }
+                    
                     player.playerElement.classList.add('visible');
                     player.playerElement.classList.remove('hidden');
+                    
+                    // 重置播放状态
                     player.isPlaying = true;
                     player.playBtn.innerHTML = '<i class="fas fa-pause"></i>';
+                    
+                    // 重置进度条
                     player.progressFill.style.width = '0%';
                     player.timeDisplay.textContent = '0:00 / 0:00';
+                    
+                    // 刷新滚动效果
                     refreshMarquee();
-
+                    
                     if (!playlist.find(s => String(s.id) === String(songId))) {
                         playlist.push(song);
                     }
-                    addToPlayHistory({ ...song, playedAt: new Date().toISOString() });
-
+                    
+                    // 添加到播放历史
+                    addToPlayHistory({
+                        ...song,
+                        playedAt: new Date().toISOString()
+                    });
+                    
                     document.querySelectorAll('.song-item').forEach(item => {
                         item.classList.toggle('active', item.dataset.id === String(songId));
                     });
+                    
                     showToast(`正在播放: ${songName}`, 'success');
                 } else {
-                    throw new Error('无效的音频链接');
+                    showToast('无法获取播放链接', 'error');
                 }
             } catch (error) {
-                if (loadingTimer) clearTimeout(loadingTimer);
-                const toast = document.getElementById('toast');
-                toast.classList.remove('show');
-
-                if (currentPlayToken !== thisPlayToken) return;
-                if (retryCount < MAX_RETRIES) {
-                    const delay = RETRY_DELAY_BASE * Math.pow(2, retryCount);
-                    showToast(`获取音频失败: ${error.message}，${delay/1000}秒后重试 (${retryCount+1}/${MAX_RETRIES})`, 'warning');
-                    const cacheKey = `${targetPlatform}_${songId}`;
-                    delete songDetailsCache[cacheKey];
-                    localStorage.setItem('songDetailsCache', JSON.stringify(songDetailsCache));
-                    ApiCache.clear();
-                    if (currentRetryTimer) clearTimeout(currentRetryTimer);
-                    currentRetryTimer = setTimeout(() => {
-                        currentRetryTimer = null;
-                        playSong(songId, targetPlatform, retryCount + 1, thisPlayToken);
-                    }, delay);
-                } else {
-                    showToast(`播放失败: ${error.message}`, 'error');
-                }
+                showToast('播放失败', 'error');
             }
         }
 
@@ -6820,6 +7132,73 @@ biliLoadMoreBtn.addEventListener('click', () => {
             setStorageItem('playHistory', JSON.stringify(playHistory));
         }
 
+        // 从服务器获取用户登录统计
+        async function loadUserLoginStats() {
+            const user = getCurrentUser();
+            if (!user || !user.id) {
+                // 未登录时显示默认值
+                document.getElementById('openCountDisplay').textContent = '0';
+                document.getElementById('lastOpenDisplay').textContent = '登录后可见';
+                return;
+            }
+            try {
+                initSupabase();
+                const { data, error } = await supabaseClient.rpc('get_user_login_stats', { _user_id: String(user.id) });
+                if (error) throw error;
+                if (data && data.length > 0) {
+                    document.getElementById('openCountDisplay').textContent = data[0].total_logins || '0';
+                    const lastLogin = data[0].last_login;
+                    if (lastLogin) {
+                        const date = new Date(lastLogin);
+                        document.getElementById('lastOpenDisplay').textContent = date.toLocaleString();
+                    } else {
+                        document.getElementById('lastOpenDisplay').textContent = '首次登录';
+                    }
+                } else {
+                    document.getElementById('openCountDisplay').textContent = '0';
+                    document.getElementById('lastOpenDisplay').textContent = '暂无记录';
+                }
+            } catch (err) {
+                console.error('获取登录统计失败', err);
+                document.getElementById('openCountDisplay').textContent = '加载失败';
+                document.getElementById('lastOpenDisplay').textContent = '--';
+            }
+        }
+
+        // 新增函数：更新个人页面的统计显示
+        async function updateUserStatsDisplay() {
+            const user = getCurrentUser();
+            if (!user || !user.id) {
+                document.getElementById('loginCountDisplay').textContent = '0';
+                document.getElementById('lastLoginDisplay').textContent = '登录后可见';
+                return;
+            }
+
+            try {
+                initSupabase();
+                const { data, error } = await supabaseClient.rpc('get_user_stats', { _user_id: String(user.id) });
+                if (error) throw error;
+                if (data && data.length > 0) {
+                    const stats = data[0];
+                    document.getElementById('loginCountDisplay').textContent = stats.login_count || '0';
+                    if (stats.last_login_time) {
+                        const date = new Date(stats.last_login_time);
+                        document.getElementById('lastLoginDisplay').textContent = date.toLocaleString();
+                    } else {
+                        document.getElementById('lastLoginDisplay').textContent = '首次登录';
+                    }
+                } else {
+                    // 没有记录时显示默认值
+                    document.getElementById('loginCountDisplay').textContent = '0';
+                    document.getElementById('lastLoginDisplay').textContent = '首次登录';
+                }
+            } catch (err) {
+                console.error('获取用户统计失败', err);
+                document.getElementById('loginCountDisplay').textContent = '加载失败';
+                document.getElementById('lastLoginDisplay').textContent = '--';
+            }
+        }
+
         // 更新个人页面统计信息
         function updateProfileStats() {
             // 计算总播放次数
@@ -6836,6 +7215,9 @@ biliLoadMoreBtn.addEventListener('click', () => {
             document.getElementById('totalPlays').textContent = totalPlays;
             document.getElementById('totalPlayTime').textContent = totalPlayTime;
             document.getElementById('totalPlaylists').textContent = totalPlaylists;
+            
+            // 更新登录和个人页访问统计
+            updateUserStatsDisplay();
         }
 
         // 加载最近播放
@@ -6874,7 +7256,9 @@ biliLoadMoreBtn.addEventListener('click', () => {
                 item.addEventListener('click', function() {
                     const songId = this.dataset.id;
                     const platform = this.dataset.platform;
-                    playSong(songId, platform);
+                    const index = parseInt(this.dataset.index);
+                    const songInfo = recentSongs[index];
+                    playSong(songId, platform, songInfo);
                 });
             });
             
