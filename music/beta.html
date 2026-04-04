@@ -1906,16 +1906,34 @@
             color: var(--text-secondary);
         }
 
+        /* 进度条区域整体布局 */
         .fullscreen-player-progress-section {
             width: 100%;
-            margin-top: auto;
             display: flex;
-            align-items: center;
-            gap: 20px;
+            flex-direction: column;
+            gap: 12px;
         }
-
         .fullscreen-player-progress-container {
-            flex: 1;
+            width: 100%;
+        }
+        /* 控制按钮 + 倍速/模式 同一行容器 */
+        .fullscreen-player-controls-row {
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+            flex-wrap: wrap;
+        }
+        .fullscreen-player-controls {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+        .fullscreen-player-extras {
+            display: flex;
+            gap: 12px;
+            align-items: center;
         }
 
         .fullscreen-player-progress {
@@ -2183,13 +2201,28 @@
             transform: scale(1.02);
             background: linear-gradient(90deg, transparent, var(--border), transparent);
         }
-        .fullscreen-player-extras {
+        /* 控制栏容器（倍速+模式） */
+
+        /* 下拉触发器样式调整 */
+        .dropdown-trigger {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 40px;
+            padding: 6px 12px;
+            font-size: 13px;
+            cursor: pointer;
             display: flex;
-            justify-content: space-between;
             align-items: center;
-            gap: 20px;
-            margin: 16px 0 12px;
-            flex-wrap: wrap;
+            gap: 6px;
+            color: var(--text);
+            transition: all 0.2s;
+        }
+        #modeDropdownTrigger i:first-child {
+            font-size: 14px;
+        }
+        #modeDropdownTrigger .fa-chevron-down {
+            font-size: 12px;
+            margin-left: 4px;
         }
         .playback-speed-selector {
             display: flex;
@@ -2299,7 +2332,7 @@
             text-align: center;
         }
 
-        /* 移动端：封面居中 + 下拉菜单纵向排列 */
+        /* 移动端：封面居中 + 下拉菜单横向排列 */
         @media (max-width: 640px) {
             .fullscreen-player-content {
                 align-items: center;
@@ -2337,16 +2370,19 @@
             .fullscreen-player-artist {
                 text-align: center;
             }
+            .fullscreen-player-controls-row {
+                justify-content: center;
+                gap: 20px;
+            }
             .fullscreen-player-extras {
-                flex-direction: column;
                 gap: 12px;
-                width: 100%;
             }
             .dropdown-container {
-                width: 100%;
+                width: auto;
             }
             .dropdown-trigger {
-                width: 100%;
+                padding: 6px 12px;
+                width: auto;
                 justify-content: center;
             }
             .fullscreen-player-progress-section {
@@ -4028,6 +4064,132 @@
                 text-align: center;
             }
         }
+
+        /* ========== 自定义滚动条 - 全局适配 ========== */
+
+        /* 针对 WebKit 浏览器 (Chrome, Safari, Edge) */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+            background: transparent;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--border);
+            border-radius: 10px;
+            margin: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--text-tertiary);
+            border-radius: 10px;
+            transition: background 0.2s;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--text-secondary);
+        }
+
+        /* 针对 Firefox 浏览器 */
+        * {
+            scrollbar-width: thin;
+            scrollbar-color: var(--text-tertiary) var(--border);
+        }
+
+        /* 深色主题下微调滚动条颜色 (保留变量自动适配) */
+        html.dark-theme ::-webkit-scrollbar-thumb {
+            background: #555555;
+        }
+        html.dark-theme ::-webkit-scrollbar-thumb:hover {
+            background: #888888;
+        }
+        html.dark-theme * {
+            scrollbar-color: #555555 var(--border);
+        }
+
+        /* 针对特定容器的滚动条优化（可选，保证一致性） */
+        .fullscreen-lyrics-container,
+        .song-list,
+        .modal-body,
+        .recent-list,
+        .playlist-list,
+        .history-list {
+            scrollbar-width: thin;
+        }
+
+        /* 确保滚动条在页面任何地方都使用自定义样式 */
+        html, body {
+            scrollbar-width: thin;
+            overflow-y: auto;
+            overflow-x: hidden;
+        }
+
+        /* 移动端触摸优化：移除所有按钮和可点击元素的默认高亮及:active背景 */
+        button,
+        a,
+        .navbar-item,
+        .song-item,
+        .history-item,
+        .playlist-item,
+        .recent-item,
+        .my-playlist-item,
+        .setting-item,
+        .feature-btn,
+        .modal-close,
+        .song-action-btn,
+        .player-btn,
+        .icon-btn,
+        .search-btn,
+        .load-more-btn,
+        .dropdown-trigger,
+        .dropdown-item,
+        .theme-toggle-btn,
+        .login-action-btn,
+        .fullscreen-player-btn,
+        .fullscreen-player-close,
+        .toast-close,
+        .m-tab,
+        .token-toggle-btn {
+            -webkit-tap-highlight-color: transparent !important;
+            outline: none !important;
+            -webkit-touch-callout: none;
+        }
+
+        /* 禁止点击时出现灰色背景（移动端WebKit默认行为） */
+        button:active,
+        a:active,
+        .navbar-item:active,
+        .song-item:active,
+        .history-item:active,
+        .playlist-item:active,
+        .recent-item:active,
+        .my-playlist-item:active,
+        .setting-item:active,
+        .feature-btn:active,
+        .modal-close:active,
+        .song-action-btn:active,
+        .player-btn:active,
+        .icon-btn:active,
+        .search-btn:active,
+        .load-more-btn:active,
+        .dropdown-trigger:active,
+        .dropdown-item:active,
+        .theme-toggle-btn:active,
+        .login-action-btn:active,
+        .fullscreen-player-btn:active,
+        .fullscreen-player-close:active,
+        .toast-close:active,
+        .m-tab:active,
+        .token-toggle-btn:active {
+            background-color: transparent !important;
+            /* 可选轻微缩放，提供触感反馈但不留痕迹 */
+            transform: scale(0.98);
+        }
+
+        /* 全局body也确保移除高亮 */
+        body {
+            -webkit-tap-highlight-color: transparent;
+        }
     </style>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
@@ -4671,7 +4833,7 @@
                         <p class="fullscreen-player-artist" id="fullscreenPlayerArtist"></p>
                     </div>
                 </div>
-                <!-- 新增歌词区域 -->
+                <!-- 歌词区域 -->
                 <div class="fullscreen-lyrics-container" id="fullscreenLyricsContainer">
                     <div class="fullscreen-lyrics-header">
                         <i class="fas fa-microphone-alt"></i> 滚动歌词
@@ -4682,33 +4844,7 @@
                 </div>
             </div>
 
-            <!-- 新增控制栏：倍速 + 播放模式 -->
-            <div class="fullscreen-player-extras">
-                <div class="dropdown-container">
-                    <button class="dropdown-trigger" id="speedDropdownTrigger">
-                        <i class="fas fa-gauge-high"></i> 倍速 <span id="currentSpeedLabel">1.0x</span> <i class="fas fa-chevron-down"></i>
-                    </button>
-                    <div class="dropdown-menu" id="speedDropdownMenu">
-                        <button class="dropdown-item speed-item" data-speed="0.5">0.5x</button>
-                        <button class="dropdown-item speed-item" data-speed="0.75">0.75x</button>
-                        <button class="dropdown-item speed-item" data-speed="1.0">1.0x</button>
-                        <button class="dropdown-item speed-item" data-speed="1.25">1.25x</button>
-                        <button class="dropdown-item speed-item" data-speed="1.5">1.5x</button>
-                        <button class="dropdown-item speed-item" data-speed="2.0">2.0x</button>
-                    </div>
-                </div>
-                <div class="dropdown-container">
-                    <button class="dropdown-trigger" id="modeDropdownTrigger">
-                        <i class="fas fa-random"></i> 模式 <span id="currentModeLabel">顺序</span> <i class="fas fa-chevron-down"></i>
-                    </button>
-                    <div class="dropdown-menu" id="modeDropdownMenu">
-                        <button class="dropdown-item mode-item" data-mode="order"><i class="fas fa-list"></i> 顺序</button>
-                        <button class="dropdown-item mode-item" data-mode="random"><i class="fas fa-random"></i> 随机</button>
-                        <button class="dropdown-item mode-item" data-mode="loop"><i class="fas fa-repeat"></i> 单曲循环</button>
-                    </div>
-                </div>
-            </div>
-
+            <!-- 进度条区域（原有） -->
             <div class="fullscreen-player-progress-section">
                 <div class="fullscreen-player-progress-container">
                     <div class="fullscreen-player-progress" id="fullscreenPlayerProgress">
@@ -4719,16 +4855,46 @@
                         <span id="fullscreenPlayerDuration">0:00</span>
                     </div>
                 </div>
-                <div class="fullscreen-player-controls">
-                    <button class="fullscreen-player-btn" id="fullscreenPlayerPrev">
-                        <i class="fas fa-step-backward"></i>
-                    </button>
-                    <button class="fullscreen-player-btn fullscreen-player-play-btn" id="fullscreenPlayerPlay">
-                        <i class="fas fa-play"></i>
-                    </button>
-                    <button class="fullscreen-player-btn" id="fullscreenPlayerNext">
-                        <i class="fas fa-step-forward"></i>
-                    </button>
+                <div class="fullscreen-player-controls-row">
+                    <div class="fullscreen-player-controls">
+                        <button class="fullscreen-player-btn" id="fullscreenPlayerPrev">
+                            <i class="fas fa-step-backward"></i>
+                        </button>
+                        <button class="fullscreen-player-btn fullscreen-player-play-btn" id="fullscreenPlayerPlay">
+                            <i class="fas fa-play"></i>
+                        </button>
+                        <button class="fullscreen-player-btn" id="fullscreenPlayerNext">
+                            <i class="fas fa-step-forward"></i>
+                        </button>
+                    </div>
+                    <div class="fullscreen-player-extras">
+                        <div class="dropdown-container">
+                            <button class="dropdown-trigger" id="speedDropdownTrigger">
+                                <i class="fas fa-gauge-high"></i>
+                                <span id="currentSpeedLabel">1.0x</span>
+                                <i class="fas fa-chevron-down"></i>
+                            </button>
+                            <div class="dropdown-menu" id="speedDropdownMenu">
+                                <button class="dropdown-item speed-item" data-speed="0.5">0.5x</button>
+                                <button class="dropdown-item speed-item" data-speed="0.75">0.75x</button>
+                                <button class="dropdown-item speed-item" data-speed="1.0">1.0x</button>
+                                <button class="dropdown-item speed-item" data-speed="1.25">1.25x</button>
+                                <button class="dropdown-item speed-item" data-speed="1.5">1.5x</button>
+                                <button class="dropdown-item speed-item" data-speed="2.0">2.0x</button>
+                            </div>
+                        </div>
+                        <div class="dropdown-container">
+                            <button class="dropdown-trigger" id="modeDropdownTrigger">
+                                <i class="fas fa-list" id="modeIcon"></i>
+                                <i class="fas fa-chevron-down"></i>
+                            </button>
+                            <div class="dropdown-menu" id="modeDropdownMenu">
+                                <button class="dropdown-item mode-item" data-mode="order"><i class="fas fa-list"></i> 顺序</button>
+                                <button class="dropdown-item mode-item" data-mode="random"><i class="fas fa-random"></i> 随机</button>
+                                <button class="dropdown-item mode-item" data-mode="loop"><i class="fas fa-repeat"></i> 单曲循环</button>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -5868,6 +6034,10 @@
                 this.maxRetries = 3;      // 最大重试次数
                 this.retryDelay = 1500;   // 重试间隔(ms)
                 
+                // 歌词自动滚动相关
+                this.lyricsAutoScrollTimer = null;   // 自动滚动计时器
+                this.userScrolledLyrics = false;     // 用户是否主动滚动过歌词
+                
                 this.init();
             }
             
@@ -5996,6 +6166,22 @@
                     if (speedMenu) speedMenu.classList.remove('show');
                     if (modeMenu) modeMenu.classList.remove('show');
                 });
+
+                // 歌词容器滚动监听（检测用户主动滚动）
+                const lyricsContainer = document.getElementById('fullscreenLyrics');
+                if (lyricsContainer) {
+                    const handleUserScroll = () => {
+                        if (!this.userScrolledLyrics) {
+                            this.userScrolledLyrics = true;
+                        }
+                        this.resetLyricsAutoScrollTimer();
+                    };
+                    lyricsContainer.addEventListener('scroll', handleUserScroll);
+                    lyricsContainer.addEventListener('wheel', handleUserScroll);
+                    lyricsContainer.addEventListener('touchmove', handleUserScroll);
+                    // 保存以便清理（可选，在类中添加清理方法）
+                    this.lyricsScrollHandler = handleUserScroll;
+                }
             }
             
             openFullscreenPlayer() {
@@ -6030,6 +6216,14 @@
                         }
                     });
                     
+                    // 同步模式图标
+                    const modeIcon = document.getElementById('modeIcon');
+                    if (modeIcon) {
+                        if (this.playMode === 'order') modeIcon.className = 'fas fa-list';
+                        else if (this.playMode === 'random') modeIcon.className = 'fas fa-random';
+                        else if (this.playMode === 'loop') modeIcon.className = 'fas fa-repeat';
+                    }
+                    
                     // 如果已经有歌词，重启同步
                     if(this.isPlaying) this.startLyricsSync();
                 }
@@ -6040,6 +6234,8 @@
                 if (fullscreenPlayer) {
                     fullscreenPlayer.classList.remove('show');
                 }
+                // 清理自动滚动计时器
+                this.stopLyricsAutoScrollTimer();
             }
             
             updateFullscreenPlayer() {
@@ -6534,11 +6730,21 @@
             setPlayMode(mode) {
                 this.playMode = mode;
                 localStorage.setItem('preferred_playMode', mode);
-                // 更新全屏模式按钮高亮
-                document.querySelectorAll('.mode-btn').forEach(btn => {
+                
+                // 更新模式触发器图标
+                const modeIcon = document.getElementById('modeIcon');
+                if (modeIcon) {
+                    if (mode === 'order') modeIcon.className = 'fas fa-list';
+                    else if (mode === 'random') modeIcon.className = 'fas fa-random';
+                    else if (mode === 'loop') modeIcon.className = 'fas fa-repeat';
+                }
+                
+                // 更新下拉菜单中的高亮
+                document.querySelectorAll('.mode-item').forEach(btn => {
                     if(btn.dataset.mode === mode) btn.classList.add('active');
                     else btn.classList.remove('active');
                 });
+                
                 const modeName = { order:'顺序播放', random:'随机播放', loop:'单曲循环' }[mode];
                 showToast(modeName, 'info');
             }
@@ -6588,6 +6794,10 @@
                 });
                 html += '</div>';
                 lyricsContainer.innerHTML = html;
+                // 重置用户滚动标志并启动自动滚动计时器
+                this.userScrolledLyrics = false;
+                this.stopLyricsAutoScrollTimer();
+                this.startLyricsAutoScrollTimer();
                 // 启动歌词同步（如果正在播放）
                 if(this.isPlaying) this.startLyricsSync();
             }
@@ -6608,13 +6818,15 @@
                             break;
                         }
                     }
-                    // 高亮当前行并滚动
+                    // 高亮当前行
                     const lines = lyricsContainer.querySelectorAll('.lyrics-line');
                     lines.forEach((line, idx) => {
                         if(idx === activeIndex) {
                             line.classList.add('active-line');
-                            // 自动滚动到可视区域
-                            line.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                            // 如果用户没有主动滚动，则自动滚动到当前行
+                            if (!this.userScrolledLyrics) {
+                                line.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                            }
                         } else {
                             line.classList.remove('active-line');
                         }
@@ -6626,6 +6838,44 @@
                 if(this.lyricsUpdateTimer) {
                     clearInterval(this.lyricsUpdateTimer);
                     this.lyricsUpdateTimer = null;
+                }
+            }
+
+            // 停止自动滚动计时器
+            stopLyricsAutoScrollTimer() {
+                if (this.lyricsAutoScrollTimer) {
+                    clearTimeout(this.lyricsAutoScrollTimer);
+                    this.lyricsAutoScrollTimer = null;
+                }
+            }
+
+            // 启动自动滚动计时器（3秒后自动回正）
+            startLyricsAutoScrollTimer() {
+                this.stopLyricsAutoScrollTimer();
+                this.lyricsAutoScrollTimer = setTimeout(() => {
+                    if (this.userScrolledLyrics) {
+                        this.userScrolledLyrics = false;
+                        // 手动滚动到当前歌词行并居中
+                        this.scrollToCurrentLyricsLine();
+                    }
+                }, 3000);
+            }
+
+            // 重置自动滚动计时器（用户操作时调用）
+            resetLyricsAutoScrollTimer() {
+                if (!this.userScrolledLyrics) {
+                    this.userScrolledLyrics = true;
+                }
+                this.startLyricsAutoScrollTimer();
+            }
+
+            // 滚动到当前激活的歌词行（居中显示）
+            scrollToCurrentLyricsLine() {
+                const lyricsContainer = document.getElementById('fullscreenLyrics');
+                if (!lyricsContainer) return;
+                const activeLine = lyricsContainer.querySelector('.lyrics-line.active-line');
+                if (activeLine) {
+                    activeLine.scrollIntoView({ behavior: 'smooth', block: 'center' });
                 }
             }
         }
