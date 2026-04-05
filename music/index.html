@@ -5990,8 +5990,8 @@
                     <div class="field">
                         <input type="password" id="loginPassword" placeholder="密码" autocomplete="current-password">
                     </div>
-                    <span class="forgot">忘记密码?</span>
-                    <button type="submit" class="btn-blue btn-full">SIGN IN</button>
+                    <span class="forgot" onclick="showToast('请联系管理员重置密码', 'info')">忘记密码?</span>
+                    <button type="submit" class="btn-blue btn-full">登录</button>
                 </form>
 
                 <!-- 注册表单 -->
@@ -6280,24 +6280,31 @@
                 return;
             }
 
+            // 🔒 锁定自动同步，防止登录过程中上传旧数据
+            isAutoSyncingLocked = true;
+
             try {
                 await vipLogin(username, password);
                 showToast('登录成功！', 'success');
                 closeLoginPage();
                 updateLoginStatus();
-                // 登录成功后获取用户数据
-                await fetchUserData();
-                // 注意：不再自动上传本地数据，避免覆盖服务器数据
-                // 初始化数据哈希，避免刚登录就重复上传
-                lastUploadDataHash = getCurrentDataHash();
-                // 刷新搜索历史记录显示
+
+                // vipLogin 内部已调用 fetchUserData 并设置 lastUploadDataHash
+                // 刷新搜索历史显示
                 loadSearchHistory('wy');
                 loadSearchHistory('bili');
-                // 不再刷新页面，直接更新UI以应用所有设置
                 updateUserStatsDisplay();
                 updateProfileStats();
+
+                // 如果当前在个人页面，刷新最近播放列表
+                if (profilePage.style.display === 'block') {
+                    loadRecentPlays();
+                }
             } catch (error) {
                 showToast(error.message, 'error');
+            } finally {
+                // 🔓 解锁自动同步
+                isAutoSyncingLocked = false;
             }
         }
 
@@ -8085,7 +8092,6 @@
                 const fullscreenCover = document.getElementById('fullscreenPlayerCover');
                 if (fullscreenCover) {
                     if (currentSong.pic) {
-                        // 处理协议相对URL和HTTP URL
                         let finalCoverUrl = currentSong.pic;
                         if (finalCoverUrl.startsWith('//')) {
                             finalCoverUrl = 'https:' + finalCoverUrl;
@@ -8095,18 +8101,11 @@
                             finalCoverUrl = finalCoverUrl.replace('http://', 'https://');
                         }
                         
-                        // 特殊处理B站封面URL，确保在GitHub Pages上能正常加载
-                        if (currentSong.platform === 'bili') {
-                            // 检查是否是B站的封面URL
-                            if (finalCoverUrl.includes('i0.hdslb.com') || finalCoverUrl.includes('i1.hdslb.com') || finalCoverUrl.includes('i2.hdslb.com') || finalCoverUrl.includes('i3.hdslb.com')) {
-                                // 确保使用HTTPS协议
-                                if (!finalCoverUrl.startsWith('https://')) {
-                                    finalCoverUrl = 'https://' + finalCoverUrl.replace('http://', '');
-                                }
-                            }
-                        }
+                        // 判断是否为B站图片
+                        const isBiliPic = finalCoverUrl.includes('hdslb.com') || finalCoverUrl.includes('bilibili.com');
+                        const referrerAttr = isBiliPic ? ' referrerpolicy="no-referrer"' : '';
                         
-                        fullscreenCover.innerHTML = `<img src="${finalCoverUrl}" alt="" onerror="this.parentElement.innerHTML='<i class=\'fas fa-disc-record\'></i>'">`;
+                        fullscreenCover.innerHTML = `<img src="${finalCoverUrl}" alt=""${referrerAttr} onerror="this.parentElement.innerHTML='<i class=\'fas fa-disc-record\'></i>'">`;
                     } else {
                         fullscreenCover.innerHTML = '<i class="fas fa-disc-record"></i>';
                     }
@@ -8620,23 +8619,17 @@
                 
                 const playerCover = this.playerElement.querySelector('.player-cover');
                 if (song.pic) {
-                    // 处理协议相对URL
                     let finalCoverUrl = song.pic;
-                    // 处理协议相对URL
                     if (finalCoverUrl.startsWith('//')) {
                         finalCoverUrl = 'https:' + finalCoverUrl;
-                    }
-                    // 处理相对路径
-                    else if (!finalCoverUrl.startsWith('http')) {
-                        // 如果是相对路径，使用一个默认的图片服务或占位符
-                        // 这里使用一个通用的音乐封面占位符
+                    } else if (!finalCoverUrl.startsWith('http')) {
                         finalCoverUrl = 'https://via.placeholder.com/100x100?text=Music';
-                    }
-                    // 确保使用HTTPS
-                    else if (finalCoverUrl.startsWith('http://')) {
+                    } else if (finalCoverUrl.startsWith('http://')) {
                         finalCoverUrl = finalCoverUrl.replace('http://', 'https://');
                     }
-                    playerCover.innerHTML = `<img src="${finalCoverUrl}" alt="" onerror="this.parentElement.innerHTML='<i class=\'fas fa-disc-record\'></i>'">`;
+                    const isBiliPic = finalCoverUrl.includes('hdslb.com') || finalCoverUrl.includes('bilibili.com');
+                    const referrerAttr = isBiliPic ? ' referrerpolicy="no-referrer"' : '';
+                    playerCover.innerHTML = `<img src="${finalCoverUrl}" alt=""${referrerAttr} onerror="this.parentElement.innerHTML='<i class=\'fas fa-disc-record\'></i>'">`;
                 } else {
                     playerCover.innerHTML = '<i class="fas fa-disc-record"></i>';
                 }
