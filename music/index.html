@@ -1985,6 +1985,7 @@
             z-index: 1000;
             display: none;
             transition: all var(--transition-normal);
+            overscroll-behavior: contain;  /* 新增：阻止滚动链 */
         }
 
         .fullscreen-player.show {
@@ -6082,27 +6083,35 @@
         async function initSupabase() {
             if (clientInitialized) return;
             if (supabaseInitPromise) return supabaseInitPromise;
-            
+
             supabaseInitPromise = (async () => {
                 try {
-                    if (SUPABASE_URL && SUPABASE_URL !== "https://你的项目.supabase.co" && SUPABASE_ANON_KEY && SUPABASE_ANON_KEY !== "你的anon密钥") {
-                        // 配置 Supabase 客户端，禁用存储以避免跟踪防护阻止
-                        supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
-                            auth: {
-                                storageKey: null, // 禁用存储
-                                autoRefreshToken: false, // 禁用自动刷新令牌
-                                persistSession: false, // 禁用会话持久化
-                            },
-                            global: {
-                                headers: {
-                                    'X-Client-Info': 'zero-seven-zero-music'
-                                }
-                            }
-                        });
-                        clientInitialized = true;
-                    } else {
+                    if (!SUPABASE_URL || SUPABASE_URL === "https://你的项目.supabase.co" ||
+                        !SUPABASE_ANON_KEY || SUPABASE_ANON_KEY === "你的anon密钥") {
                         throw new Error("Supabase 配置无效，请检查 URL 和 Key");
                     }
+
+                    // 自定义存储：完全禁用任何存储操作
+                    const noopStorage = {
+                        getItem: () => null,
+                        setItem: () => {},
+                        removeItem: () => {},
+                    };
+
+                    supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+                        auth: {
+                            storage: noopStorage,          // 使用无操作存储
+                            storageKey: null,              // 禁用存储键
+                            autoRefreshToken: false,       // 禁用自动刷新令牌
+                            persistSession: false,         // 禁用会话持久化
+                        },
+                        global: {
+                            headers: {
+                                'X-Client-Info': 'zero-seven-zero-music'
+                            }
+                        }
+                    });
+                    clientInitialized = true;
                 } catch (e) {
                     console.error("Supabase 初始化失败", e);
                     clientInitialized = false;
@@ -6111,6 +6120,176 @@
                 }
             })();
             return supabaseInitPromise;
+        }
+
+        // 统一的鉴权 RPC 调用（自动附加 sessionToken，并处理过期错误）
+        async function authRpcCall(rpcName, params) {
+            // verify_vip_user 不需要 sessionToken
+            if (rpcName !== 'verify_vip_user' && !sessionToken) {
+                console.warn(`RPC ${rpcName} 调用失败: SESSION_MISSING`);
+                throw new Error('SESSION_MISSING');
+            }
+            const finalParams = { ...params };
+            if (rpcName !== 'verify_vip_user') {
+                finalParams._session_token = sessionToken;
+            }
+            const { data, error } = await supabaseClient.rpc(rpcName, finalParams);
+            if (error) throw error;
+            // 检查后端返回的会话过期标志
+            if (data && data.success === false && data.error === 'SESSION_EXPIRED') {
+                handleSessionExpired();
+                throw new Error('您的账号已在其他设备登录，请重新登录');
+            }
+            return data;
+        }
+
+        // 会话过期处理：清空本地数据，提示并刷新页面
+        function handleSessionExpired() {
+            if (isSessionExpiredHandling) return;
+            if (sessionExpiredNotified) return;
+            
+            isSessionExpiredHandling = true;
+            sessionExpiredNotified = true;
+            
+            localStorage.setItem('sessionExpiredFlag', Date.now().toString());
+            
+            // 停止所有后台任务
+            if (autoSyncInterval) {
+                clearInterval(autoSyncInterval);
+                autoSyncInterval = null;
+            }
+            stopSessionHeartbeat();
+            stopSessionPolling();
+            if (sessionRealtimeChannel) {
+                if (supabaseClient) supabaseClient.removeChannel(sessionRealtimeChannel);
+                sessionRealtimeChannel = null;
+            }
+            
+            // ====== 修复点：先清除登录标志，再清除数据，避免 setStorageItem 写入 guest_ 前缀 ======
+            // 1. 先移除登录标志
+            localStorage.removeItem('userLoggedIn');
+            localStorage.removeItem('sessionToken');
+            localStorage.removeItem('vipUser');
+            localStorage.removeItem('username');
+            localStorage.removeItem('userAvatar');
+            
+            // 2. 再清除其他所有用户数据（直接 removeItem，不调用 setStorageItem）
+            localStorage.removeItem('totalPlayTime');
+            localStorage.removeItem('songDetailsCache');
+            localStorage.removeItem('myPlaylists');
+            localStorage.removeItem('sessionExpiredFlag');
+            localStorage.removeItem('wyPageSize');
+            localStorage.removeItem('biliPageSize');
+            localStorage.removeItem('yunzhi_token');
+            localStorage.removeItem('theme');
+            localStorage.removeItem('navbarShowText');
+            localStorage.removeItem('defaultPage');
+            localStorage.removeItem('preferred_playbackRate');
+            localStorage.removeItem('preferred_playMode');
+            localStorage.removeItem('playHistory');   // 直接删除，不通过 setStorageItem
+            localStorage.removeItem('searchHistory'); // 直接删除
+            
+            // 3. 重置内存中的变量
+            sessionToken = '';
+            playHistory = [];
+            searchHistory = [];
+            songDetailsCache = {};
+            myPlaylists = [];
+            playlist = [];
+            wyPageSize = 20;
+            biliPageSize = 20;
+            yunzhiToken = '';
+            currentTheme = 'dark';
+            defaultPage = 'home';
+            
+            // 4. 更新界面
+            updateLoginStatus();
+            if (profilePage.style.display === 'block') {
+                updateProfileStats();
+                loadRecentPlays();
+                loadMyPlaylists();
+            }
+            if (player && player.audioElement) {
+                player.audioElement.pause();
+                player.audioElement.src = '';
+                player.currentSongId = null;
+                player.isPlaying = false;
+                player.playBtn.innerHTML = '<i class="fas fa-play"></i>';
+                player.playerElement.classList.add('hidden');
+                player.playerElement.classList.remove('visible');
+            }
+            wySongList.innerHTML = '';
+            biliSongList.innerHTML = '';
+            searchResults = { wy: [], bili: [] };
+            
+            showToast('您的账号已在其他设备登录，请重新登录', 'error');
+            
+            setTimeout(() => {
+                isSessionExpiredHandling = false;
+                sessionExpiredNotified = false;
+                switchPage('home');
+                location.reload();
+            }, 2000);
+        }
+
+        // 停止会话心跳
+        function stopSessionHeartbeat() {
+            if (sessionCheckIntervalId) {
+                clearInterval(sessionCheckIntervalId);
+                sessionCheckIntervalId = null;
+            }
+        }
+
+        // 检查会话有效性（轻量RPC调用）
+        async function checkSessionValidity() {
+            if (isSessionExpiredHandling || sessionExpiredNotified) return;
+            
+            const user = getCurrentUser();
+            if (!user || !user.id) {
+                stopSessionHeartbeat();
+                return;
+            }
+            
+            // 新增：如果没有 sessionToken，直接触发过期处理
+            if (!sessionToken) {
+                handleSessionExpired();
+                return;
+            }
+            
+            try {
+                await initSupabase();
+                const result = await authRpcCall('check_session_valid', { _user_id: user.id });
+                if (!result || !result.success) {
+                    if (result && result.error === 'SESSION_EXPIRED') {
+                        handleSessionExpired();
+                    } else if (!result) {
+                        handleSessionExpired();
+                    }
+                }
+            } catch (err) {
+                if (err.message && (err.message.includes('SESSION_EXPIRED') || err.message.includes('SESSION_MISSING'))) {
+                    handleSessionExpired();
+                }
+                // 其他网络错误不处理
+            }
+        }
+
+        // 启动会话心跳（默认60秒间隔）
+        function startSessionHeartbeat(intervalMs = 10000) {
+            stopSessionHeartbeat(); // 确保只有一个定时器
+            // 重置过期标志（新的登录会话）
+            isSessionExpiredHandling = false;
+            sessionExpiredNotified = false;
+            const user = getCurrentUser();
+            if (!user || !user.id) return;
+            sessionCheckIntervalId = setInterval(() => {
+                // 仅当页面可见时执行检查，节省资源
+                if (!document.hidden) {
+                    checkSessionValidity();
+                }
+            }, intervalMs);
+            // 启动后立即检查一次
+            if (!document.hidden) checkSessionValidity();
         }
 
         const STORAGE_KEY = "vipUser";  // 存储键名
@@ -6186,36 +6365,24 @@
         async function vipLogin(username, password) {
             await initSupabase();
             
-            if (!username.trim() || !password.trim()) {
-                throw new Error("用户名和密码都不能为空");
-            }
-            if (!supabaseClient) {
-                throw new Error("Supabase 客户端未初始化，请检查网络或刷新页面重试");
-            }
-
-            // 测试 Supabase 连接
-            try {
-                const { error: testError } = await supabaseClient.from('site_stats').select('id').limit(1);
-                if (testError) {
-                    console.warn('Supabase 连接测试失败', testError);
-                    throw new Error(`数据库连接异常: ${testError.message}`);
-                }
-            } catch (connErr) {
-                throw new Error(`无法连接服务器，请检查网络后重试 (${connErr.message})`);
-            }
+            const uname = username.trim();
+            if (!uname) throw new Error("用户名不能为空");
+            if (!password) throw new Error("密码不能为空");
+            if (!supabaseClient) throw new Error("Supabase 客户端未初始化");
 
             const { data, error } = await supabaseClient.rpc('verify_vip_user', {
-                _username: username.trim(),
+                _username: uname,
                 _password: password
             });
 
-            if (error) {
-                console.error('verify_vip_user RPC 错误', error);
-                throw new Error(`登录失败: ${error.message || '请稍后重试'}`);
-            }
+            if (error) throw new Error(`登录失败: ${error.message}`);
             if (!data || !data.success) {
                 throw new Error(data?.error || "用户名或密码错误");
             }
+
+            // 存储会话令牌
+            sessionToken = data.session_token;
+            localStorage.setItem('sessionToken', sessionToken);
 
             // 存储用户信息
             saveUser({ 
@@ -6224,27 +6391,30 @@
                 avatar_url: data.avatar_url || ''
             });
 
-            // 记录登录日志（失败不影响登录）
+            isSessionExpiredHandling = false;
+            sessionExpiredNotified = false;
+
+            // 启动会话心跳
+            startSessionHeartbeat();
+            // 订阅实时会话变更
+            subscribeToUserSessions();
+            // 启动短轮询作为备份
+            startSessionPolling();
+
+            // 记录登录日志（使用 authRpcCall）
             try {
-                await supabaseClient.rpc('record_user_login', { _user_id: String(data.user_id) });
+                await authRpcCall('record_user_login', { _user_id: data.user_id });
             } catch (logErr) {
                 console.warn('记录登录日志失败', logErr);
             }
 
-            // 获取同步数据（失败不影响登录）
-            try {
-                await fetchUserData();
-                // 注意：不再自动上传本地数据，避免覆盖服务器数据
-                lastUploadDataHash = getCurrentDataHash();
-                loadSearchHistory('wy');
-                loadSearchHistory('bili');
-                updateUserStatsDisplay();
-                updateProfileStats();
-            } catch (syncErr) {
-                console.warn('同步数据失败', syncErr);
-                // 不抛出错误，仅提示
-                showToast('数据同步失败，但已成功登录', 'warning');
-            }
+            // 获取同步数据
+            await fetchUserData();   // fetchUserData 内部需改用 authRpcCall
+            lastUploadDataHash = getCurrentDataHash();
+            loadSearchHistory('wy');
+            loadSearchHistory('bili');
+            updateUserStatsDisplay();
+            updateProfileStats();
 
             return data;
         }
@@ -6419,12 +6589,11 @@
                 return;
             }
             try {
-                initSupabase();
-                const { data, error } = await supabaseClient.rpc('update_user_avatar', {
-                    _user_id: String(user.id),
+                await initSupabase();
+                const data = await authRpcCall('update_user_avatar', {
+                    _user_id: user.id,
                     _avatar_url: avatarUrl
                 });
-                if (error) throw error;
                 if (data && data.success) {
                     // 更新本地存储
                     localStorage.setItem('userAvatar', avatarUrl);
@@ -6448,85 +6617,123 @@
 
         // 退出登录
         async function logout() {
-            try {
-                // 登出前同步数据（即使失败也继续登出）
-                try {
-                    await syncUserData();
-                } catch (syncError) {
-                    console.error('登出时同步数据失败:', syncError);
-                    // 继续执行登出流程
-                }
-                // 清空本地数据
-                setStorageItem('playHistory', '[]');
-                setStorageItem('searchHistory', '[]');
-                localStorage.removeItem('totalPlayTime');
-                localStorage.removeItem('songDetailsCache');
-                setStorageItem('defaultPage', 'home');
-                localStorage.removeItem('wyPageSize');
-                localStorage.removeItem('biliPageSize');
-                setStorageItem('yunzhi_token', '');
-                localStorage.removeItem('theme');
-                // 重置导航栏文本显示状态
-                setStorageItem('navbarShowText', 'true');
-                updateNavbarTextVisibility();
-                // 重置应用数据
-                playHistory = [];
-                myPlaylists = [];
-                songDetailsCache = {};
-                defaultPage = 'home';
-                wyPageSize = 20;
-                biliPageSize = 20;
-                yunzhiToken = '';
-                currentTheme = 'dark';
-                // 保存用户状态
-                saveUser(null);
-                showToast('已退出登录并清空本地数据', 'success');
-                // 刷新页面
-                setTimeout(() => {
-                    location.reload();
-                }, 1500);
-            } catch (error) {
-                console.error('登出时出错:', error);
-                // 即使同步失败，也要继续登出流程
-                setStorageItem('playHistory', '[]');
-                setStorageItem('searchHistory', '[]');
-                localStorage.removeItem('totalPlayTime');
-                localStorage.removeItem('songDetailsCache');
-                setStorageItem('defaultPage', 'home');
-                localStorage.removeItem('wyPageSize');
-                localStorage.removeItem('biliPageSize');
-                setStorageItem('yunzhi_token', '');
-                localStorage.removeItem('theme');
-                // 重置导航栏文本显示状态
-                setStorageItem('navbarShowText', 'true');
-                updateNavbarTextVisibility();
-                playHistory = [];
-                myPlaylists = [];
-                songDetailsCache = {};
-                defaultPage = 'home';
-                wyPageSize = 20;
-                biliPageSize = 20;
-                yunzhiToken = '';
-                currentTheme = 'dark';
-                saveUser(null);
-                showToast('已退出登录并清空本地数据', 'success');
-                setTimeout(() => {
-                    location.reload();
-                }, 1500);
+            // 防止重复执行
+            if (isSessionExpiredHandling) return;
+            isSessionExpiredHandling = true;
+
+            // 1. 停止所有后台任务
+            if (autoSyncInterval) {
+                clearInterval(autoSyncInterval);
+                autoSyncInterval = null;
             }
+            stopSessionHeartbeat();
+            stopSessionPolling();
+            if (sessionRealtimeChannel) {
+                if (supabaseClient) supabaseClient.removeChannel(sessionRealtimeChannel);
+                sessionRealtimeChannel = null;
+            }
+
+            // 2. 尝试撤销会话（网络请求，失败不影响本地清理）
+            try {
+                if (sessionToken && getCurrentUser()) {
+                    await supabaseClient.rpc('revoke_session', { _session_token: sessionToken });
+                }
+            } catch(e) {
+                console.warn('登出时撤销会话失败', e);
+            }
+
+            // 3. 清除所有本地存储中的用户数据
+            // 1. 先移除登录标志
+            localStorage.removeItem('userLoggedIn');
+            localStorage.removeItem('sessionToken');
+            localStorage.removeItem('vipUser');        // vipUser
+            localStorage.removeItem('username');
+            localStorage.removeItem('userAvatar');
+            
+            // 2. 再清除其他所有用户数据（直接 removeItem，不调用 setStorageItem）
+            localStorage.removeItem('totalPlayTime');
+            localStorage.removeItem('songDetailsCache');
+            localStorage.removeItem('myPlaylists');
+            localStorage.removeItem('sessionExpiredFlag'); // 清除会话过期标志
+            localStorage.removeItem('wyPageSize');
+            localStorage.removeItem('biliPageSize');
+            localStorage.removeItem('yunzhi_token');
+            localStorage.removeItem('theme');
+            localStorage.removeItem('navbarShowText');
+            localStorage.removeItem('defaultPage');
+            localStorage.removeItem('preferred_playbackRate');
+            localStorage.removeItem('preferred_playMode');
+            localStorage.removeItem('playHistory');   // 直接删除，不通过 setStorageItem
+            localStorage.removeItem('searchHistory'); // 直接删除
+            
+            // 3. 清除全局变量中的用户数据
+            sessionToken = '';
+            playHistory = [];
+            searchHistory = [];
+            songDetailsCache = {};
+            myPlaylists = [];
+            playlist = [];
+            // 重置页面默认值（可选）
+            wyPageSize = 20;
+            biliPageSize = 20;
+            yunzhiToken = '';
+            currentTheme = 'dark';
+            defaultPage = 'home';
+
+            // 4. 更新界面状态
+            updateLoginStatus();
+            if (profilePage.style.display === 'block') {
+                updateProfileStats();
+                loadRecentPlays();
+                loadMyPlaylists();
+            }
+            // 清空播放器
+            if (player && player.audioElement) {
+                player.audioElement.pause();
+                player.audioElement.src = '';
+                player.currentSongId = null;
+                player.isPlaying = false;
+                player.playBtn.innerHTML = '<i class="fas fa-play"></i>';
+                player.playerElement.classList.add('hidden');
+                player.playerElement.classList.remove('visible');
+            }
+            // 清空歌曲列表
+            wySongList.innerHTML = '';
+            biliSongList.innerHTML = '';
+            searchResults = { wy: [], bili: [] };
+
+            showToast('已退出登录并清空本地数据', 'success');
+            
+            // 5. 重置标志
+            isSessionExpiredHandling = false;
+            sessionExpiredNotified = false;
+            
+            // 6. 可选：跳转到主页并刷新页面以确保干净状态
+            setTimeout(() => {
+                switchPage('home');
+                location.reload();
+            }, 1500);
+            return;
         }
 
         // 同步用户数据到服务器
         async function syncUserData(showNotifications = true) {
-            if (isAutoSyncingLocked && !showNotifications) {
-                console.log('自动同步被锁定，跳过本次上传');
-                return;
-            }
+            if (isAutoSyncingLocked && !showNotifications) return;
+            
             const user = getCurrentUser();
             if (!user || !user.id) {
                 if (showNotifications) showToast('请先登录', 'error');
                 return;
             }
+            
+            // 新增：检查会话令牌是否存在，若不存在则视为未登录
+            if (!sessionToken) {
+                if (showNotifications) showToast('会话已过期，请重新登录', 'warning');
+                // 可选：自动跳转登录页或清理状态
+                handleSessionExpired();
+                return;
+            }
+            
             if (!supabaseClient) {
                 if (showNotifications) showToast('系统初始化失败，无法同步', 'error');
                 return;
@@ -6545,23 +6752,20 @@
             const navbarShowText = getStorageItem('navbarShowText', 'true') === 'true';
             const defaultPage = getStorageItem('defaultPage') || 'home';
 
-            const rpcParams = {
-                _user_id: String(user.id),
-                _total_plays: totalPlays,
-                _total_play_time: totalPlayTime,
-                _theme: theme,
-                _play_history: playHistoryData,
-                _search_history: searchHistoryData,
-                _wy_page_size: wyPageSize,
-                _bili_page_size: biliPageSize,
-                _token: token,
-                _navbar_show_text: navbarShowText,
-                _default_page: defaultPage
-            };
-
             try {
-                const { data, error } = await supabaseClient.rpc('upsert_user_sync_data', rpcParams);
-                if (error) throw error;
+                const data = await authRpcCall('upsert_user_sync_data', {
+                    _user_id: user.id,
+                    _total_plays: totalPlays,
+                    _total_play_time: totalPlayTime,
+                    _theme: theme,
+                    _play_history: playHistoryData,
+                    _search_history: searchHistoryData,
+                    _wy_page_size: wyPageSize,
+                    _bili_page_size: biliPageSize,
+                    _token: token,
+                    _navbar_show_text: navbarShowText,
+                    _default_page: defaultPage
+                });
                 if (data && data.success) {
                     if (showNotifications) showToast('数据上传成功！', 'success');
                 } else {
@@ -6569,7 +6773,9 @@
                 }
             } catch (err) {
                 console.error('同步数据异常', err);
-                if (showNotifications) showToast(`数据上传失败: ${err.message}`, 'error');
+                if (showNotifications && !err.message.includes('重新登录')) {
+                    showToast(`数据上传失败: ${err.message}`, 'error');
+                }
             }
         }
 
@@ -6579,15 +6785,10 @@
             if (!user || !user.id) return;
             if (!supabaseClient) {
                 console.warn('Supabase 未初始化，跳过数据同步');
-                showToast('无法连接服务器，请检查网络', 'warning');
                 return;
             }
-
             try {
-                const { data, error } = await supabaseClient.rpc('get_user_sync_data', {
-                    _user_id: String(user.id)
-                });
-                if (error) throw error;
+                const data = await authRpcCall('get_user_sync_data', { _user_id: user.id });
                 if (data && data.success && data.data) {
                     const syncData = data.data;
                     // 更新本地数据（服务器数据优先）
@@ -6608,31 +6809,27 @@
                     if (syncData.wy_page_size) {
                         setStorageItem('wyPageSize', syncData.wy_page_size);
                         wyPageSize = syncData.wy_page_size;
-                        const wySizeInput = document.getElementById('wyPageSizeInput');
-                        if (wySizeInput) wySizeInput.value = wyPageSize;
+                        document.getElementById('wyPageSizeInput').value = wyPageSize;
                     }
                     if (syncData.bili_page_size) {
                         setStorageItem('biliPageSize', syncData.bili_page_size);
                         biliPageSize = syncData.bili_page_size;
-                        const biliSizeInput = document.getElementById('biliPageSizeInput');
-                        if (biliSizeInput) biliSizeInput.value = biliPageSize;
+                        document.getElementById('biliPageSizeInput').value = biliPageSize;
                     }
                     if (syncData.token) {
                         setStorageItem('yunzhi_token', syncData.token);
                         yunzhiToken = syncData.token;
-                        const tokenInput = document.getElementById('tokenInput');
-                        if (tokenInput) tokenInput.value = yunzhiToken;
+                        document.getElementById('tokenInput').value = yunzhiToken;
                     }
                     if (syncData.navbar_show_text !== undefined) {
                         setStorageItem('navbarShowText', syncData.navbar_show_text.toString());
                         updateNavbarTextVisibility();
-                        const navbarToggle = document.getElementById('navbarTextToggle');
-                        if (navbarToggle) navbarToggle.checked = syncData.navbar_show_text;
+                        document.getElementById('navbarTextToggle').checked = syncData.navbar_show_text;
                     }
                     if (syncData.default_page) {
                         setStorageItem('defaultPage', syncData.default_page);
                         defaultPage = syncData.default_page;
-                        // 更新自定义选择器显示
+                        // 更新自定义选择器显示（保留原有逻辑）
                         const defaultSelect = document.getElementById('defaultPageSelect');
                         if (defaultSelect) {
                             const valueDisplay = defaultSelect.querySelector('.custom-select-value');
@@ -6656,18 +6853,17 @@
                         }
                         updateLoginStatus();
                     }
-                    // 刷新个人页面显示
                     if (profilePage.style.display === 'block') {
                         updateProfileStats();
                         loadRecentPlays();
                     }
                     showToast('数据已从服务器同步', 'success');
-                } else {
-                    console.warn('服务器无数据或返回格式异常');
                 }
             } catch (err) {
                 console.error('获取数据异常', err);
-                showToast(`数据同步失败: ${err.message}`, 'warning');
+                if (!err.message.includes('重新登录')) {
+                    showToast(`数据同步失败: ${err.message}`, 'warning');
+                }
             }
         }
 
@@ -6701,16 +6897,13 @@
         // 绑定登录页面事件（在DOM加载完成后）
         // 自动登录验证
         async function autoLogin() {
-            const isLoggedIn = localStorage.getItem('userLoggedIn') === 'true';
+            const storedToken = localStorage.getItem('sessionToken');
             const storedUser = getCurrentUser();
-            
-            if (!isLoggedIn || !storedUser || !storedUser.id) {
-                return; // 无本地登录信息，跳过
+            if (!storedToken || !storedUser || !storedUser.id) {
+                return;
             }
-
-            // 🔒 锁定自动同步，防止在数据拉取完成前触发上传
+            sessionToken = storedToken;
             isAutoSyncingLocked = true;
-
             try {
                 await initSupabase();
                 if (!supabaseClient) {
@@ -6718,56 +6911,134 @@
                     updateLoginStatus();
                     return;
                 }
-                
-                const { data, error } = await supabaseClient.rpc('check_user_exists', {
-                    _user_id: String(storedUser.id)
-                });
-                
-                if (error || !data) {
-                    console.warn('用户验证失败:', error);
+                const result = await authRpcCall('check_session_valid', { _user_id: storedUser.id });
+                if (result.success) {
+                    // 验证通过，清空旧数据并从服务器拉取
+                    playHistory = [];
+                    searchHistory = [];
+                    songDetailsCache = {};
+                    myPlaylists = [];
+                    playlist = [];
+                    setStorageItem('playHistory', '[]');
+                    setStorageItem('searchHistory', '[]');
+                    localStorage.removeItem('songDetailsCache');
+                    localStorage.removeItem('myPlaylists');
+                    localStorage.removeItem('totalPlayTime');
+                    await fetchUserData();
+                    lastUploadDataHash = getCurrentDataHash();
                     updateLoginStatus();
-                    return;
+                    // 自动登录成功后启动心跳
+                    startSessionHeartbeat();
+                    // 订阅实时会话变更
+                    subscribeToUserSessions();
+                    // 启动短轮询作为备份
+                    startSessionPolling();
+                    if (profilePage.style.display === 'block') {
+                        updateProfileStats();
+                        loadRecentPlays();
+                    }
+                    loadSearchHistory('wy');
+                    loadSearchHistory('bili');
+                    console.log('自动登录成功，数据已从服务器同步');
+                } else {
+                    handleSessionExpired();
                 }
-                
-                // 验证通过，确保存储的用户信息是最新的（可能已有头像等）
-                saveUser(storedUser);
-                
-                // 🧹 清空内存中的旧数据（游客数据或上一次残留数据）
-                playHistory = [];
-                searchHistory = [];
-                songDetailsCache = {};
-                myPlaylists = [];
-                playlist = [];
-                // 重置本地存储中与用户相关的键（不清除用户登录状态）
-                setStorageItem('playHistory', '[]');
-                setStorageItem('searchHistory', '[]');
-                localStorage.removeItem('songDetailsCache');
-                localStorage.removeItem('myPlaylists');
-                // 可选：清空其他可能被残留的键
-                localStorage.removeItem('totalPlayTime');
-                
-                // 📥 从服务器拉取最新数据（会重新填充上面的变量和本地存储）
-                await fetchUserData();
-                
-                // 🔐 重置数据哈希，避免立刻触发上传（此时数据已与服务器同步）
-                lastUploadDataHash = getCurrentDataHash();
-                
-                // 刷新界面显示
-                updateLoginStatus();
-                if (profilePage.style.display === 'block') {
-                    updateProfileStats();
-                    loadRecentPlays();
-                }
-                loadSearchHistory('wy');
-                loadSearchHistory('bili');
-                
-                console.log('自动登录成功，数据已从服务器同步');
             } catch (err) {
                 console.warn('自动登录过程出错:', err);
-                // 出错时不破坏现有状态，但需要解锁
+                handleSessionExpired();
             } finally {
-                // 🔓 解锁自动同步
                 isAutoSyncingLocked = false;
+            }
+        }
+
+        // 订阅当前用户的新会话（其他设备登录）
+        async function subscribeToUserSessions() {
+            const user = getCurrentUser();
+            if (!user || !user.id) return;
+
+            await initSupabase();
+            if (!supabaseClient) return;
+
+            // 先取消已有的订阅
+            if (sessionRealtimeChannel) {
+                supabaseClient.removeChannel(sessionRealtimeChannel);
+                sessionRealtimeChannel = null;
+            }
+
+            // 使用正确的 filter 格式
+            sessionRealtimeChannel = supabaseClient
+                .channel('user_sessions_channel')
+                .on(
+                    'postgres_changes',
+                    {
+                        event: 'INSERT',
+                        schema: 'public',
+                        table: 'user_sessions',
+                        filter: `user_id=eq.${user.id}`   // 注意：user.id 必须是数字或字符串，与数据库字段类型一致
+                    },
+                    (payload) => {
+                        const newSessionToken = payload.new?.session_token;
+                        const currentToken = localStorage.getItem('sessionToken');
+                        if (newSessionToken && currentToken && newSessionToken !== currentToken) {
+                            if (!isSessionExpiredHandling && !sessionExpiredNotified) {
+                                handleSessionExpired();
+                            }
+                        }
+                    }
+                )
+                .subscribe((status, err) => {
+                    if (status === 'CHANNEL_ERROR') {
+                        // 降级为短轮询
+                        startSessionPolling();
+                    }
+                });
+        }
+
+        // 短轮询检查用户会话（降级方案）
+        async function pollUserSessions() {
+            const user = getCurrentUser();
+            if (!user || !user.id) return;
+            
+            const now = Date.now();
+            if (now - lastSessionCheckTime < 5000) return;
+            lastSessionCheckTime = now;
+            
+            try {
+                await initSupabase();
+                const { data, error } = await supabaseClient
+                    .from('user_sessions')
+                    .select('session_token, created_at')
+                    .eq('user_id', user.id)
+                    .order('created_at', { ascending: false })
+                    .limit(1);
+                
+                if (error) throw error;
+                if (data && data.length > 0) {
+                    const latestToken = data[0].session_token;
+                    const currentToken = localStorage.getItem('sessionToken');
+                    if (latestToken && currentToken && latestToken !== currentToken) {
+                        handleSessionExpired();
+                    }
+                }
+            } catch (err) {
+                // 忽略轮询失败的错误
+            }
+        }
+
+        // 启动会话短轮询
+        function startSessionPolling(intervalMs = 5000) {
+            if (sessionPollingInterval) clearInterval(sessionPollingInterval);
+            sessionPollingInterval = setInterval(() => {
+                if (!document.hidden) pollUserSessions();
+            }, intervalMs);
+            pollUserSessions();
+        }
+
+        // 停止会话短轮询
+        function stopSessionPolling() {
+            if (sessionPollingInterval) {
+                clearInterval(sessionPollingInterval);
+                sessionPollingInterval = null;
             }
         }
 
@@ -6883,6 +7154,34 @@
             recordPageView();
             // -------------------------------------------
 
+            // 页面可见性变化时，重新调整心跳（可见时立即检查并恢复定时器，不可见时停止定时器）
+            document.addEventListener('visibilitychange', () => {
+                if (document.hidden) {
+                    // 页面隐藏时停止心跳
+                    stopSessionHeartbeat();
+                } else {
+                    // 页面重新可见，若已登录则重启心跳
+                    const isLoggedIn = localStorage.getItem('userLoggedIn') === 'true';
+                    if (isLoggedIn) {
+                        startSessionHeartbeat();
+                    }
+                }
+            });
+            
+            // 跨标签页同步
+            window.addEventListener('storage', (e) => {
+                if (e.key === 'sessionExpiredFlag' && !isSessionExpiredHandling && !sessionExpiredNotified) {
+                    handleSessionExpired();
+                }
+            });
+            
+            // 页面关闭时清理订阅
+            window.addEventListener('beforeunload', () => {
+                if (sessionRealtimeChannel) {
+                    supabaseClient?.removeChannel(sessionRealtimeChannel);
+                }
+            });
+
             // 初始化登录状态
             updateLoginStatus();
             
@@ -6891,6 +7190,13 @@
             
             // 添加自动登录验证
             autoLogin();
+            
+            // 若已有会话令牌且用户已登录（未触发自动登录或自动登录失败时），尝试启动心跳
+            const storedToken = localStorage.getItem('sessionToken');
+            const storedUser = getCurrentUser();
+            if (storedToken && storedUser && storedUser.id) {
+                startSessionHeartbeat();
+            }
             
             // 绑定导航栏文本开关事件
             const navbarTextToggle = document.getElementById('navbarTextToggle');
@@ -6905,32 +7211,41 @@
                     if (isLoggedIn) {
                         await syncUserData(true);   // 显示上传提示
                     } else {
-                        showToast('导航栏文本显示设置已保存（未登录）', 'success');
+                        showToast('导航栏文本显示设置已保存', 'success');
                     }
                 });
             }
             
             // 自动登录会处理数据同步，无需在此重复调用fetchUserData
             
-            // 每秒检查数据是否有变动，有变动则上传
-            setInterval(() => {
+            // 自动同步定时器（每5秒检查一次数据变化）
+            autoSyncInterval = setInterval(async () => {
                 const isLoggedIn = localStorage.getItem('userLoggedIn') === 'true';
                 if (!isLoggedIn) return;
-                
-                // 如果处于自动登录锁定状态，跳过本次同步
                 if (isAutoSyncingLocked) return;
+                
+                // 额外检查：如果 sessionToken 为空，则停止同步并触发过期处理
+                if (!sessionToken) {
+                    handleSessionExpired();
+                    return;
+                }
                 
                 const currentHash = getCurrentDataHash();
                 if (currentHash === null) return;
                 
                 if (lastUploadDataHash === null || currentHash !== lastUploadDataHash) {
-                    syncUserData(false).then(() => {
+                    try {
+                        await syncUserData(false);
                         lastUploadDataHash = getCurrentDataHash();
-                    }).catch(() => {
-                        // 上传失败，保留原哈希，下次重试
-                    });
+                    } catch (err) {
+                        if (err.message === 'SESSION_MISSING') {
+                            // 会话丢失，触发过期处理
+                            handleSessionExpired();
+                        }
+                        // 其他错误忽略，下次重试
+                    }
                 }
-            }, 1000);
+            }, 5000);
             
             // 初始化下载面板
             initDownloadPanel();
@@ -6967,6 +7282,8 @@
         // ── 原有功能 ──
         let currentPlatform = 'wy';
         let yunzhiToken = getStorageItem('yunzhi_token') || '';
+        // 会话令牌（单点登录）
+        let sessionToken = localStorage.getItem('sessionToken') || '';
         let searchHistory = JSON.parse(getStorageItem('searchHistory', '[]') || '[]');
         let searchResults = {
             wy: [],
@@ -8030,7 +8347,8 @@
                 const fullscreenPlayer = document.getElementById('fullscreenPlayer');
                 if (fullscreenPlayer) {
                     fullscreenPlayer.classList.add('show');
-                    // 禁止 body 滚动，隐藏外部滚动条
+                    // 禁止背景滚动
+                    document.documentElement.style.overflow = 'hidden';
                     document.body.style.overflow = 'hidden';
                     this.updateFullscreenPlayer();
                     
@@ -8077,7 +8395,8 @@
                 const fullscreenPlayer = document.getElementById('fullscreenPlayer');
                 if (fullscreenPlayer) {
                     fullscreenPlayer.classList.remove('show');
-                    // 恢复 body 滚动
+                    // 恢复背景滚动
+                    document.documentElement.style.overflow = '';
                     document.body.style.overflow = '';
                 }
                 // 清理自动滚动计时器
@@ -8105,9 +8424,9 @@
                         const isBiliPic = finalCoverUrl.includes('hdslb.com') || finalCoverUrl.includes('bilibili.com');
                         const referrerAttr = isBiliPic ? ' referrerpolicy="no-referrer"' : '';
                         
-                        fullscreenCover.innerHTML = `<img src="${finalCoverUrl}" alt=""${referrerAttr} onerror="this.parentElement.innerHTML='<i class=\'fas fa-disc-record\'></i>'">`;
+                        fullscreenCover.innerHTML = `<img src="${finalCoverUrl}" alt=""${referrerAttr} onerror="this.parentElement.innerHTML='<i class=\'fas fa-music\'></i>'">`;
                     } else {
-                        fullscreenCover.innerHTML = '<i class="fas fa-disc-record"></i>';
+                        fullscreenCover.innerHTML = '<i class="fas fa-music"></i>';
                     }
                 }
                 
@@ -8629,9 +8948,9 @@
                     }
                     const isBiliPic = finalCoverUrl.includes('hdslb.com') || finalCoverUrl.includes('bilibili.com');
                     const referrerAttr = isBiliPic ? ' referrerpolicy="no-referrer"' : '';
-                    playerCover.innerHTML = `<img src="${finalCoverUrl}" alt=""${referrerAttr} onerror="this.parentElement.innerHTML='<i class=\'fas fa-disc-record\'></i>'">`;
+                    playerCover.innerHTML = `<img src="${finalCoverUrl}" alt=""${referrerAttr} onerror="this.parentElement.innerHTML='<i class=\'fas fa-music\'></i>'">`;
                 } else {
-                    playerCover.innerHTML = '<i class="fas fa-disc-record"></i>';
+                    playerCover.innerHTML = '<i class="fas fa-music"></i>';
                 }
                 
                 this.playerElement.classList.add('visible');
@@ -9615,6 +9934,15 @@ biliLoadMoreBtn.addEventListener('click', () => {
         
         // 登录相关变量
         let isAutoSyncingLocked = false;   // 自动同步锁，防止登录过程中上传旧数据
+        let isSessionExpiredHandling = false;   // 防止重复处理会话过期
+        let sessionExpiredNotified = false;     // 防止重复弹窗
+        // 会话心跳定时器ID
+        let sessionCheckIntervalId = null;
+        let sessionRealtimeChannel = null;   // 实时订阅频道
+        let lastSessionCheckTime = 0;
+        let sessionPollingInterval = null;
+        // 自动同步定时器ID
+        let autoSyncInterval = null;
         let lastUploadDataHash = null;
 
         // 星空主题变量
@@ -10563,6 +10891,9 @@ biliLoadMoreBtn.addEventListener('click', () => {
                 
                 li.addEventListener('click', () => playSong(song.id, song.platform || platform));
                 songList.appendChild(li);
+                
+                // 立即加载封面（解决 B 站封面在 GitHub Pages 上不自动加载的问题）
+                loadCoverForLazyLoading(li, song.id);
             });
             
             // 初始化懒加载
@@ -11013,9 +11344,8 @@ biliLoadMoreBtn.addEventListener('click', () => {
                 return;
             }
             try {
-                initSupabase();
-                const { data, error } = await supabaseClient.rpc('get_user_login_stats', { _user_id: String(user.id) });
-                if (error) throw error;
+                await initSupabase();
+                const data = await authRpcCall('get_user_login_stats', { _user_id: user.id });
                 if (data && data.length > 0) {
                     document.getElementById('openCountDisplay').textContent = data[0].total_logins || '0';
                     const lastLogin = data[0].last_login;
@@ -11046,11 +11376,10 @@ biliLoadMoreBtn.addEventListener('click', () => {
             }
 
             try {
-                initSupabase();
-                const { data, error } = await supabaseClient.rpc('get_user_stats', { _user_id: String(user.id) });
-                if (error) throw error;
-                if (data && data.length > 0) {
-                    const stats = data[0];
+                await initSupabase();
+                const data = await authRpcCall('get_user_stats', { _user_id: user.id });
+                if (data && data.success && data.data) {
+                    const stats = data.data;
                     document.getElementById('loginCountDisplay').textContent = stats.login_count || '0';
                     if (stats.last_login_time) {
                         const date = new Date(stats.last_login_time);
