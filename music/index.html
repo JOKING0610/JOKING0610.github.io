@@ -4647,6 +4647,139 @@
             background: var(--text-secondary);
         }
 
+        /* 公告卡片样式 */
+        .home-announcement {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            padding: 16px 20px;
+            margin: 20px auto 0;
+            max-width: 800px;
+            box-shadow: var(--shadow-sm);
+            transition: all var(--transition-normal);
+        }
+
+        .announcement-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 12px;
+            font-weight: 600;
+            font-size: 14px;
+            color: var(--text-secondary);
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 8px;
+        }
+
+        .announcement-header i:first-child {
+            color: var(--primary);
+        }
+
+        .announcement-refresh {
+            margin-left: auto;
+            background: transparent;
+            border: none;
+            color: var(--text-tertiary);
+            cursor: pointer;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all var(--transition-fast);
+        }
+
+        .announcement-refresh:hover {
+            background: var(--border);
+            color: var(--text);
+        }
+
+        /* 公告列表样式 */
+        .announcement-list {
+            max-height: 280px;
+            overflow-y: auto;
+            scrollbar-width: thin;
+        }
+
+        .announcement-item {
+            padding: 14px 0;
+            border-bottom: 1px solid var(--border);
+            transition: background var(--transition-fast);
+        }
+
+        .announcement-item:last-child {
+            border-bottom: none;
+        }
+
+
+
+        .announcement-title {
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 6px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .announcement-title i {
+            color: var(--primary);
+            font-size: 12px;
+        }
+
+        .announcement-date {
+            font-size: 11px;
+            font-weight: normal;
+            color: var(--text-tertiary);
+            margin-left: auto;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        
+        .announcement-date i {
+            font-size: 10px;
+            color: var(--text-tertiary);
+        }
+
+        .announcement-content {
+            font-size: 13px;
+            line-height: 1.5;
+            color: var(--text);
+            white-space: pre-wrap;
+            word-break: break-word;
+            margin-bottom: 6px;
+            text-align: left;
+        }
+
+
+
+        .announcement-loading,
+        .announcement-empty {
+            text-align: center;
+            padding: 20px;
+            color: var(--text-tertiary);
+        }
+
+        /* 星空主题适配 */
+        html.star-bg-active .home-announcement {
+            background: rgba(255, 255, 255, 0.05) !important;
+            backdrop-filter: blur(8px);
+            border-color: var(--glass-border) !important;
+        }
+
+        html.star-bg-active .announcement-header {
+            border-bottom-color: var(--glass-border);
+        }
+
+        html.star-bg-active .announcement-item {
+            border-bottom-color: var(--glass-border);
+        }
+
+
+
         /* 针对 Firefox 浏览器 */
         * {
             scrollbar-width: thin;
@@ -5671,6 +5804,20 @@
                         <button class="stats-refresh-btn" onclick="updateSiteVisitCount()" title="刷新访问次数">
                             <i class="fas fa-sync-alt"></i>
                         </button>
+                    </div>
+                </div>
+
+                <!-- 公告卡片（支持多条公告列表） -->
+                <div class="home-announcement" id="homeAnnouncement">
+                    <div class="announcement-header">
+                        <i class="fas fa-bullhorn"></i>
+                        <span>公告栏</span>
+                        <button class="announcement-refresh" id="refreshAnnouncementBtn" title="刷新公告">
+                            <i class="fas fa-sync-alt"></i>
+                        </button>
+                    </div>
+                    <div class="announcement-list" id="announcementList">
+                        <div class="announcement-loading"><i class="fas fa-spinner fa-spin"></i> 加载中...</div>
                     </div>
                 </div>
 
@@ -10111,6 +10258,8 @@ biliPlaylistBtn.addEventListener('click', () => {
             if (pageId === 'home') {
                 homePage.style.display = 'block';
                 activePage = homePage;
+                loadAnnouncement();           // 加载公告列表
+                bindAnnouncementRefresh();    // 绑定刷新按钮
             } else if (pageId === 'wy') {
                 wyPage.style.display = 'block';
                 activePage = wyPage;
@@ -10423,7 +10572,7 @@ biliLoadMoreBtn.addEventListener('click', () => {
         let starCurrentIndex = 0, starDrawProgress = 0, starPhase = 'drawing', starHoldTimer = 0, starFadeAlpha = 1;
         let starBgStars = [], starTime = 0, starShootingStars = [];
         let starAnimationId = null, starEnabled = false;
-        let currentConstellationIndex = 0; // 当前选择的星座索引
+        let currentConstellationIndex = 6; // 当前选择的星座索引（双子座）
 
         function switchConstellation(index) {
             if (index < 0 || index >= starConstellations.length) return;
@@ -10510,11 +10659,11 @@ biliLoadMoreBtn.addEventListener('click', () => {
             });
             
             // 从当前主题中获取星座索引
-            let selectedIdx = 0;
+            let selectedIdx = 6;
             if (currentTheme && currentTheme.startsWith('star')) {
-                selectedIdx = parseInt(currentTheme.replace('star', '')) || 0;
+                selectedIdx = parseInt(currentTheme.replace('star', '')) || 6;
             } else {
-                selectedIdx = currentConstellationIndex || 0;
+                selectedIdx = currentConstellationIndex || 6;
             }
             const selectedOption = content.querySelector(`.custom-select-item[data-value="${selectedIdx}"]`);
             if (selectedOption) {
@@ -12274,8 +12423,103 @@ biliLoadMoreBtn.addEventListener('click', () => {
         }
 
         // 初始化星空画布
+        // 加载并显示公告列表（支持多条、自定义时间、空时间不显示、自定义图标）
+        async function loadAnnouncement() {
+            const announcementList = document.getElementById('announcementList');
+            if (!announcementList) return;
+
+            try {
+                await initSupabase();
+                if (!supabaseClient) {
+                    announcementList.innerHTML = '<div class="announcement-empty"><i class="fas fa-exclamation-circle"></i> 公告加载失败</div>';
+                    return;
+                }
+
+                // 获取所有有效公告，按排序序号升序，再按自定义时间倒序，最后按创建时间倒序
+                const { data, error } = await supabaseClient
+                    .from('announcements')
+                    .select('id, title, content, display_time, created_at, icon, sort_order')
+                    .eq('is_active', true)
+                    .order('sort_order', { ascending: true, nullsFirst: false })
+                    .order('display_time', { ascending: false, nullsLast: true })
+                    .order('created_at', { ascending: false })
+                    .limit(10);
+
+                if (error) throw error;
+
+                if (data && data.length > 0) {
+                    let html = '';
+                    for (const item of data) {
+                        // 处理自定义显示时间（若为空则不显示）
+                        let displayTimeStr = '';
+                        if (item.display_time) {
+                            const date = new Date(item.display_time);
+                            if (!isNaN(date.getTime())) {
+                                displayTimeStr = `${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,'0')}-${String(date.getDate()).padStart(2,'0')} ${String(date.getHours()).padStart(2,'0')}:${String(date.getMinutes()).padStart(2,'0')}`;
+                            }
+                        }
+                        
+                        // 获取图标类名，默认为 fa-bullhorn
+                        const iconClass = item.icon && item.icon.trim() !== '' ? item.icon : 'fa-bullhorn';
+                        
+                        // 处理公告内容中的图标占位符和链接，例如 {icon:fa-music} -> <i class="fas fa-music"></i>，http://example.com -> <a href="http://example.com">http://example.com</a>
+                        function renderContentWithIcons(content) {
+                            if (!content) return '';
+                            // 转义 HTML 特殊字符，避免 XSS
+                            let escaped = escapeHTML(content);
+                            // 将 {icon:xxx} 替换为 Font Awesome 图标，xxx 为图标类名（不含 fas 前缀）
+                            // 匹配模式：{icon:图标名}，图标名只允许字母数字和连字符
+                            escaped = escaped.replace(/\{icon:([a-zA-Z0-9\-]+)\}/g, (match, iconName) => {
+                                return `<i class="fas fa-${iconName}" style="margin:0 2px;"></i>`;
+                            });
+                            // 识别并处理链接，支持 http, https, ftp 协议
+                            escaped = escaped.replace(/(https?:\/\/[\w\-._~:/?#[\]@!$&'()*+,;=.]+)/g, (match, url) => {
+                                return `<a href="${url}" target="_blank" rel="noopener noreferrer" style="color: #3b82f6; text-decoration: underline;">${url}</a>`;
+                            });
+                            // 将换行转为 <br>
+                            return escaped.replace(/\n/g, '<br>');
+                        }
+                        
+                        const timeHtml = displayTimeStr ? `<span class="announcement-date"><i class="far fa-clock"></i> ${displayTimeStr}</span>` : '';
+                        
+                        html += `
+                            <div class="announcement-item" data-id="${item.id}">
+                                <div class="announcement-title">
+                                    <i class="fas ${iconClass}"></i>
+                                    <span>${renderContentWithIcons(item.title)}</span>
+                                    ${timeHtml}
+                                </div>
+                                ${item.content && item.content.trim() !== '' ? `<div class="announcement-content">${renderContentWithIcons(item.content)}</div>` : ''}
+                            </div>
+                        `;
+                    }
+                    announcementList.innerHTML = html;
+                } else {
+                    announcementList.innerHTML = '<div class="announcement-empty"><i class="fas fa-info-circle"></i> 暂无公告</div>';
+                }
+            } catch (err) {
+                console.warn('公告加载失败', err);
+                announcementList.innerHTML = '<div class="announcement-empty"><i class="fas fa-exclamation-circle"></i> 公告加载失败，请稍后重试</div>';
+            }
+        }
+
+        // 绑定公告刷新按钮
+        function bindAnnouncementRefresh() {
+            const refreshBtn = document.getElementById('refreshAnnouncementBtn');
+            if (refreshBtn && !refreshBtn.dataset.bound) {
+                refreshBtn.dataset.bound = 'true';
+                refreshBtn.addEventListener('click', () => {
+                    loadAnnouncement();
+                    showToast('公告已刷新', 'success');
+                });
+            }
+        }
+
         document.addEventListener('DOMContentLoaded', () => {
             initStarCanvas();
+            // 初始化加载公告
+            loadAnnouncement();
+            bindAnnouncementRefresh();
         });
     </script>
     <!-- 下载选项面板 -->
