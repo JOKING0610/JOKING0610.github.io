@@ -1,0 +1,985 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>公告管理后台</title>
+    <!-- Supabase SDK -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.0"></script>
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+            background: #f5f7fb;
+            padding: 30px 20px;
+            color: #1e293b;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        /* 头部 */
+        .header {
+            margin-bottom: 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        h1 {
+            font-size: 1.8rem;
+            font-weight: 600;
+            background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        .btn {
+            border: none;
+            padding: 8px 18px;
+            border-radius: 40px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-size: 14px;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: #3b82f6;
+            color: white;
+            box-shadow: 0 2px 6px rgba(59,130,246,0.3);
+        }
+        .btn-primary:hover {
+            background: #2563eb;
+            transform: translateY(-1px);
+        }
+        .btn-outline {
+            background: white;
+            border: 1px solid #cbd5e1;
+            color: #1e293b;
+        }
+        .btn-outline:hover {
+            background: #f1f5f9;
+            border-color: #94a3b8;
+        }
+        .btn-danger {
+            background: #ef4444;
+            color: white;
+        }
+        .btn-danger:hover {
+            background: #dc2626;
+        }
+        .btn-sm {
+            padding: 5px 12px;
+            font-size: 12px;
+        }
+
+        /* 公告卡片网格 */
+        .announcements-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            overflow: hidden;
+            transition: 0.2s;
+            border: 1px solid #e2e8f0;
+        }
+
+        .card-body {
+            padding: 20px 24px;
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-bottom: 12px;
+        }
+
+        .card-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .badge {
+            font-size: 11px;
+            padding: 2px 10px;
+            border-radius: 40px;
+            font-weight: 500;
+        }
+        .badge-active {
+            background: #dcfce7;
+            color: #15803d;
+        }
+        .badge-inactive {
+            background: #f1f5f9;
+            color: #475569;
+        }
+
+        .card-date {
+            font-size: 13px;
+            color: #64748b;
+            margin-top: 4px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .card-content {
+            margin: 16px 0;
+            line-height: 1.5;
+            color: #334155;
+            white-space: pre-wrap;
+        }
+
+        .card-actions {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+            border-top: 1px solid #eef2ff;
+            padding-top: 16px;
+            margin-top: 8px;
+        }
+
+        /* 表单模态框 */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            backdrop-filter: blur(4px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            visibility: hidden;
+            opacity: 0;
+            transition: 0.2s;
+        }
+        .modal-overlay.active {
+            visibility: visible;
+            opacity: 1;
+        }
+        .modal {
+            background: white;
+            width: 90%;
+            max-width: 580px;
+            max-height: 80vh;
+            overflow-y: auto;
+            border-radius: 28px;
+            box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25);
+            padding: 24px;
+        }
+        
+        .modal::-webkit-scrollbar {
+            width: 6px;
+        }
+        
+        .modal::-webkit-scrollbar-track {
+            background: #f1f5f9;
+            border-radius: 3px;
+        }
+        
+        .modal::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 3px;
+        }
+        
+        .modal::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+        .modal h3 {
+            font-size: 1.5rem;
+            margin-bottom: 20px;
+        }
+        .form-group {
+            margin-bottom: 18px;
+        }
+        label {
+            font-weight: 500;
+            display: block;
+            margin-bottom: 6px;
+            font-size: 14px;
+        }
+        input, textarea, select {
+            width: 100%;
+            padding: 10px 14px;
+            border: 1px solid #cbd5e1;
+            border-radius: 16px;
+            font-family: inherit;
+            font-size: 14px;
+            transition: 0.2s;
+        }
+        input:focus, textarea:focus, select:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59,130,246,0.2);
+        }
+        textarea {
+            min-height: 100px;
+            resize: vertical;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        
+        textarea::-webkit-scrollbar {
+            width: 6px;
+        }
+        
+        textarea::-webkit-scrollbar-track {
+            background: #f1f5f9;
+            border-radius: 3px;
+        }
+        
+        textarea::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 3px;
+        }
+        
+        textarea::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+        .form-buttons {
+            display: flex;
+            justify-content: flex-end;
+            gap: 12px;
+            margin-top: 24px;
+        }
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #64748b;
+        }
+        .toast {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%) translateY(100px);
+            background: #1e293b;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 60px;
+            font-size: 14px;
+            z-index: 1100;
+            transition: 0.2s;
+            opacity: 0;
+            pointer-events: none;
+        }
+        .toast.show {
+            transform: translateX(-50%) translateY(0);
+            opacity: 1;
+        }
+        hr {
+            margin: 16px 0;
+            border-color: #eef2ff;
+        }
+        footer {
+            margin-top: 40px;
+            text-align: center;
+            font-size: 13px;
+            color: #94a3b8;
+        }
+        i {
+            margin-right: 4px;
+        }
+        
+        .icon-picker {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 10px;
+            padding: 12px;
+            background: #f8fafc;
+            border-radius: 20px;
+            border: 1px solid #e2e8f0;
+        }
+        .icon-option {
+            background: white;
+            border: 1px solid #cbd5e1;
+            border-radius: 12px;
+            width: 40px;
+            height: 40px;
+            cursor: pointer;
+            font-size: 18px;
+            transition: 0.2s;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .icon-option:hover {
+            background: #e2e8f0;
+            transform: scale(1.05);
+        }
+        .icon-option i {
+            margin: 0;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="header">
+        <h1><i class="fas fa-bullhorn"></i> 公告管理后台</h1>
+        <button class="btn btn-primary" id="newAnnouncementBtn"><i class="fas fa-plus"></i> 新建公告</button>
+    </div>
+
+    <div class="announcements-grid" id="announcementsContainer">
+        <div class="empty-state"><i class="fas fa-spinner fa-pulse"></i> 加载公告中...</div>
+    </div>
+</div>
+
+<!-- 编辑/新建模态框 -->
+<div class="modal-overlay" id="modalOverlay">
+    <div class="modal">
+        <h3 id="modalTitle">新建公告</h3>
+        <form id="announcementForm">
+            <div class="form-group">
+                <label>标题 <span style="color:red">*</span></label>
+                <input type="text" id="annTitle" required placeholder="例如：系统维护通知">
+                <div class="icon-picker" id="titleIconPicker" style="margin-top: 8px;">
+                    <button type="button" class="icon-option" data-icon="music"><i class="fas fa-music"></i></button>
+                    <button type="button" class="icon-option" data-icon="star"><i class="fas fa-star"></i></button>
+                    <button type="button" class="icon-option" data-icon="heart"><i class="fas fa-heart"></i></button>
+                    <button type="button" class="icon-option" data-icon="fire"><i class="fas fa-fire"></i></button>
+                    <button type="button" class="icon-option" data-icon="bell"><i class="fas fa-bell"></i></button>
+                    <button type="button" class="icon-option" data-icon="crown"><i class="fas fa-crown"></i></button>
+                    <button type="button" class="icon-option" data-icon="gift"><i class="fas fa-gift"></i></button>
+                    <button type="button" class="icon-option" data-icon="cloud"><i class="fas fa-cloud"></i></button>
+                    <button type="button" class="icon-option" data-icon="bug"><i class="fas fa-bug"></i></button>
+                    <button type="button" class="icon-option" data-icon="check-circle"><i class="fas fa-check-circle"></i></button>
+                </div>
+                <small style="color:#64748b;">点击图标可在标题中插入 {icon:图标名} 标记</small>
+            </div>
+            <div class="form-group">
+                <label>图标（Font Awesome）</label>
+                <div style="display: flex; gap: 8px; align-items: center;">
+                    <input type="text" id="annIcon" placeholder="例如：fa-music" value="fa-bullhorn">
+                    <div id="iconPreview" style="width: 36px; height: 36px; background: #f1f5f9; border-radius: 12px; display: flex; align-items: center; justify-content: center; border: 1px solid #cbd5e1;">
+                        <i class="fas fa-bullhorn" id="previewIcon"></i>
+                    </div>
+                </div>
+                <div class="icon-picker" id="iconInputIconPicker" style="margin-top: 8px;">
+                    <button type="button" class="icon-option" data-icon=""><span style="font-size: 12px;">无图标</span></button>
+                    <button type="button" class="icon-option" data-icon="bullhorn"><i class="fas fa-bullhorn"></i></button>
+                    <button type="button" class="icon-option" data-icon="music"><i class="fas fa-music"></i></button>
+                    <button type="button" class="icon-option" data-icon="star"><i class="fas fa-star"></i></button>
+                    <button type="button" class="icon-option" data-icon="heart"><i class="fas fa-heart"></i></button>
+                    <button type="button" class="icon-option" data-icon="fire"><i class="fas fa-fire"></i></button>
+                    <button type="button" class="icon-option" data-icon="bell"><i class="fas fa-bell"></i></button>
+                    <button type="button" class="icon-option" data-icon="crown"><i class="fas fa-crown"></i></button>
+                    <button type="button" class="icon-option" data-icon="gift"><i class="fas fa-gift"></i></button>
+                    <button type="button" class="icon-option" data-icon="cloud"><i class="fas fa-cloud"></i></button>
+                </div>
+                <small style="color:#64748b; display:block; margin-top:4px;">
+                    输入 Font Awesome 6 免费图标类名（如 fa-music, fa-star, fa-bullhorn）。<br>
+                    常用：<i class="fas fa-bullhorn"></i> fa-bullhorn, <i class="fas fa-music"></i> fa-music, <i class="fas fa-star"></i> fa-star, <i class="fas fa-newspaper"></i> fa-newspaper
+                </small>
+            </div>
+            <div class="form-group">
+                <label>排序序号（数字越小越靠前）</label>
+                <input type="number" id="annSortOrder" value="0" step="1" style="width: 100px;">
+                <small style="color:#64748b;">0 表示默认顺序，可输入正负数。公告将按此值升序排列。</small>
+            </div>
+            <div class="form-group">
+                <label>内容图标插入器</label>
+                <div class="icon-picker" id="iconPicker">
+                    <button type="button" class="icon-option" data-icon="music"><i class="fas fa-music"></i></button>
+                    <button type="button" class="icon-option" data-icon="star"><i class="fas fa-star"></i></button>
+                    <button type="button" class="icon-option" data-icon="heart"><i class="fas fa-heart"></i></button>
+                    <button type="button" class="icon-option" data-icon="fire"><i class="fas fa-fire"></i></button>
+                    <button type="button" class="icon-option" data-icon="bell"><i class="fas fa-bell"></i></button>
+                    <button type="button" class="icon-option" data-icon="crown"><i class="fas fa-crown"></i></button>
+                    <button type="button" class="icon-option" data-icon="gift"><i class="fas fa-gift"></i></button>
+                    <button type="button" class="icon-option" data-icon="cloud"><i class="fas fa-cloud"></i></button>
+                    <button type="button" class="icon-option" data-icon="bug"><i class="fas fa-bug"></i></button>
+                    <button type="button" class="icon-option" data-icon="check-circle"><i class="fas fa-check-circle"></i></button>
+                </div>
+                <small style="color:#64748b;">点击图标可在内容中插入 {icon:图标名} 标记，前台将显示为图标</small>
+            </div>
+            <div class="form-group">
+                <label>内容</label>
+                <textarea id="annContent" placeholder="详细内容...支持换行（可留空）"></textarea>
+                <small style="color:#64748b;">内容支持换行和图标占位符 {icon:图标名}，可留空仅显示标题</small>
+            </div>
+            <div class="form-group">
+                <label>自定义显示时间（可选）</label>
+                <div style="display: flex; gap: 8px; align-items: center;">
+                    <input type="datetime-local" id="annDisplayTime" style="flex: 1;">
+                    <button type="button" class="btn btn-outline btn-sm" id="nowTimeBtn">当前时间</button>
+                </div>
+                <small style="color:#64748b; display:block; margin-top:4px;">留空则不显示时间，排序按此时间倒序（空值排在最后）</small>
+            </div>
+            <div class="form-group">
+                <label>状态</label>
+                <select id="annActive">
+                    <option value="true">✅ 启用（显示在播放器）</option>
+                    <option value="false">⛔ 禁用（不显示）</option>
+                </select>
+            </div>
+            <input type="hidden" id="editId" value="">
+            <div class="form-buttons">
+                <button type="button" class="btn btn-outline" id="cancelModalBtn">取消</button>
+                <button type="submit" class="btn btn-primary" id="saveBtn">保存公告</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="toast" id="toastMsg">消息</div>
+
+<script>
+    // ---------- Supabase 配置（复用音乐播放器的项目）----------
+    const SUPABASE_URL = "https://yeogthpysbqgehjkayaf.supabase.co";
+    const SUPABASE_ANON_KEY = "sb_publishable_WoO50Mbz0Rhfy0nPugE3vA_5UP__SYX";
+
+    let supabase = null;
+    let currentEditId = null;
+
+    // 初始化 Supabase
+    async function initSupabase() {
+        if (supabase) return supabase;
+        supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+            auth: { persistSession: false, autoRefreshToken: false }
+        });
+        return supabase;
+    }
+
+    // 显示提示
+    function showToast(message, isError = false) {
+        const toast = document.getElementById('toastMsg');
+        toast.textContent = message;
+        toast.style.background = isError ? '#dc2626' : '#1e293b';
+        toast.classList.add('show');
+        setTimeout(() => toast.classList.remove('show'), 3000);
+    }
+
+    // 加载并渲染公告列表
+    async function loadAnnouncements() {
+        const container = document.getElementById('announcementsContainer');
+        container.innerHTML = '<div class="empty-state"><i class="fas fa-spinner fa-pulse"></i> 加载中...</div>';
+        try {
+            await initSupabase();
+            const { data, error } = await supabase
+                .from('announcements')
+                .select('*')
+                .order('sort_order', { ascending: true, nullsFirst: false })
+                .order('display_time', { ascending: false, nullsLast: true })
+                .order('created_at', { ascending: false });
+
+            if (error) throw error;
+
+            if (!data || data.length === 0) {
+                container.innerHTML = `<div class="empty-state"><i class="far fa-newspaper"></i> 暂无公告，点击「新建公告」添加</div>`;
+                return;
+            }
+
+            let html = '';
+            for (const item of data) {
+                // 格式化自定义时间
+                let displayTimeStr = '';
+                if (item.display_time) {
+                    // 处理不同格式的时间字符串，包括CSV文件中的格式
+                    let d;
+                    if (typeof item.display_time === 'string') {
+                        // 处理CSV格式：2026-04-05 20:51:00+00
+                        if (item.display_time.includes(' ')) {
+                            // 将空格替换为'T'以符合ISO格式
+                            const isoTime = item.display_time.replace(' ', 'T');
+                            d = new Date(isoTime);
+                        } else {
+                            d = new Date(item.display_time);
+                        }
+                    } else {
+                        d = new Date(item.display_time);
+                    }
+                    
+                    if (!isNaN(d.getTime())) {
+                        displayTimeStr = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
+                    }
+                }
+                // 获取图标类名，默认为 fa-bullhorn
+                const iconClass = item.icon && item.icon.trim() !== '' ? item.icon : 'fa-bullhorn';
+                const activeBadge = item.is_active ? '<span class="badge badge-active"><i class="fas fa-check-circle"></i> 启用</span>' : '<span class="badge badge-inactive"><i class="fas fa-eye-slash"></i> 禁用</span>';
+                html += `
+                    <div class="card" data-id="${item.id}">
+                        <div class="card-body">
+                            <div class="card-header">
+                                <div class="card-title">
+                                    <i class="fas ${iconClass}" style="margin-right: 10px;"></i>
+                                    ${escapeHtml(item.title)}
+                                    ${activeBadge}
+                                    <span class="badge" style="background:#e2e8f0; color:#334155;">排序: ${item.sort_order ?? 0}</span>
+                                </div>
+                            </div>
+                            ${displayTimeStr ? `<div class="card-date"><i class="far fa-calendar-alt"></i> ${displayTimeStr}</div>` : ''}
+                                ${item.content && item.content.trim() !== '' ? `<div class="card-content">${(item.content || '').replace(/^\s+/gm, (match) => {
+                                    return match.replace(/ /g, '&nbsp;');
+                                }).replace(/\{icon:([a-zA-Z0-9\-]+)\}/g, (match, iconName) => {
+                                    return `<i class="fas fa-${iconName}" style="margin:0 2px;"></i>`;
+                                }).replace(/\n/g, '<br>')}</div>` : ''}
+                            <div class="card-actions">
+                                <button class="btn btn-outline btn-sm move-up-btn" data-id="${item.id}"><i class="fas fa-arrow-up"></i> 上移</button>
+                                <button class="btn btn-outline btn-sm move-down-btn" data-id="${item.id}"><i class="fas fa-arrow-down"></i> 下移</button>
+                                <button class="btn btn-outline btn-sm edit-btn" data-id="${item.id}"><i class="fas fa-edit"></i> 编辑</button>
+                                <button class="btn btn-danger btn-sm delete-btn" data-id="${item.id}"><i class="fas fa-trash-alt"></i> 删除</button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+            container.innerHTML = html;
+
+            // 绑定编辑/删除事件
+            document.querySelectorAll('.edit-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const id = parseInt(btn.dataset.id);
+                    openEditModal(id);
+                });
+            });
+            document.querySelectorAll('.delete-btn').forEach(btn => {
+                btn.addEventListener('click', async (e) => {
+                    const id = parseInt(btn.dataset.id);
+                    if (confirm('确定要删除此公告吗？')) {
+                        await deleteAnnouncement(id);
+                    }
+                });
+            });
+        } catch (err) {
+            console.error(err);
+            container.innerHTML = `<div class="empty-state"><i class="fas fa-exclamation-triangle"></i> 加载失败: ${err.message}</div>`;
+            showToast('加载公告失败: ' + err.message, true);
+        }
+    }
+
+    // 打开新建模态框
+    function openNewModal() {
+        currentEditId = null;
+        document.getElementById('modalTitle').innerText = '新建公告';
+        document.getElementById('annTitle').value = '';
+        document.getElementById('annIcon').value = 'fa-bullhorn';
+        document.getElementById('annContent').value = '';
+        document.getElementById('annDisplayTime').value = '';
+        document.getElementById('annActive').value = 'true';
+        document.getElementById('annSortOrder').value = '0';
+        document.getElementById('editId').value = '';
+        updateIconPreview('fa-bullhorn');
+        document.getElementById('modalOverlay').classList.add('active');
+    }
+
+    // 打开编辑模态框并加载数据
+    async function openEditModal(id) {
+        try {
+            await initSupabase();
+            const { data, error } = await supabase.from('announcements').select('*').eq('id', id).single();
+            if (error) throw error;
+            if (!data) throw new Error('公告不存在');
+            currentEditId = data.id;
+            document.getElementById('modalTitle').innerText = '编辑公告';
+            document.getElementById('annTitle').value = data.title || '';
+            document.getElementById('annIcon').value = data.icon || 'fa-bullhorn';
+            document.getElementById('annContent').value = data.content || '';
+            // 处理 datetime-local 格式
+            let displayVal = '';
+            if (data.display_time) {
+                // 处理不同格式的时间字符串，包括CSV文件中的格式
+                let d;
+                if (typeof data.display_time === 'string') {
+                    // 处理CSV格式：2026-04-05 20:51:00+00
+                    if (data.display_time.includes(' ')) {
+                        // 将空格替换为'T'以符合ISO格式
+                        const isoTime = data.display_time.replace(' ', 'T');
+                        d = new Date(isoTime);
+                    } else {
+                        d = new Date(data.display_time);
+                    }
+                } else {
+                    d = new Date(data.display_time);
+                }
+                
+                if (!isNaN(d.getTime())) {
+                    displayVal = d.toISOString().slice(0, 16);
+                }
+            }
+            document.getElementById('annDisplayTime').value = displayVal;
+            document.getElementById('annActive').value = data.is_active ? 'true' : 'false';
+            document.getElementById('annSortOrder').value = data.sort_order ?? 0;
+            document.getElementById('editId').value = data.id;
+            updateIconPreview(data.icon || 'fa-bullhorn');
+            document.getElementById('modalOverlay').classList.add('active');
+        } catch (err) {
+            showToast('加载公告详情失败: ' + err.message, true);
+        }
+    }
+
+    // 保存（新增或更新）
+    async function saveAnnouncement(event) {
+        event.preventDefault();
+        const title = document.getElementById('annTitle').value.trim();
+        const content = document.getElementById('annContent').value;
+        const icon = document.getElementById('annIcon').value.trim();
+        const sortOrder = parseInt(document.getElementById('annSortOrder').value) || 0;
+        if (!title) {
+            showToast('标题不能为空', true);
+            return;
+        }
+        const displayTimeRaw = document.getElementById('annDisplayTime').value;
+        let displayTime = null;
+        if (displayTimeRaw) {
+            // 转为 ISO 字符串（数据库 timestamptz 接受）
+            displayTime = new Date(displayTimeRaw).toISOString();
+        }
+        const isActive = document.getElementById('annActive').value === 'true';
+        const editId = document.getElementById('editId').value;
+
+        try {
+            await initSupabase();
+            if (editId) {
+                // 更新
+                const { error } = await supabase
+                    .from('announcements')
+                    .update({
+                        title,
+                        content,
+                        icon,
+                        sort_order: sortOrder,
+                        display_time: displayTime,
+                        is_active: isActive,
+                        updated_at: new Date().toISOString()
+                    })
+                    .eq('id', parseInt(editId));
+                if (error) throw error;
+                showToast('公告已更新');
+            } else {
+                // 新增
+                const { error } = await supabase
+                    .from('announcements')
+                    .insert({
+                        title,
+                        content,
+                        icon,
+                        sort_order: sortOrder,
+                        display_time: displayTime,
+                        is_active: isActive,
+                        created_at: new Date().toISOString(),
+                        updated_at: new Date().toISOString()
+                    });
+                if (error) throw error;
+                showToast('公告已创建');
+            }
+            closeModal();
+            loadAnnouncements();
+        } catch (err) {
+            showToast('保存失败: ' + err.message, true);
+        }
+    }
+
+    // 更新图标预览
+    function updateIconPreview(iconClass) {
+        const previewIcon = document.getElementById('previewIcon');
+        if (previewIcon) {
+            // 移除所有fa-开头的类
+            previewIcon.className = '';
+            // 添加新的图标类
+            if (iconClass && iconClass.trim() !== '') {
+                previewIcon.className = 'fas ' + iconClass;
+            }
+        }
+    }
+
+    // 绑定图标输入事件
+    function bindIconInputEvent() {
+        const iconInput = document.getElementById('annIcon');
+        if (iconInput) {
+            iconInput.addEventListener('input', function() {
+                const iconClass = this.value.trim() || 'fa-bullhorn';
+                updateIconPreview(iconClass);
+            });
+        }
+    }
+
+    // 获取当前光标位置插入文本（适用于 textarea）
+    function insertAtCursor(textarea, text) {
+        const start = textarea.selectionStart;
+        const end = textarea.selectionEnd;
+        const value = textarea.value;
+        textarea.value = value.substring(0, start) + text + value.substring(end);
+        textarea.selectionStart = textarea.selectionEnd = start + text.length;
+        textarea.focus();
+        // 触发 input 事件以便其他逻辑
+        textarea.dispatchEvent(new Event('input', { bubbles: true }));
+    }
+
+    // 初始化图标选择器
+    function initIconPicker() {
+        // 内容图标选择器
+        const picker = document.getElementById('iconPicker');
+        if (picker) {
+            const contentTextarea = document.getElementById('annContent');
+            if (contentTextarea) {
+                picker.querySelectorAll('.icon-option').forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        const iconName = btn.dataset.icon;
+                        if (iconName) {
+                            const mark = `{icon:${iconName}}`;
+                            insertAtCursor(contentTextarea, mark);
+                        }
+                    });
+                });
+            }
+        }
+        
+        // 标题图标选择器
+        const titlePicker = document.getElementById('titleIconPicker');
+        if (titlePicker) {
+            const titleInput = document.getElementById('annTitle');
+            if (titleInput) {
+                titlePicker.querySelectorAll('.icon-option').forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        const iconName = btn.dataset.icon;
+                        if (iconName) {
+                            const mark = `{icon:${iconName}}`;
+                            insertAtCursor(titleInput, mark);
+                        }
+                    });
+                });
+            }
+        }
+        
+        // 图标输入框图标选择器
+        const iconInputPicker = document.getElementById('iconInputIconPicker');
+        if (iconInputPicker) {
+            const iconInput = document.getElementById('annIcon');
+            if (iconInput) {
+                iconInputPicker.querySelectorAll('.icon-option').forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        const iconName = btn.dataset.icon;
+                        if (iconName) {
+                            iconInput.value = `fa-${iconName}`;
+                            updateIconPreview(`fa-${iconName}`);
+                        } else {
+                            // 无图标选项
+                            iconInput.value = '';
+                            updateIconPreview('');
+                        }
+                    });
+                });
+            }
+        }
+    }
+
+    // 删除公告
+    async function deleteAnnouncement(id) {
+        // 确认删除
+        if (!confirm('确定要删除此公告吗？')) {
+            return;
+        }
+        
+        try {
+            await initSupabase();
+            const { error } = await supabase.from('announcements').delete().eq('id', id);
+            if (error) throw error;
+            showToast('公告已删除');
+            loadAnnouncements();
+        } catch (err) {
+            showToast('删除失败: ' + err.message, true);
+        }
+    }
+
+    // 上移公告
+    async function moveAnnouncementUp(id) {
+        try {
+            await initSupabase();
+            // 获取所有公告并按排序序号排序
+            const { data: announcements, error: fetchError } = await supabase
+                .from('announcements')
+                .select('id, sort_order')
+                .order('sort_order', { ascending: true })
+                .order('created_at', { ascending: false });
+            
+            if (fetchError) throw fetchError;
+            
+            const currentIndex = announcements.findIndex(a => a.id === id);
+            if (currentIndex <= 0) {
+                showToast('已经是第一个公告了');
+                return;
+            }
+            
+            const currentAnnouncement = announcements[currentIndex];
+            const previousAnnouncement = announcements[currentIndex - 1];
+            
+            // 交换排序序号
+            const tempSortOrder = currentAnnouncement.sort_order;
+            
+            // 更新当前公告
+            const { error: updateCurrentError } = await supabase
+                .from('announcements')
+                .update({ sort_order: previousAnnouncement.sort_order, updated_at: new Date().toISOString() })
+                .eq('id', currentAnnouncement.id);
+            
+            if (updateCurrentError) throw updateCurrentError;
+            
+            // 更新上一个公告
+            const { error: updatePreviousError } = await supabase
+                .from('announcements')
+                .update({ sort_order: tempSortOrder, updated_at: new Date().toISOString() })
+                .eq('id', previousAnnouncement.id);
+            
+            if (updatePreviousError) throw updatePreviousError;
+            
+            showToast('公告已上移');
+            loadAnnouncements();
+        } catch (err) {
+            showToast('上移失败: ' + err.message, true);
+        }
+    }
+
+    // 下移公告
+    async function moveAnnouncementDown(id) {
+        try {
+            await initSupabase();
+            // 获取所有公告并按排序序号排序
+            const { data: announcements, error: fetchError } = await supabase
+                .from('announcements')
+                .select('id, sort_order')
+                .order('sort_order', { ascending: true })
+                .order('created_at', { ascending: false });
+            
+            if (fetchError) throw fetchError;
+            
+            const currentIndex = announcements.findIndex(a => a.id === id);
+            if (currentIndex >= announcements.length - 1) {
+                showToast('已经是最后一个公告了');
+                return;
+            }
+            
+            const currentAnnouncement = announcements[currentIndex];
+            const nextAnnouncement = announcements[currentIndex + 1];
+            
+            // 交换排序序号
+            const tempSortOrder = currentAnnouncement.sort_order;
+            
+            // 更新当前公告
+            const { error: updateCurrentError } = await supabase
+                .from('announcements')
+                .update({ sort_order: nextAnnouncement.sort_order, updated_at: new Date().toISOString() })
+                .eq('id', currentAnnouncement.id);
+            
+            if (updateCurrentError) throw updateCurrentError;
+            
+            // 更新下一个公告
+            const { error: updateNextError } = await supabase
+                .from('announcements')
+                .update({ sort_order: tempSortOrder, updated_at: new Date().toISOString() })
+                .eq('id', nextAnnouncement.id);
+            
+            if (updateNextError) throw updateNextError;
+            
+            showToast('公告已下移');
+            loadAnnouncements();
+        } catch (err) {
+            showToast('下移失败: ' + err.message, true);
+        }
+    }
+
+    function closeModal() {
+        document.getElementById('modalOverlay').classList.remove('active');
+    }
+
+    // 辅助转义
+    function escapeHtml(str) {
+        if (!str) return '';
+        return str.replace(/[&<>]/g, function(m) {
+            if (m === '&') return '&amp;';
+            if (m === '<') return '&lt;';
+            if (m === '>') return '&gt;';
+            return m;
+        }).replace(/[\uD800-\uDBFF][\uDC00-\uDFFF]/g, function(c) {
+            return c;
+        });
+    }
+
+    // 设置当前时间到输入框
+    function setCurrentTime() {
+        const now = new Date();
+        // 格式化日期时间为 YYYY-MM-DDTHH:MM 格式
+        const year = now.getFullYear();
+        const month = String(now.getMonth() + 1).padStart(2, '0');
+        const day = String(now.getDate()).padStart(2, '0');
+        const hours = String(now.getHours()).padStart(2, '0');
+        const minutes = String(now.getMinutes()).padStart(2, '0');
+        const formattedTime = `${year}-${month}-${day}T${hours}:${minutes}`;
+        
+        const timeInput = document.getElementById('annDisplayTime');
+        if (timeInput) {
+            timeInput.value = formattedTime;
+        }
+    }
+
+    // 初始化页面
+    document.addEventListener('DOMContentLoaded', () => {
+        loadAnnouncements();
+        bindIconInputEvent();
+        initIconPicker();
+        document.getElementById('newAnnouncementBtn').addEventListener('click', openNewModal);
+        document.getElementById('cancelModalBtn').addEventListener('click', closeModal);
+        document.getElementById('announcementForm').addEventListener('submit', saveAnnouncement);
+        // 绑定当前时间按钮事件
+        const nowTimeBtn = document.getElementById('nowTimeBtn');
+        if (nowTimeBtn) {
+            nowTimeBtn.addEventListener('click', setCurrentTime);
+        }
+        // 点击遮罩关闭
+        document.getElementById('modalOverlay').addEventListener('click', (e) => {
+            if (e.target === document.getElementById('modalOverlay')) closeModal();
+        });
+        // 委托绑定编辑、删除、上移和下移按钮事件
+        document.getElementById('announcementsList').addEventListener('click', function(e) {
+            if (e.target.closest('.edit-btn')) {
+                const btn = e.target.closest('.edit-btn');
+                const id = parseInt(btn.dataset.id);
+                openEditModal(id);
+            } else if (e.target.closest('.delete-btn')) {
+                const btn = e.target.closest('.delete-btn');
+                const id = parseInt(btn.dataset.id);
+                deleteAnnouncement(id);
+            } else if (e.target.closest('.move-up-btn')) {
+                const btn = e.target.closest('.move-up-btn');
+                const id = parseInt(btn.dataset.id);
+                moveAnnouncementUp(id);
+            } else if (e.target.closest('.move-down-btn')) {
+                const btn = e.target.closest('.move-down-btn');
+                const id = parseInt(btn.dataset.id);
+                moveAnnouncementDown(id);
+            }
+        });
+    });
+</script>
+</body>
+</html>
