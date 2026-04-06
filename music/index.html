@@ -12453,7 +12453,21 @@ biliLoadMoreBtn.addEventListener('click', () => {
                         // 处理自定义显示时间（若为空则不显示）
                         let displayTimeStr = '';
                         if (item.display_time) {
-                            const date = new Date(item.display_time);
+                            // 处理不同格式的时间字符串，包括CSV文件中的格式
+                            let date;
+                            if (typeof item.display_time === 'string') {
+                                // 处理CSV格式：2026-04-05 20:51:00+00
+                                if (item.display_time.includes(' ')) {
+                                    // 将空格替换为'T'以符合ISO格式
+                                    const isoTime = item.display_time.replace(' ', 'T');
+                                    date = new Date(isoTime);
+                                } else {
+                                    date = new Date(item.display_time);
+                                }
+                            } else {
+                                date = new Date(item.display_time);
+                            }
+                            
                             if (!isNaN(date.getTime())) {
                                 displayTimeStr = `${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,'0')}-${String(date.getDate()).padStart(2,'0')} ${String(date.getHours()).padStart(2,'0')}:${String(date.getMinutes()).padStart(2,'0')}`;
                             }
@@ -12467,6 +12481,10 @@ biliLoadMoreBtn.addEventListener('click', () => {
                             if (!content) return '';
                             // 转义 HTML 特殊字符，避免 XSS
                             let escaped = escapeHTML(content);
+                            // 保留行首的空格，将其转换为 &nbsp;
+                            escaped = escaped.replace(/^\s+/gm, (match) => {
+                                return match.replace(/ /g, '&nbsp;');
+                            });
                             // 将 {icon:xxx} 替换为 Font Awesome 图标，xxx 为图标类名（不含 fas 前缀）
                             // 匹配模式：{icon:图标名}，图标名只允许字母数字和连字符
                             escaped = escaped.replace(/\{icon:([a-zA-Z0-9\-]+)\}/g, (match, iconName) => {
