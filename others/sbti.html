@@ -1,0 +1,675 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>SBTI · 玄学人格模态宇宙 | 生成图片分享</title>
+    <!-- html2canvas 库：用于生成分享图片 -->
+    <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: linear-gradient(145deg, #eef0f5 0%, #ddd8cf 100%);
+            font-family: system-ui, 'Segoe UI', 'Noto Sans', 'PingFang SC', Roboto, 'Helvetica Neue', sans-serif;
+            padding: 2rem 1rem;
+            color: #1f1b17;
+            min-height: 100vh;
+        }
+
+        .app-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #fffdf9;
+            border-radius: 56px;
+            box-shadow: 0 35px 55px -20px rgba(0, 0, 0, 0.35), 0 0 0 1px rgba(210, 180, 150, 0.4);
+            overflow: hidden;
+            transition: all 0.2s;
+        }
+
+        .test-header {
+            background: #1e1915;
+            color: #fef0e0;
+            padding: 2rem 1.5rem 1.6rem;
+            text-align: center;
+            border-bottom-left-radius: 36px;
+            border-bottom-right-radius: 36px;
+        }
+
+        .test-header h1 {
+            font-size: 2.2rem;
+            letter-spacing: -0.5px;
+            font-weight: 800;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.6rem;
+            flex-wrap: wrap;
+        }
+
+        .badge-group {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            margin-top: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .stat-badge {
+            background: #2f2a24;
+            padding: 0.2rem 1rem;
+            border-radius: 40px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: #ffe0c4;
+            letter-spacing: 0.3px;
+        }
+
+        .test-header p {
+            margin-top: 0.9rem;
+            opacity: 0.8;
+            font-size: 0.85rem;
+        }
+
+        .content-pane {
+            padding: 1.8rem 1.5rem 2rem;
+        }
+
+        .progress-area {
+            margin-bottom: 1.5rem;
+        }
+
+        .progress-stats {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.8rem;
+            font-weight: 600;
+            margin-bottom: 6px;
+            color: #9b7a62;
+        }
+
+        .progress-bar-bg {
+            background: #ede3d9;
+            border-radius: 30px;
+            height: 8px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            background: #b87c4f;
+            width: 0%;
+            height: 100%;
+            border-radius: 30px;
+            transition: width 0.25s cubic-bezier(0.2, 0.9, 0.4, 1.1);
+        }
+
+        .question-card {
+            background: #ffffff;
+            border-radius: 32px;
+            padding: 1.6rem 1.4rem;
+            box-shadow: 0 8px 18px rgba(0, 0, 0, 0.04);
+            border: 1px solid #f2e4d8;
+            margin-bottom: 1.8rem;
+        }
+
+        .question-text {
+            font-size: 1.4rem;
+            font-weight: 650;
+            line-height: 1.4;
+            margin-bottom: 1.6rem;
+            color: #2a241f;
+        }
+
+        .options-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .option-btn {
+            background: #fefaf7;
+            border: 1.5px solid #eedfcb;
+            border-radius: 60px;
+            padding: 0.9rem 1.2rem;
+            font-size: 0.98rem;
+            font-weight: 500;
+            text-align: left;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            color: #3e2e24;
+            font-family: inherit;
+        }
+
+        .option-btn:hover:not(:disabled) {
+            background: #fff5ed;
+            border-color: #cfa27e;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.05);
+        }
+
+        .option-prefix {
+            font-size: 1.2rem;
+            font-weight: 600;
+            width: 30px;
+            text-align: center;
+            color: #b87c4f;
+        }
+
+        .nav-buttons {
+            display: flex;
+            justify-content: space-between;
+            gap: 12px;
+        }
+
+        .nav-btn {
+            background: transparent;
+            border: 1px solid #dccbbc;
+            padding: 0.7rem 1.5rem;
+            border-radius: 48px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.2s;
+            font-size: 0.9rem;
+            color: #5a463a;
+            flex: 1;
+            text-align: center;
+        }
+
+        .nav-btn.primary {
+            background: #2c241e;
+            border-color: #2c241e;
+            color: white;
+        }
+
+        .nav-btn.primary:hover:not(:disabled) {
+            background: #4f3729;
+            transform: scale(0.97);
+        }
+
+        .nav-btn:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+
+        /* 模态框样式 */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.75);
+            backdrop-filter: blur(5px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .modal-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .modal-container {
+            background: #fffef8;
+            max-width: 550px;
+            width: 90%;
+            border-radius: 48px;
+            box-shadow: 0 30px 50px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+            animation: modalPop 0.35s cubic-bezier(0.2, 0.9, 0.4, 1.1);
+            position: relative;
+        }
+
+        @keyframes modalPop {
+            from {
+                transform: scale(0.92);
+                opacity: 0;
+            }
+            to {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        .modal-header {
+            background: #2c241e;
+            padding: 1.2rem 1.5rem;
+            color: #ffe7d6;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-header h3 {
+            font-size: 1.3rem;
+            font-weight: 700;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 1.8rem;
+            cursor: pointer;
+            color: #d9c2ae;
+            transition: 0.2s;
+        }
+
+        .modal-close:hover {
+            color: #fff;
+        }
+
+        .modal-body {
+            padding: 1.8rem 1.5rem;
+            max-height: 70vh;
+            overflow-y: auto;
+        }
+
+        /* 结果卡片（用于生成图片） */
+        .result-share-card {
+            background: linear-gradient(135deg, #fff9f3 0%, #fff3ea 100%);
+            border-radius: 32px;
+            padding: 1.6rem;
+            text-align: center;
+            border: 1px solid #f3e1d2;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.05);
+        }
+
+        .result-tag {
+            display: inline-block;
+            background: #2c241e;
+            color: #ffe7d6;
+            padding: 0.2rem 1rem;
+            border-radius: 60px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            margin-bottom: 0.8rem;
+        }
+
+        .result-name {
+            font-size: 1.9rem;
+            font-weight: 800;
+            margin-bottom: 0.3rem;
+            color: #2c241e;
+        }
+
+        .result-sub {
+            font-size: 0.85rem;
+            background: #f3ebe4;
+            display: inline-block;
+            padding: 0.2rem 1rem;
+            border-radius: 40px;
+            margin-bottom: 1rem;
+            color: #8b694f;
+        }
+
+        .result-desc {
+            background: #ffffffcc;
+            padding: 1rem;
+            border-radius: 24px;
+            text-align: left;
+            line-height: 1.5;
+            margin: 1rem 0;
+            color: #3f2d22;
+            font-size: 0.9rem;
+            border: 1px solid #f5e3d4;
+        }
+
+        .dimension-hint {
+            font-size: 0.7rem;
+            background: #f1ede8;
+            border-radius: 20px;
+            padding: 0.3rem 0.8rem;
+            display: inline-block;
+            margin: 0.5rem 0;
+        }
+
+        .share-footer {
+            margin-top: 1rem;
+            font-size: 0.65rem;
+            color: #b87c4f;
+            border-top: 1px dashed #eedfcb;
+            padding-top: 0.8rem;
+        }
+
+        .modal-buttons {
+            display: flex;
+            gap: 12px;
+            margin-top: 1.2rem;
+        }
+
+        .share-btn {
+            background: #b87c4f;
+            border: none;
+            padding: 0.7rem 1rem;
+            border-radius: 60px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            color: white;
+            cursor: pointer;
+            flex: 1;
+            transition: 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+        }
+
+        .share-btn:hover {
+            background: #9a623f;
+            transform: translateY(-2px);
+        }
+
+        .restart-modal-btn {
+            background: #2c241e;
+            border: none;
+            padding: 0.7rem 1rem;
+            border-radius: 60px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            color: white;
+            cursor: pointer;
+            flex: 1;
+        }
+
+        footer {
+            font-size: 0.7rem;
+            text-align: center;
+            padding: 1rem 1rem 1.2rem;
+            color: #b39e8b;
+            border-top: 1px solid #f3e8e0;
+        }
+
+        @media (max-width: 550px) {
+            .content-pane {
+                padding: 1.2rem;
+            }
+            .question-text {
+                font-size: 1.2rem;
+            }
+            .result-name {
+                font-size: 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="app-container" id="app">
+    <div class="test-header">
+        <h1>🧠 SBTI·玄学矩阵 <span class="sbti-badge">完全体+图片分享</span></h1>
+        <div class="badge-group">
+            <span class="stat-badge">📋 32 道题目</span>
+            <span class="stat-badge">🎭 27 种离谱人格</span>
+            <span class="stat-badge">🌀 15 个玄学维度</span>
+        </div>
+        <p>完成测试 · 模态结果 · 一键生成人格卡片并分享</p>
+    </div>
+    <div class="content-pane" id="mainContent"></div>
+    <footer>⚡ SBTI 非标准测评 · 探索平行自我 · 截图保存你的离谱人格</footer>
+</div>
+
+<!-- 模态框 -->
+<div id="resultModal" class="modal-overlay">
+    <div class="modal-container">
+        <div class="modal-header">
+            <h3>✨ 你的 SBTI 玄学档案 ✨</h3>
+            <button class="modal-close" id="closeModalBtn">&times;</button>
+        </div>
+        <div class="modal-body" id="modalBody">
+            <!-- 动态填充结果以及图片生成区域 -->
+        </div>
+    </div>
+</div>
+
+<script>
+    // ----------------------------- 15维度定义 -------------------------
+    const DIMENSIONS = [
+        "混沌指数", "拖延原力", "共情辐射", "卷王动能", "虚无感知",
+        "社交拟态", "情绪潮汐", "行动电阻", "自我解构", "荒诞耐受",
+        "能量代谢", "镜像防御", "存在焦虑", "灵感熵值", "野生直觉"
+    ];
+
+    function zeroVec() {
+        return new Array(15).fill(0);
+    }
+
+    // ----------------------------- 27种人格库 -------------------------
+    const PERSONALITIES = [
+        { id: "CHAOS_GOD", name: "🌪️ 混沌创世神", subtitle: "无序即秩序，熵增是你的呼吸", desc: "你体内流淌着原始混沌能量，所有规则在你面前都会扭曲。不是不懂规矩，而是你本身就是新规则的源头。" },
+        { id: "LUCID_DREAMER", name: "💤 清醒梦游者", subtitle: "肉身在人间，灵魂在异次元", desc: "你总是走神，但走神时反而看得最透彻。现实对你来说像一场半醒的梦，你擅长在梦境和清醒之间偷渡灵感。" },
+        { id: "SOCIAL_CORPSE", name: "🥀 社交尸体花", subtitle: "活着，但已退出群聊", desc: "你拥有隐身于人群的超能力：既不是社恐也不是社牛，而是「已读不回」的具象化。你的能量在独处时绽放。" },
+        { id: "SELF_ROLL", name: "🌀 自卷永动机", subtitle: "内耗即燃料，停不下来", desc: "你不需要外界鞭策，自己就能卷成麻花。焦虑是你的肾上腺素，看似高效，其实心里住着一位永不满足的考官。" },
+        { id: "NIHIL_BARD", name: "🎭 虚无吟游诗人", subtitle: "看破红尘但还在写诗", desc: "你早早看透了人生的荒谬，但依然选择用浪漫对抗虚无。你的存在是一首荒诞而深情的散文诗。" },
+        { id: "MIMIC_OCTOPUS", name: "🐙 社交拟态章鱼", subtitle: "变色龙Pro Max", desc: "你能无缝融入任何圈子，但面具太多，偶尔忘了自己原本的颜色。不过没关系，章鱼本来就没有骨头。" },
+        { id: "TIDAL_EMPATH", name: "🌊 潮汐共情体", subtitle: "情绪放大器，哭点极低", desc: "你像一块情感海绵，朋友emo你比他还伤心。你拥有巨大的疗愈力，但也需要定期拧干自己。" },
+        { id: "RESISTOR_BOT", name: "⚡ 高阻机器人", subtitle: "万事开头难，然后中间难", desc: "你的行动电阻永远拉满。拖延不是懒惰，而是潜意识在对抗惯性。但一旦启动，你其实能跑得比谁都快。" },
+        { id: "DECONSTRUCTOR", name: "🔪 自我解构狂", subtitle: "每天解剖自己八百次", desc: "你是自己的心理医生兼恐怖分子。习惯性分析每一个念头，过度反思让你痛苦，但也让你比谁都清醒。" },
+        { id: "ABSURD_SURFER", name: "🏄 荒诞冲浪手", subtitle: "世界是个草台班子，而你爱看戏", desc: "你深谙人间不值得的精髓，把荒诞当冲浪板。你拒绝严肃，因为严肃就输了。" },
+        { id: "ENERGY_VAMPIRE", name: "🦇 能量代谢异类", subtitle: "电量忽高忽低，随机待机", desc: "你的精力像过山车，有时候一天能顶三天，有时候三天躺一天。这是最诚实的生命节律。" },
+        { id: "MIRROR_KNIGHT", name: "🛡️ 镜像防御使", subtitle: "敏感但坚硬，柔软且带刺", desc: "你高度敏感，但为了保护自己学会了镜像防御：别人怎么对你，你就怎么反弹。你是一首加密的抒情诗。" },
+        { id: "ANXIETY_GHOST", name: "👻 存在焦虑魅影", subtitle: "深夜思想家，白昼隐形人", desc: "你总在思考活着的意义，害怕平庸又渴望安稳。你的焦虑不是缺点，而是通往深邃的暗号。" },
+        { id: "INSP_ENTROPY", name: "✨ 灵感熵增体", subtitle: "越混乱越创造", desc: "你的书桌越乱灵感越旺，生活越颠创作越炸。熵增是你的引擎，无序是你的秩序。" },
+        { id: "WILD_INTUIT", name: "🐺 野生直觉派", subtitle: "信感觉不信逻辑", desc: "你决策靠第六感，选答案看心情。看似不靠谱，但往往蒙得比理性分析还准。" },
+        { id: "MELANCHOLY_ALCHEMIST", name: "🧪 忧郁炼金师", subtitle: "把悲伤炼成诗", desc: "你能从痛苦中提炼美，从失落中萃取哲理。忧郁是你的实验室，你炼出的东西闪闪发光。" },
+        { id: "BOUNDARY_GHOST", name: "🚧 边界幽灵", subtitle: "忽近忽远，若即若离", desc: "你极度需要个人空间，一旦感觉被入侵就会瞬间消失。不是冷漠，而是守护最后的安全区。" },
+        { id: "CYNICAL_HOPE", name: "🕯️ 犬儒式理想家", subtitle: "嘴上说随便，心里有火焰", desc: "你口头禅是“都行”，但深夜会为理想偷偷落泪。你用毒舌保护脆弱的希望。" },
+        { id: "DOPAMINE_RACER", name: "🏎️ 多巴胺赛车手", subtitle: "永远在追逐新鲜感", desc: "你喜新厌旧的速度堪比闪电，三分钟热度是你的宿命。但也是你体验世界的密度远超常人。" },
+        { id: "OBSERVER_BOT", name: "📡 人类观察bot", subtitle: "冷眼热心，记录一切", desc: "你习惯站在人群外观察，像一台高精度摄像机。你不善表达情感，但你的记录本身就是深情。" },
+        { id: "RECOVERING_PERFECT", name: "🎯 康复期完美主义", subtitle: "曾经非黑即白，现在灰阶很美", desc: "你正在从完美主义的枷锁中康复，学会了允许自己犯错。不完美反而让你更完整。" },
+        { id: "HUMOR_NIHILIST", name: "🤡 幽默虚无主义者", subtitle: "笑对一切深渊", desc: "你发现生活没有意义后，决定亲自给生活编段子。你是聚会上的开心果，也是深夜独自喝酒的哲学家。" },
+        { id: "STOIC_FLOWER", name: "🏵️ 斯多葛野花", subtitle: "坚韧但柔软", desc: "你像旷野里的花，风吹雨打也不倒，但依然能绽放美丽。你信奉控制可控，接纳不可控。" },
+        { id: "ECHO_EMPATH", name: "📢 回声共情体", subtitle: "过度承受他人情绪", desc: "你总能接住别人的情绪，甚至替他们难受。你是情绪海绵Pro，但别忘记释放。" },
+        { id: "PARADOX_WALKER", name: "⚖️ 矛盾步行者", subtitle: "一身反骨却渴望安稳", desc: "你充满矛盾：渴望自由又需要归属，热爱冒险又胆小。但这正是你最迷人的地方。" },
+        { id: "SACRED_LAZY", name: "🙏 神圣懒癌", subtitle: "懒出哲学，躺出境界", desc: "你的懒不是懈怠，而是参透了效率的虚妄。你选择把精力留给真正热爱之事，其他全部躺平。" },
+        { id: "WEIRDO_PROPHET", name: "🔮 怪诞先知", subtitle: "古怪但深刻，被当成疯子", desc: "你的想法超前且怪异，常常不被理解。但时间会证明，你只是比时代快了半步。" }
+    ];
+
+    // ----------------------------- 生成32道题目 -------------------------
+    function generateQuestions() {
+        const scenarios = [
+            "周末午后突然停电，你做的第一件事？", "同事甩锅给你，你会？", "朋友半夜哭诉失恋，你的反应？",
+            "理想与现实差距越来越大，你会？", "面对需要长期坚持的目标，你通常？", "社交场合碰到讨厌的人，如何应对？",
+            "深夜看到贩卖焦虑的文案，你心里？", "假如你有超能力，你会选？", "丢失了最重要的日记本，你的情绪？",
+            "你更害怕哪一种未来？", "别人评价与自我认知冲突时，你更倾向于？", "疲惫不堪时，你最需要？",
+            "你相信直觉超过逻辑吗？", "面对突如其来的赞美，第一反应？", "如果可以删除一种情绪，你会删掉？",
+            "你觉得自己最矛盾的地方是？", "如果人生是游戏，卡关的原因是？", "你更享受过程还是结果？",
+            "帮了别人却没得到感谢，你会？", "稳定平淡 vs 动荡精彩？", "你觉得自己更接近哪种动物？",
+            "对于仪式感的态度？", "如何处理积压的负面情绪？", "认为自己最大的天赋是？",
+            "团队中你通常扮演？", "如何看待失败？", "你相信命运可以改变吗？", "对网络流行梗的态度？",
+            "更容易被哪种艺术打动？", "你觉得自己复杂吗？", "更向往哪种自然景观？", "完全自由的24小时会用来？"
+        ];
+        const optTemplates = [
+            ["顺其自然", "理性计划", "直接开摆", "找人聊聊"], ["正面硬刚", "默默记仇", "幽默化解", "完全无视"],
+            ["耐心倾听", "理性分析", "讲个笑话", "有点烦躁"], ["更拼命", "降低期望", "换赛道", "自我怀疑"],
+            ["详细计划", "三分钟热度", "凭感觉", "找人监督"], ["假装没见", "礼貌微笑", "怼回去", "内心抓狂"],
+            ["瞬间焦虑", "划走不看", "截图吐槽", "思考原因"], ["读心术", "时间暂停", "瞬移", "治愈"],
+            ["崩溃大哭", "冷静接受", "创作转化", "找人倾诉"], ["平庸无聊", "动荡孤独", "成功但众叛亲离", "平凡有爱"],
+            ["反思自己", "对方不懂我", "我就是我", "沟通消除"], ["独处放空", "朋友疯玩", "运动流汗", "吃顿好的"],
+            ["完全相信", "依赖逻辑", "两者结合", "怀疑但信"], ["怀疑目的", "开心接受", "内心狂喜", "尴尬"],
+            ["焦虑", "悲伤", "愤怒", "嫉妒"], ["自由又孤独", "成功怕吃苦", "社交又独处", "理性感性拉扯"],
+            ["技能不够", "装备差", "队友不行", "设计问题"], ["过程重要", "结果重要", "同样重要", "无所谓"],
+            ["理所当然", "不舒服不说", "下次不帮", "直接表达"], ["稳定平淡", "动荡精彩", "摇摆", "看阶段"],
+            ["猫", "狼", "树懒", "章鱼"], ["必要调味", "浪费时间", "看心情", "不在意"],
+            ["运动发泄", "写日记", "找朋友吐槽", "自我消化"], ["共情力", "创造力", "执行力", "幽默感"],
+            ["领导者", "协调者", "执行者", "气氛组"], ["世界末日", "宝贵教训", "人生常态", "逃避"],
+            ["可以改变", "早已注定", "小范围改变", "玄学"], ["紧跟潮流", "偶尔用", "不用", "自创梗"],
+            ["电影", "音乐", "文字", "戏剧"], ["非常复杂", "简单纯粹", "表面简单内心复杂", "拒绝定义"],
+            ["星空", "大海", "森林", "沙漠"], ["学新技能", "朋友聚会", "独自冒险", "宅家刷剧"]
+        ];
+        let qs = [];
+        for (let i = 0; i < 32; i++) {
+            let text = scenarios[i % scenarios.length];
+            let opts = optTemplates[i % optTemplates.length];
+            let options = opts.map((label, optIdx) => {
+                let w = zeroVec();
+                if (optIdx === 0) { w[2] += 2; w[6] += 2; w[14] += 2; }
+                else if (optIdx === 1) { w[3] += 2; w[7] -= 1; w[13] += 1; }
+                else if (optIdx === 2) { w[4] += 2; w[9] += 2; w[1] += 2; }
+                else { w[5] += 2; w[11] += 2; w[12] += 1; w[2] += 1; }
+                w[8] += (i % 3) * 0.6;
+                w[13] += (optIdx * 0.4);
+                return { label, weights: w.map(v => Math.round(v * 1.5)) };
+            });
+            qs.push({ text, options });
+        }
+        return qs;
+    }
+
+    const QUESTIONS = generateQuestions();
+    let currentIndex = 0;
+    let answers = new Array(32).fill(null);
+    let testCompleted = false;
+    let latestResultData = null; // 存储最新结果用于模态
+
+    // 计算分数
+    function computeDimensionScores() {
+        let total = zeroVec();
+        for (let ans of answers) {
+            if (ans && ans.weights) {
+                for (let d = 0; d < 15; d++) total[d] += ans.weights[d];
+            }
+        }
+        return total;
+    }
+
+    function matchPersonality(scores) {
+        let hash = 0;
+        for (let i = 0; i < scores.length; i++) {
+            hash = ((hash << 5) - hash) + Math.floor(scores[i] * 131);
+            hash |= 0;
+        }
+        let idx = Math.abs(hash) % PERSONALITIES.length;
+        let sum = scores.reduce((a,b)=>a+b,0);
+        let variance = scores.reduce((a,b)=>a+Math.pow(b- (sum/15),2),0);
+        idx = (idx + Math.floor(variance) % 7) % PERSONALITIES.length;
+        return PERSONALITIES[idx];
+    }
+
+    // 渲染题目界面
+    function renderTest() {
+        const container = document.getElementById("mainContent");
+        if (!container) return;
+        if (testCompleted || answers.every(a => a !== null)) {
+            if (!testCompleted && answers.every(a => a !== null)) showResultModal();
+            return;
+        }
+        const q = QUESTIONS[currentIndex];
+        const selected = answers[currentIndex];
+        const percent = (currentIndex / 32) * 100;
+        let optsHtml = '';
+        q.options.forEach((opt, idx) => {
+            const prefix = String.fromCharCode(65+idx);
+            optsHtml += `<div class="option-btn" data-opt-index="${idx}"><span class="option-prefix">${prefix}.</span><span>${opt.label}</span></div>`;
+        });
+        container.innerHTML = `
+            <div class="progress-area"><div class="progress-stats"><span>🧩 第 ${currentIndex+1}/32 题</span><span>🎭 15维浸入中</span></div>
+            <div class="progress-bar-bg"><div class="progress-fill" style="width: ${percent}%;"></div></div></div>
+            <div class="question-card"><div class="question-text">${q.text}</div><div class="options-list" id="optionsList">${optsHtml}</div></div>
+            <div class="nav-buttons"><button class="nav-btn" id="prevBtn" ${currentIndex===0 ? 'disabled' : ''}>◀ 上一题</button>
+            <button class="nav-btn primary" id="nextBtn">${currentIndex===31 ? '🌌 揭示人格' : '下一题 ▶'}</button></div>
+        `;
+        document.querySelectorAll('.option-btn').forEach((btn, idx) => {
+            btn.addEventListener('click', () => { answers[currentIndex] = q.options[idx]; renderTest(); });
+        });
+        if (selected) {
+            document.querySelectorAll('.option-btn').forEach((btn, idx) => {
+                if (q.options[idx] === selected) { btn.style.background = "#f8ede2"; btn.style.borderColor = "#b87c4f"; }
+                else { btn.style.background = "#fefaf7"; btn.style.borderColor = "#eedfcb"; }
+            });
+        }
+        document.getElementById("prevBtn")?.addEventListener("click", () => { if(currentIndex>0){ currentIndex--; renderTest(); } });
+        document.getElementById("nextBtn")?.addEventListener("click", () => {
+            if(!answers[currentIndex]){ alert("随便选一个，玄学需要你的意志～"); return; }
+            if(currentIndex < 31) { currentIndex++; renderTest(); }
+            else { if(answers[currentIndex]) showResultModal(); else alert("请完成最后一题"); }
+        });
+    }
+
+    // 显示模态结果并支持图片生成
+    function showResultModal() {
+        const scores = computeDimensionScores();
+        const personality = matchPersonality(scores);
+        const topDims = [...scores].map((s,i)=> ({ name: DIMENSIONS[i], score: s })).sort((a,b)=>b.score - a.score).slice(0,3);
+        latestResultData = { personality, scores, topDims };
+        
+        const modalBody = document.getElementById("modalBody");
+        modalBody.innerHTML = `
+            <div id="shareImageContainer" class="result-share-card">
+                <div class="result-tag">✨ SBTI · 玄学全息图谱 ✨</div>
+                <div class="result-name">${personality.name}</div>
+                <div class="result-sub">${personality.subtitle}</div>
+                <div class="result-desc"><strong>📜 人格解析</strong><br>${personality.desc}<br><br>
+                <span class="dimension-hint">🔮 主导维度: ${topDims.map(d=>`${d.name}(${d.score})`).join(' · ')}</span></div>
+                <div class="share-footer">⚡ 基于15维能量场 · 32道灵魂拷问 · 27种平行自我</div>
+            </div>
+            <div class="modal-buttons">
+                <button class="share-btn" id="generateShareBtn">📸 生成图片分享</button>
+                <button class="restart-modal-btn" id="restartFromModalBtn">🔄 重新测试</button>
+            </div>
+        `;
+        document.getElementById("resultModal").classList.add("active");
+        
+        document.getElementById("generateShareBtn")?.addEventListener("click", () => generateShareImage());
+        document.getElementById("restartFromModalBtn")?.addEventListener("click", () => { closeModal(); resetTest(); });
+        document.getElementById("closeModalBtn")?.addEventListener("click", () => closeModal());
+        // 点击遮罩关闭
+        const overlay = document.getElementById("resultModal");
+        overlay.addEventListener("click", (e) => { if(e.target === overlay) closeModal(); });
+    }
+    
+    async function generateShareImage() {
+        const element = document.getElementById("shareImageContainer");
+        if(!element) return;
+        const btn = document.getElementById("generateShareBtn");
+        const originalText = btn.innerText;
+        btn.innerText = "✨ 生成中...";
+        btn.disabled = true;
+        try {
+            const canvas = await html2canvas(element, {
+                scale: 2.5,
+                backgroundColor: '#fffef8',
+                logging: false,
+                useCORS: false
+            });
+            const link = document.createElement('a');
+            const personalityName = latestResultData?.personality?.name?.replace(/[^a-z0-9]/gi, '_') || 'SBTI';
+            link.download = `SBTI_${personalityName}.png`;
+            link.href = canvas.toDataURL();
+            link.click();
+        } catch(err) {
+            alert("生成图片失败，可尝试截图保存~");
+            console.error(err);
+        } finally {
+            btn.innerText = originalText;
+            btn.disabled = false;
+        }
+    }
+    
+    function closeModal() {
+        document.getElementById("resultModal").classList.remove("active");
+    }
+    
+    function resetTest() {
+        currentIndex = 0;
+        answers = new Array(32).fill(null);
+        testCompleted = false;
+        latestResultData = null;
+        renderTest();
+    }
+    
+    // 启动应用
+    renderTest();
+</script>
+</body>
+</html>
