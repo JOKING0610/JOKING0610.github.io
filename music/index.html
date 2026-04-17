@@ -250,7 +250,7 @@
         }
 
         html.theme-transition {
-            transition: background 0.6s ease, color 0.6s ease, border-color 0.6s ease, box-shadow 0.6s ease;
+            transition: none;
         }
 
         .app {
@@ -2030,9 +2030,15 @@
             border-radius: 100px;
             padding: 3.5px;
             display: flex;
-            justify-content: center;
+            justify-content: flex-start;
             align-items: center;
             gap: 1.4px;
+            max-width: calc(100vw - 40px);
+            overflow-x: auto;
+            overflow-y: hidden;
+            white-space: nowrap;
+            scrollbar-width: none;
+            -ms-overflow-style: none;
             box-shadow:
                 inset 2px -2px 1px -1px rgba(255, 255, 255, 0.9),
                 inset -2px 2px 1px -1px rgba(255, 255, 255, 0.9),
@@ -5928,6 +5934,52 @@
             </div>
         </div>
 
+        <!-- QQ音乐搜索页面 -->
+        <div class="page" id="qqPage" style="display: none;">
+            <div class="search-container">
+                <div class="search-wrapper">
+                    <div class="search-input-group">
+                        <input type="text" class="search-input" id="qqSearchInput" placeholder="请输入歌曲名或歌手..." autocomplete="off">
+                        <button class="search-clear" id="qqSearchClear"><i class="fas fa-times-circle"></i></button>
+                    </div>
+                    <button class="search-btn" id="qqSearchBtn">
+                        <i class="fas fa-search"></i>
+                    </button>
+                </div>
+            </div>
+
+            <div class="toolbar">
+                <div class="toolbar-actions">
+                    <button class="icon-btn" id="qqPlaylistBtn" title="播放列表">
+                        <i class="fas fa-list"></i>
+                    </button>
+                </div>
+            </div>
+
+            <div class="history-section" id="qqHistorySection">
+                <div class="history-header">
+                    <span class="history-title"><i class="fas fa-clock-rotate-left"></i> 最近搜索</span>
+                    <button class="history-clear" id="qqClearHistoryBtn">清空</button>
+                </div>
+                <div class="history-list" id="qqHistoryList"></div>
+            </div>
+
+            <div class="results-section">
+                <div class="loading-overlay" id="qqLoadingOverlay" style="display: none;">
+                    <div class="spinner"></div>
+                </div>
+                <div class="empty-state" id="qqEmptyState">
+                    <div class="empty-icon"><i class="fab fa-qq"></i></div>
+                    <p class="empty-title">QQ音乐搜歌</p>
+                    <p class="empty-desc">输入歌曲或歌手，发现好音乐</p>
+                </div>
+                <ul class="song-list" id="qqSongList"></ul>
+                <div class="load-more" id="qqLoadMoreContainer" style="display: none;">
+                    <button class="load-more-btn" id="qqLoadMoreBtn">加载更多 <i class="fas fa-chevron-down"></i></button>
+                </div>
+            </div>
+        </div>
+
         <!-- 个人页面 -->
         <div class="page" id="profilePage" style="display: none;">
             <div class="profile-header">
@@ -6081,6 +6133,11 @@
                     <p class="settings-hint">B站API每次搜索返回的歌曲数量，最大50</p>
                 </div>
                 <div class="settings-group">
+                    <div class="settings-label">QQ音乐API搜索数量</div>
+                    <input type="number" class="settings-input" id="qqPageSizeInput" min="1" max="50" value="20">
+                    <p class="settings-hint">QQ音乐API每次搜索返回的歌曲数量，最大50</p>
+                </div>
+                <div class="settings-group">
                     <div class="settings-label">导航栏显示文本</div>
                     <div class="toggle-switch">
                         <input type="checkbox" id="navbarTextToggle">
@@ -6101,6 +6158,7 @@
                             <div class="custom-select-item" data-value="home">主页</div>
                             <div class="custom-select-item" data-value="wy">网易云搜索页面</div>
                             <div class="custom-select-item" data-value="bili">B站搜索页面</div>
+                            <div class="custom-select-item" data-value="qq">QQ音乐搜索页面</div>
                             <div class="custom-select-item" data-value="profile">个人页面</div>
                         </div>
                     </div>
@@ -6178,11 +6236,17 @@
                 <p class="settings-hint">B站API每次搜索返回的歌曲数量，最大50</p>
             </div>
             <div class="settings-group">
+                <div class="settings-label">QQ音乐API搜索数量</div>
+                <input type="number" class="settings-input" id="modalQQPageSizeInput" min="1" max="50" value="20">
+                <p class="settings-hint">QQ音乐API每次搜索返回的歌曲数量，最大50</p>
+            </div>
+            <div class="settings-group">
                 <div class="settings-label">默认页面</div>
                 <select class="settings-input" id="modalDefaultPageInput">
                     <option value="home">主页</option>
                     <option value="wy">网易云搜索页面</option>
                     <option value="bili">B站搜索页面</option>
+                    <option value="qq">QQ音乐搜索页面</option>
                     <option value="profile">个人页面</option>
                 </select>
                 <p class="settings-hint">应用启动时默认显示的页面</p>
@@ -6415,11 +6479,15 @@
                 <i class="fab fa-bilibili"></i>
                 <span>B站</span>
             </a>
-            <a href="#" class="navbar-item" id="navSettings" data-i="3">
+            <a href="#" class="navbar-item" id="navQQ" data-i="3">
+                <i class="fab fa-qq"></i>
+                <span>QQ音乐</span>
+            </a>
+            <a href="#" class="navbar-item" id="navSettings" data-i="4">
                 <i class="fas fa-cog"></i>
                 <span>设置</span>
             </a>
-            <a href="#" class="navbar-item" id="navProfile" data-i="4" onclick="handleProfileClick(event)">
+            <a href="#" class="navbar-item" id="navProfile" data-i="5" onclick="handleProfileClick(event)">
                 <i class="fas fa-user-astronaut"></i>
                 <span>我的</span>
             </a>
@@ -6591,7 +6659,7 @@
                 sessionExpiredNotified = false;
                 switchPage('home');
                 location.reload();
-            }, 2000);
+            }, 4500);
         }
 
         // 停止会话心跳
@@ -6725,6 +6793,7 @@
 
         // ---------- 登录（调用 verify_vip_user） ----------
         async function vipLogin(username, password) {
+            showGlobalLoading('正在验证账号...');
             await initSupabase();
             
             const uname = username.trim();
@@ -6753,6 +6822,25 @@
                 avatar_url: data.avatar_url || ''
             });
 
+            // 登录后检查avatar_url，若为空则生成默认头像
+            if (!data.avatar_url) {
+                // 生成默认头像（基于用户名的首字母头像）
+                const defaultAvatarUrl = `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(data.username)}&backgroundColor=333333&fontSize=40`;
+                try {
+                    await updateUserAvatar(defaultAvatarUrl);
+                    // 更新本地存储中的头像
+                    localStorage.setItem('userAvatar', defaultAvatarUrl);
+                    const storedUser = getCurrentUser();
+                    if (storedUser) {
+                        storedUser.avatar_url = defaultAvatarUrl;
+                        saveUser(storedUser);
+                    }
+                    updateLoginStatus();
+                } catch (err) {
+                    console.warn('设置默认头像失败', err);
+                }
+            }
+
             isSessionExpiredHandling = false;
             sessionExpiredNotified = false;
 
@@ -6770,14 +6858,21 @@
                 console.warn('记录登录日志失败', logErr);
             }
 
-            // 获取同步数据
-            await fetchUserData();   // fetchUserData 内部需改用 authRpcCall
+            // 登录成功后，同步数据时显示加载动画
+            showGlobalLoading('正在同步个人数据...');
+            
+            // 直接获取服务器上的用户数据，不再合并访客数据
+            await fetchUserData();
+            
+            // 上传本地数据到服务器（如果有）
             await syncUserData(false);   // 上传本地数据到服务器
             lastUploadDataHash = getCurrentDataHash();
             loadSearchHistory('wy');
             loadSearchHistory('bili');
             updateUserStatsDisplay();
             updateProfileStats();
+            
+            hideGlobalLoading();
 
             return data;
         }
@@ -6834,6 +6929,7 @@
                     loadRecentPlays();
                 }
             } catch (error) {
+                hideGlobalLoading();
                 showToast(error.message, 'error');
             } finally {
                 // 🔓 解锁自动同步
@@ -6858,8 +6954,14 @@
             }
 
             try {
-                await vipSignup(username, password, confirmPwd);
-                showToast('注册成功！请登录', 'success');
+                const data = await vipSignup(username, password, confirmPwd);
+                if (data && data.success) {
+                    showToast('注册成功！正在自动登录...', 'success');
+                    // 自动填充登录表单并登录
+                    document.getElementById('loginUsername').value = username;
+                    document.getElementById('loginPassword').value = password;
+                    await handleLogin();
+                }
                 // 清空表单
                 document.getElementById('regUsername').value = '';
                 document.getElementById('regPassword').value = '';
@@ -6916,21 +7018,21 @@
                     if (profileSyncBtn) {
                         profileSyncBtn.style.display = 'flex';
                     }
-                    // 移除更换头像按钮的显示
-                    // if (editAvatarBtn) {
-                    //     editAvatarBtn.style.display = 'flex';
-                    //     // 移除旧监听避免重复绑定
-                    //     const newBtn = editAvatarBtn.cloneNode(true);
-                    //     editAvatarBtn.parentNode.replaceChild(newBtn, editAvatarBtn);
-                    //     newBtn.addEventListener('click', async () => {
-                    //         const newAvatarUrl = prompt('请输入新的头像图片 URL（支持 http/https）：');
-                    //         if (newAvatarUrl && (newAvatarUrl.startsWith('http://') || newAvatarUrl.startsWith('https://'))) {
-                    //             await updateUserAvatar(newAvatarUrl);
-                    //         } else if (newAvatarUrl) {
-                    //             showToast('请输入有效的图片 URL', 'error');
-                    //         }
-                    //     });
-                    // }
+                    // 显示编辑头像按钮
+                    if (editAvatarBtn) {
+                        editAvatarBtn.style.display = 'flex';
+                        // 移除旧监听避免重复绑定
+                        const newBtn = editAvatarBtn.cloneNode(true);
+                        editAvatarBtn.parentNode.replaceChild(newBtn, editAvatarBtn);
+                        newBtn.addEventListener('click', async () => {
+                            const newAvatarUrl = prompt('请输入新的头像图片 URL（支持 http/https）：');
+                            if (newAvatarUrl && (newAvatarUrl.startsWith('http://') || newAvatarUrl.startsWith('https://'))) {
+                                await updateUserAvatar(newAvatarUrl);
+                            } else if (newAvatarUrl) {
+                                showToast('请输入有效的图片 URL', 'error');
+                            }
+                        });
+                    }
                 } else {
                     profileLoginBtn.style.display = 'flex';
                     profileLogoutBtn.style.display = 'none';
@@ -6978,11 +7080,26 @@
             }
         }
 
+        // 登录时，不再合并 guest 数据到 user 数据
+        function mergeGuestToUser() {
+            // 移除合并逻辑，保持访客数据和用户数据完全分离
+            // 登录后直接使用用户数据
+        }
+
+        // 登出时，清空保存在本地的用户数据
+        function saveUserToGuest() {
+            // 直接删除用户数据，不再保存为访客数据
+            localStorage.removeItem('user_settings');
+        }
+
         // 退出登录
         async function logout() {
             // 防止重复执行
             if (isSessionExpiredHandling) return;
             isSessionExpiredHandling = true;
+            
+            // 显示加载动画
+            showGlobalLoading('正在退出登录...');
 
             // 停止同步防抖定时器
             if (syncDebounceTimer) clearTimeout(syncDebounceTimer);
@@ -7008,51 +7125,75 @@
                 console.warn('登出时撤销会话失败', e);
             }
 
-            // 3. 清除所有本地存储中的用户数据
-            // 1. 先移除登录标志
+            // 3. 清空保存在本地的用户数据
+            saveUserToGuest();
+            
+            // 4. 清除登录相关的本地存储
             localStorage.removeItem('userLoggedIn');
             localStorage.removeItem('sessionToken');
-            localStorage.removeItem('vipUser');        // vipUser
+            localStorage.removeItem('vipUser');
             localStorage.removeItem('username');
             localStorage.removeItem('userAvatar');
+            localStorage.removeItem('sessionExpiredFlag');
             
-            // 2. 再清除其他所有用户数据（直接 removeItem，不调用 setStorageItem）
-            localStorage.removeItem('totalPlayTime');
-            localStorage.removeItem('songDetailsCache');
-            localStorage.removeItem('myPlaylists');
-            localStorage.removeItem('sessionExpiredFlag'); // 清除会话过期标志
-            localStorage.removeItem('wyPageSize');
-            localStorage.removeItem('biliPageSize');
-            localStorage.removeItem('yunzhi_token');
-            localStorage.removeItem('theme');
-            localStorage.removeItem('navbarShowText');
-            localStorage.removeItem('defaultPage');
-            localStorage.removeItem('preferred_playbackRate');
-            localStorage.removeItem('preferred_playMode');
-            localStorage.removeItem('playHistory');   // 直接删除，不通过 setStorageItem
-            localStorage.removeItem('searchHistory'); // 直接删除
-            
-            // 3. 清除全局变量中的用户数据
+            // 5. 清除全局变量中的用户数据
             sessionToken = '';
-            playHistory = [];
-            searchHistory = [];
             songDetailsCache = {};
             myPlaylists = [];
             playlist = [];
-            // 重置页面默认值（可选）
-            wyPageSize = 20;
-            biliPageSize = 20;
-            yunzhiToken = '';
-            currentTheme = 'dark';
-            defaultPage = 'home';
-
-            // 4. 更新界面状态
+            searchResults = { wy: [], bili: [], qq: [] };
+            
+            // 重新加载访客数据（从 guest_settings 读取）
+            const guestSettings = JSON.parse(localStorage.getItem('guest_settings') || JSON.stringify(DEFAULT_SETTINGS));
+            
+            // 更新全局变量为访客数据
+            playHistory = guestSettings.playHistory || [];
+            searchHistory = guestSettings.searchHistory || [];
+            wyPageSize = guestSettings.wyPageSize || 20;
+            biliPageSize = guestSettings.biliPageSize || 20;
+            qqPageSize = guestSettings.qqPageSize || 20;
+            yunzhiToken = guestSettings.yunzhiToken || '';
+            currentTheme = guestSettings.theme || 'dark';
+            defaultPage = guestSettings.defaultPage || 'home';
+            
+            // 刷新UI
             updateLoginStatus();
-            if (profilePage.style.display === 'block') {
+            
+            // 重新加载搜索历史（访客数据）
+            loadSearchHistory('wy');
+            loadSearchHistory('bili');
+            loadSearchHistory('qq');
+            
+            // 清空所有平台的歌曲列表显示
+            if (wySongList) wySongList.innerHTML = '';
+            if (biliSongList) biliSongList.innerHTML = '';
+            if (qqSongList) qqSongList.innerHTML = '';
+            
+            // 重置空状态显示
+            if (wyEmptyState) wyEmptyState.style.display = 'block';
+            if (biliEmptyState) biliEmptyState.style.display = 'block';
+            if (qqEmptyState) qqEmptyState.style.display = 'block';
+            
+            // 如果当前在个人页面，刷新个人页面显示
+            if (profilePage && profilePage.style.display === 'block') {
                 updateProfileStats();
                 loadRecentPlays();
                 loadMyPlaylists();
             }
+            
+            // 如果当前在设置页面，刷新设置项显示
+            if (settingsPage && settingsPage.style.display === 'block') {
+                document.getElementById('wyPageSizeInput').value = wyPageSize;
+                document.getElementById('biliPageSizeInput').value = biliPageSize;
+                document.getElementById('qqPageSizeInput').value = qqPageSize;
+                document.getElementById('tokenInput').value = yunzhiToken;
+                updateNavbarTextVisibility();
+                document.getElementById('navbarTextToggle').checked = guestSettings.navbarShowText ?? true;
+            }
+            
+            // 重新初始化主题（根据访客主题设置）
+            initTheme();
+            
             // 清空播放器
             if (player && player.audioElement) {
                 player.audioElement.pause();
@@ -7063,23 +7204,18 @@
                 player.playerElement.classList.add('hidden');
                 player.playerElement.classList.remove('visible');
             }
-            // 清空歌曲列表
-            wySongList.innerHTML = '';
-            biliSongList.innerHTML = '';
-            searchResults = { wy: [], bili: [] };
-
-            showToast('已退出登录并清空本地数据', 'success');
             
-            // 5. 重置标志
+            showToast('已退出登录', 'success');
+            
+            // 重置标志
             isSessionExpiredHandling = false;
             sessionExpiredNotified = false;
             
-            // 6. 可选：跳转到主页并刷新页面以确保干净状态
-            setTimeout(() => {
-                switchPage('home');
-                location.reload();
-            }, 1500);
-            return;
+            // 切换到主页
+            switchPage('home');
+            
+            // 隐藏加载动画
+            hideGlobalLoading();
         }
 
         // 同步用户数据到服务器
@@ -7102,9 +7238,12 @@
                 return;
             }
 
-            // 如果没有本地数据，跳过上传（避免空数据覆盖服务器）
-            const totalPlayTime = parseInt(localStorage.getItem('totalPlayTime') || 0);
-            if (playHistory.length === 0 && searchHistory.length === 0 && totalPlayTime === 0) {
+            // 获取当前设置
+            const settings = getCurrentSettings();
+            
+            // 检查是否有数据需要同步
+            const hasData = settings.playHistory.length > 0 || settings.searchHistory.length > 0 || settings.totalPlayTime > 0 || settings.theme;
+            if (!hasData) {
                 if (showNotifications) showToast('无新数据需要同步', 'info');
                 return;
             }
@@ -7113,18 +7252,29 @@
             if (showNotifications) showToast('正在上传数据...', 'warning');
 
             try {
-                const data = await authRpcCall('upsert_user_sync_data', {
+                const settingsObj = {
+                    theme: settings.theme || 'dark',
+                    wyPageSize: settings.wyPageSize || 20,
+                    biliPageSize: settings.biliPageSize || 20,
+                    qqPageSize: settings.qqPageSize || 20,
+                    yunzhiToken: settings.yunzhiToken || '',
+                    navbarShowText: settings.navbarShowText ?? true,
+                    defaultPage: settings.defaultPage || 'home',
+                    totalPlayTime: settings.totalPlayTime || 0,
+                    playHistory: settings.playHistory || [],
+                    searchHistory: settings.searchHistory || [],
+                    total_plays: settings.playHistory.length,
+                    total_play_time: settings.totalPlayTime,
+                    wy_page_size: settings.wyPageSize || 20,
+                    bili_page_size: settings.biliPageSize || 20,
+                    qq_page_size: settings.qqPageSize || 20,
+                    token: settings.yunzhiToken || '',
+                    navbar_show_text: settings.navbarShowText ?? true,
+                    default_page: settings.defaultPage || 'home'
+                };
+                const data = await authRpcCall('upsert_user_sync_data_v2', {
                     _user_id: user.id,
-                    _total_plays: playHistory.length,
-                    _total_play_time: totalPlayTime,
-                    _theme: getStorageItem('theme') || 'dark',
-                    _play_history: playHistory,
-                    _search_history: searchHistory,
-                    _wy_page_size: parseInt(getStorageItem('wyPageSize') || 20),
-                    _bili_page_size: parseInt(getStorageItem('biliPageSize') || 20),
-                    _token: getStorageItem('yunzhi_token') || '',
-                    _navbar_show_text: getStorageItem('navbarShowText', 'true') === 'true',
-                    _default_page: getStorageItem('defaultPage') || 'home'
+                    _settings: settingsObj
                 });
                 if (data && data.success) {
                     if (showNotifications) showToast('数据上传成功！', 'success');
@@ -7151,104 +7301,94 @@
                 return;
             }
             try {
-                const data = await authRpcCall('get_user_sync_data', { _user_id: user.id });
+                const data = await authRpcCall('get_user_sync_data_v2', { _user_id: user.id });
                 if (data && data.success && data.data) {
-                    const syncData = data.data;
-                    let needUpload = false;
+                    const sync = data.data;
+                    const serverSettings = sync.settings || {};
                     
-                    // 播放时长校验：仅当服务器时长大于本地时长时才覆盖
-                    if (syncData.total_play_time) {
-                        const localTotalPlayTime = parseInt(localStorage.getItem('totalPlayTime') || 0);
-                        const serverTotalPlayTime = parseInt(syncData.total_play_time);
-                        if (serverTotalPlayTime > localTotalPlayTime) {
-                            setStorageItem('totalPlayTime', syncData.total_play_time);
-                        }
-                    } else if (parseInt(localStorage.getItem('totalPlayTime') || 0) > 0) {
-                        needUpload = true;
-                    }
+                    // 获取本地设置
+                    const localSettings = getCurrentSettings();
+                    const localTotalPlayTime = localSettings.totalPlayTime || 0;
+                    const serverTotalPlayTime = serverSettings.totalPlayTime || serverSettings.total_play_time || 0;
                     
-                    if (syncData.theme) {
-                        setStorageItem('theme', syncData.theme);
-                        currentTheme = syncData.theme;
-                        initTheme();
+                    // 比较播放时长：如果本地时长大于服务端时长，保留本地数据并上传
+                    if (localTotalPlayTime > serverTotalPlayTime) {
+                        console.log('本地播放时长大于服务端，保留本地数据并上传');
+                        await syncUserData(false);
+                        return;
                     }
                     
-                    // 处理播放历史：仅当服务器有非空数据时才覆盖，否则保留本地并标记需要上传
-                    if (syncData.play_history && Array.isArray(syncData.play_history) && syncData.play_history.length > 0) {
-                        playHistory = syncData.play_history;
-                        setStorageItem('playHistory', JSON.stringify(playHistory));
-                    } else if (playHistory.length > 0) {
-                        needUpload = true;
+                    // 服务端时长大于或等于本地，使用服务端数据
+                    const newSettings = {
+                        theme: serverSettings.theme || 'dark',
+                        wyPageSize: serverSettings.wyPageSize || serverSettings.wy_page_size || 20,
+                        biliPageSize: serverSettings.biliPageSize || serverSettings.bili_page_size || 20,
+                        qqPageSize: serverSettings.qqPageSize || serverSettings.qq_page_size || 20,
+                        yunzhiToken: serverSettings.yunzhiToken || serverSettings.token || '',
+                        navbarShowText: serverSettings.navbarShowText ?? serverSettings.navbar_show_text ?? true,
+                        defaultPage: serverSettings.defaultPage || serverSettings.default_page || 'home',
+                        totalPlayTime: serverSettings.totalPlayTime || serverSettings.total_play_time || 0,
+                        playHistory: serverSettings.playHistory || serverSettings.play_history || [],
+                        searchHistory: serverSettings.searchHistory || serverSettings.search_history || []
+                    };
+                    localStorage.setItem('user_settings', JSON.stringify(newSettings));
+                    
+                    // 更新全局变量
+                    playHistory = newSettings.playHistory;
+                    searchHistory = newSettings.searchHistory;
+                    wyPageSize = newSettings.wyPageSize;
+                    biliPageSize = newSettings.biliPageSize;
+                    qqPageSize = newSettings.qqPageSize;
+                    yunzhiToken = newSettings.yunzhiToken;
+                    currentTheme = newSettings.theme;
+                    defaultPage = newSettings.defaultPage;
+                    // 更新UI
+                    document.getElementById('wyPageSizeInput').value = wyPageSize;
+                    document.getElementById('biliPageSizeInput').value = biliPageSize;
+                    document.getElementById('qqPageSizeInput').value = qqPageSize;
+                    document.getElementById('tokenInput').value = yunzhiToken;
+                    updateNavbarTextVisibility();
+                    document.getElementById('navbarTextToggle').checked = newSettings.navbarShowText;
+                    
+                    // 更新自定义选择器显示
+                    const defaultSelect = document.getElementById('defaultPageSelect');
+                    if (defaultSelect) {
+                        const valueDisplay = defaultSelect.querySelector('.custom-select-value');
+                        const items = defaultSelect.querySelectorAll('.custom-select-item');
+                        items.forEach(item => {
+                            if (item.dataset.value === defaultPage) {
+                                valueDisplay.textContent = item.textContent;
+                                item.classList.add('selected');
+                            } else {
+                                item.classList.remove('selected');
+                            }
+                        });
                     }
                     
-                    // 处理搜索历史
-                    if (syncData.search_history && Array.isArray(syncData.search_history) && syncData.search_history.length > 0) {
-                        searchHistory = syncData.search_history;
-                        setStorageItem('searchHistory', JSON.stringify(searchHistory));
-                    } else if (searchHistory.length > 0) {
-                        needUpload = true;
-                    }
-                    if (syncData.wy_page_size) {
-                        setStorageItem('wyPageSize', syncData.wy_page_size);
-                        wyPageSize = syncData.wy_page_size;
-                        document.getElementById('wyPageSizeInput').value = wyPageSize;
-                    }
-                    if (syncData.bili_page_size) {
-                        setStorageItem('biliPageSize', syncData.bili_page_size);
-                        biliPageSize = syncData.bili_page_size;
-                        document.getElementById('biliPageSizeInput').value = biliPageSize;
-                    }
-                    if (syncData.token) {
-                        setStorageItem('yunzhi_token', syncData.token);
-                        yunzhiToken = syncData.token;
-                        document.getElementById('tokenInput').value = yunzhiToken;
-                    }
-                    if (syncData.navbar_show_text !== undefined) {
-                        setStorageItem('navbarShowText', syncData.navbar_show_text.toString());
-                        updateNavbarTextVisibility();
-                        document.getElementById('navbarTextToggle').checked = syncData.navbar_show_text;
-                    }
-                    if (syncData.default_page) {
-                        setStorageItem('defaultPage', syncData.default_page);
-                        defaultPage = syncData.default_page;
-                        // 更新自定义选择器显示（保留原有逻辑）
-                        const defaultSelect = document.getElementById('defaultPageSelect');
-                        if (defaultSelect) {
-                            const valueDisplay = defaultSelect.querySelector('.custom-select-value');
-                            const items = defaultSelect.querySelectorAll('.custom-select-item');
-                            items.forEach(item => {
-                                if (item.dataset.value === defaultPage) {
-                                    valueDisplay.textContent = item.textContent;
-                                    item.classList.add('selected');
-                                } else {
-                                    item.classList.remove('selected');
-                                }
-                            });
-                        }
-                    }
-                    if (syncData.avatar_url !== undefined) {
-                        localStorage.setItem('userAvatar', syncData.avatar_url || '');
+                    // 处理头像
+                    if (sync.avatar_url !== undefined) {
+                        localStorage.setItem('userAvatar', sync.avatar_url || '');
                         const storedUser = getCurrentUser();
                         if (storedUser) {
-                            storedUser.avatar_url = syncData.avatar_url || '';
+                            storedUser.avatar_url = sync.avatar_url || '';
                             saveUser(storedUser);
                         }
                         updateLoginStatus();
                     }
+                    
                     if (profilePage.style.display === 'block') {
                         updateProfileStats();
                         loadRecentPlays();
                     }
                     
-                    // 如果有本地数据需要上传，则触发一次静默同步
-                    if (needUpload) {
-                        await syncUserData(false);
-                    }
+                    // 初始化主题
+                    initTheme();
                     
                     showToast('数据已从服务器同步', 'success');
                 }
             } catch (err) {
                 console.error('获取数据异常', err);
+                hideGlobalLoading();
                 if (!err.message.includes('重新登录')) {
                     showToast(`数据同步失败: ${err.message}`, 'warning');
                 }
@@ -7269,7 +7409,7 @@
 
         // 导航栏文本显示控制
         function updateNavbarTextVisibility() {
-            const showText = getStorageItem('navbarShowText', 'true') === 'true';
+            const showText = getSetting('navbarShowText', true);
             const navbarItems = document.querySelectorAll('.navbar-item span');
             navbarItems.forEach(span => {
                 span.style.display = showText ? 'block' : 'none';
@@ -7464,7 +7604,7 @@
                     showToast('获取访问次数失败，请稍后重试', 'error');
                 } else {
                     if (visitCountElement) {
-                        visitCountElement.textContent = data.view_count;
+                        visitCountElement.textContent = formatNumber(data.view_count);
                     }
                 }
             } catch (err) {
@@ -7581,7 +7721,7 @@
             if (navbarTextToggle) {
                 navbarTextToggle.addEventListener('change', async function() {
                     const showText = this.checked;
-                    setStorageItem('navbarShowText', showText.toString());
+                    setSetting('navbarShowText', showText);
                     updateNavbarTextVisibility();
 
                     // 登录状态下自动上传
@@ -7707,7 +7847,7 @@
         // 删除单条历史记录
         function removeHistoryItem(songId) {
             playHistory = playHistory.filter(item => String(item.id) !== String(songId));
-            setStorageItem('playHistory', JSON.stringify(playHistory));
+            setSetting('playHistory', playHistory);
             // 刷新个人页面的最近聆听区域
             if (profilePage.style.display === 'block') {
                 loadRecentPlays();
@@ -7724,7 +7864,7 @@
         // 清空全部历史记录
         function clearAllHistory() {
             playHistory = [];
-            setStorageItem('playHistory', '[]');
+            setSetting('playHistory', []);
             if (profilePage.style.display === 'block') {
                 loadRecentPlays();
                 updateProfileStats();
@@ -7747,6 +7887,118 @@
             }
         });
 
+        // 默认设置结构（未登录和登录共用同一结构）
+        const DEFAULT_SETTINGS = {
+            theme: 'dark',               // 'light', 'dark', 'star*'
+            wyPageSize: 20,
+            biliPageSize: 20,
+            qqPageSize: 20,
+            yunzhiToken: '',
+            navbarShowText: true,
+            defaultPage: 'home',
+            totalPlayTime: 0,            // 播放总时长（毫秒）
+            playHistory: [],             // 播放历史数组
+            searchHistory: []            // 搜索历史数组
+        };
+        
+        // 获取当前使用的 settings 对象（guest 或 user）
+        function getCurrentSettings() {
+            const isLoggedIn = localStorage.getItem('userLoggedIn') === 'true';
+            if (isLoggedIn) {
+                let settings = localStorage.getItem('user_settings');
+                if (!settings) {
+                    // 首次登录，使用默认值
+                    settings = JSON.stringify(DEFAULT_SETTINGS);
+                    localStorage.setItem('user_settings', settings);
+                }
+                return JSON.parse(settings);
+            } else {
+                let settings = localStorage.getItem('guest_settings');
+                if (!settings) {
+                    settings = JSON.stringify(DEFAULT_SETTINGS);
+                    localStorage.setItem('guest_settings', settings);
+                }
+                return JSON.parse(settings);
+            }
+        }
+        
+        function saveCurrentSettings(settings) {
+            const isLoggedIn = localStorage.getItem('userLoggedIn') === 'true';
+            const key = isLoggedIn ? 'user_settings' : 'guest_settings';
+            localStorage.setItem(key, JSON.stringify(settings));
+        }
+        
+        // 获取单个设置项
+        function getSetting(key, defaultValue = null) {
+            const settings = getCurrentSettings();
+            return settings.hasOwnProperty(key) ? settings[key] : defaultValue;
+        }
+        
+        // 设置单个设置项（自动保存）
+        function setSetting(key, value) {
+            const settings = getCurrentSettings();
+            settings[key] = value;
+            saveCurrentSettings(settings);
+            // 如果是登录状态，触发自动同步
+            if (localStorage.getItem('userLoggedIn') === 'true') {
+                triggerSync();
+            }
+        }
+        
+        // 迁移旧数据（在页面加载时执行一次）
+        function migrateOldGuestData() {
+            // 检查是否存在旧的独立 guest_* 字段
+            const oldKeys = [
+                'guest_playHistory', 'guest_searchHistory', 'guest_theme',
+                'guest_wyPageSize', 'guest_biliPageSize', 'guest_qqPageSize',
+                'guest_yunzhi_token', 'guest_navbarShowText', 'guest_defaultPage',
+                'totalPlayTime'  // 注意 totalPlayTime 无前缀，也需要迁移
+            ];
+            let needMigrate = false;
+            for (let key of oldKeys) {
+                if (localStorage.getItem(key) !== null) {
+                    needMigrate = true;
+                    break;
+                }
+            }
+            if (!needMigrate) return;
+
+            // 读取旧数据
+            const oldPlayHistory = JSON.parse(localStorage.getItem('guest_playHistory') || '[]');
+            const oldSearchHistory = JSON.parse(localStorage.getItem('guest_searchHistory') || '[]');
+            const oldTheme = localStorage.getItem('guest_theme') || 'dark';
+            const oldWyPageSize = parseInt(localStorage.getItem('guest_wyPageSize') || '20');
+            const oldBiliPageSize = parseInt(localStorage.getItem('guest_biliPageSize') || '20');
+            const oldQqPageSize = parseInt(localStorage.getItem('guest_qqPageSize') || '20');
+            const oldYunzhiToken = localStorage.getItem('guest_yunzhi_token') || '';
+            const oldNavbarShowText = localStorage.getItem('guest_navbarShowText') !== 'false';
+            const oldDefaultPage = localStorage.getItem('guest_defaultPage') || 'home';
+            const oldTotalPlayTime = parseInt(localStorage.getItem('totalPlayTime') || '0');
+
+            // 组装新 settings
+            const newSettings = {
+                theme: oldTheme,
+                wyPageSize: oldWyPageSize,
+                biliPageSize: oldBiliPageSize,
+                qqPageSize: oldQqPageSize,
+                yunzhiToken: oldYunzhiToken,
+                navbarShowText: oldNavbarShowText,
+                defaultPage: oldDefaultPage,
+                totalPlayTime: oldTotalPlayTime,
+                playHistory: oldPlayHistory,
+                searchHistory: oldSearchHistory
+            };
+
+            // 存储为 guest_settings
+            localStorage.setItem('guest_settings', JSON.stringify(newSettings));
+
+            // 删除旧键
+            for (let key of oldKeys) {
+                localStorage.removeItem(key);
+            }
+            console.log('Migrated old guest data to guest_settings');
+        }
+        
         // ── 数据隔离功能 ──
         // 获取隔离的localStorage键名
         function getStorageKey(key) {
@@ -7757,9 +8009,7 @@
         // 安全的localStorage操作
         function getStorageItem(key, defaultValue = null) {
             try {
-                const storageKey = getStorageKey(key);
-                const value = localStorage.getItem(storageKey);
-                return value !== null ? value : defaultValue;
+                return getSetting(key, defaultValue);
             } catch (e) {
                 return defaultValue;
             }
@@ -7767,8 +8017,7 @@
         
         function setStorageItem(key, value) {
             try {
-                const storageKey = getStorageKey(key);
-                localStorage.setItem(storageKey, value);
+                setSetting(key, value);
             } catch (e) {
                 console.error('localStorage设置失败:', e);
             }
@@ -7776,11 +8025,12 @@
         
         // ── 原有功能 ──
         let currentPlatform = 'wy';
-        let yunzhiToken = getStorageItem('yunzhi_token') || '';
+        let yunzhiToken = getSetting('yunzhiToken') || '';
         // 会话令牌（单点登录）
         let sessionToken = localStorage.getItem('sessionToken') || '';
-        let searchHistory = JSON.parse(getStorageItem('searchHistory', '[]') || '[]');
+        let searchHistory = getSetting('searchHistory', []) || [];
         let searchResults = {
+            qq: [],
             wy: [],
             bili: []
         };
@@ -7791,14 +8041,22 @@
         let wyLoadMoreAttempts = 0; // 网易云加载更多尝试次数（当返回数量不足时）
         const MAX_WY_LOAD_MORE_ATTEMPTS = 2; // 最大尝试次数
         let isSearching = false; // 防止重复搜索请求
-        let wyPageSize = parseInt(getStorageItem('wyPageSize')) || 20;
-        let biliPageSize = parseInt(getStorageItem('biliPageSize')) || 20;
+        let wyPageSize = getSetting('wyPageSize') || 20;
+        let biliPageSize = getSetting('biliPageSize') || 20;
+        let biliSearchPageNum = 1;
+        let biliHasNextPage = true;
+        let qqPageSize = getSetting('qqPageSize') || 20;
+        let qqSearchPageNum = 1;
+        let qqHasNextPage = true;
         let playlist = [];
-        let playHistory = JSON.parse(getStorageItem('playHistory', '[]') || '[]');
+        let playHistory = getSetting('playHistory', []) || [];
         let myPlaylists = JSON.parse(localStorage.getItem('myPlaylists') || '[]');
         let songDetailsCache = JSON.parse(localStorage.getItem('songDetailsCache') || '{}');
-        let currentTheme = getStorageItem('theme') || 'dark';
-        let defaultPage = getStorageItem('defaultPage') || 'home';
+        let currentTheme = getSetting('theme') || 'dark';
+        let defaultPage = getSetting('defaultPage') || 'home';
+        
+        // 页面加载时执行数据迁移
+        migrateOldGuestData();
         
         // 数据同步防抖
         let syncDebounceTimer = null;
@@ -8279,17 +8537,27 @@
             if (coverUrl.startsWith('//')) coverUrl = 'https:' + coverUrl;
             if (coverUrl.startsWith('http://')) coverUrl = coverUrl.replace('http://', 'https://');
             
-            const controller = new AbortController();
-            const timeoutId = setTimeout(() => controller.abort(), 15000);
-            try {
-                const response = await fetch(coverUrl, { signal: controller.signal });
-                clearTimeout(timeoutId);
-                if (!response.ok) throw new Error(`HTTP ${response.status}`);
-                return await response.blob();
-            } catch (err) {
-                clearTimeout(timeoutId);
-                console.warn('封面获取失败:', err);
+            // 检查是否是QQ音乐图片域名
+            const isQQPic = coverUrl.includes('y.gtimg.cn');
+            
+            if (isQQPic) {
+                // QQ音乐图片因CORS限制无法下载，直接返回null
+                console.warn('QQ音乐封面因CORS限制无法下载，跳过封面');
                 return null;
+            } else {
+                // 对于其他图片，使用fetch API
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 15000);
+                try {
+                    const response = await fetch(coverUrl, { signal: controller.signal });
+                    clearTimeout(timeoutId);
+                    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                    return await response.blob();
+                } catch (err) {
+                    clearTimeout(timeoutId);
+                    console.warn('封面获取失败:', err);
+                    return null;
+                }
             }
         }
 
@@ -9181,8 +9449,8 @@
                     const now = Date.now();
                     const delta = now - this.lastUpdateTime;
                     if (delta > 0) {
-                        const totalPlayTime = parseInt(localStorage.getItem('totalPlayTime') || 0) + delta;
-                        localStorage.setItem('totalPlayTime', totalPlayTime);
+                        const totalPlayTime = getSetting('totalPlayTime', 0) + delta;
+                        setSetting('totalPlayTime', totalPlayTime);
                         // 仅当个人页面可见时才刷新UI
                         if (profilePage.style.display === 'block') {
                             updateProfileStats();
@@ -9221,8 +9489,8 @@
                     // 每1秒更新一次localStorage，避免频繁写入
                     if (now - this.lastStorageUpdate >= this.updateInterval) {
                         if (delta > 0) {
-                            const totalPlayTime = parseInt(localStorage.getItem('totalPlayTime') || 0) + delta;
-                            localStorage.setItem('totalPlayTime', totalPlayTime);
+                            const totalPlayTime = getSetting('totalPlayTime', 0) + delta;
+                            setSetting('totalPlayTime', totalPlayTime);
                             this.lastStorageUpdate = now;
                             
                             // 仅当个人页面可见时才刷新UI，减少不必要操作
@@ -9311,7 +9579,7 @@
                                 if (idx !== -1) playlist[idx].url = result.data.url;
                                 const histIdx = playHistory.findIndex(s => String(s.id) === String(currentSong.id));
                                 if (histIdx !== -1) playHistory[histIdx].url = result.data.url;
-                                setStorageItem('playHistory', JSON.stringify(playHistory));
+                                setSetting('playHistory', playHistory);
 
                                 this.audioElement.src = result.data.url;
                                 this.audioElement.load();
@@ -9342,8 +9610,8 @@
                     const now = Date.now();
                     const delta = now - this.lastUpdateTime;
                     if (delta > 0) {
-                        const totalPlayTime = parseInt(localStorage.getItem('totalPlayTime') || 0) + delta;
-                        localStorage.setItem('totalPlayTime', totalPlayTime);
+                        const totalPlayTime = getSetting('totalPlayTime', 0) + delta;
+                        setSetting('totalPlayTime', totalPlayTime);
                         // 如果当前在个人页面，更新显示
                         if (profilePage.style.display === 'block') {
                             updateProfileStats();
@@ -9385,8 +9653,8 @@
                     const now = Date.now();
                     const delta = now - this.lastUpdateTime;
                     if (delta > 0) {
-                        const totalPlayTime = parseInt(localStorage.getItem('totalPlayTime') || 0) + delta;
-                        localStorage.setItem('totalPlayTime', totalPlayTime);
+                        const totalPlayTime = getSetting('totalPlayTime', 0) + delta;
+                        setSetting('totalPlayTime', totalPlayTime);
                         // 如果当前在个人页面，更新显示
                         if (profilePage.style.display === 'block') {
                             updateProfileStats();
@@ -9424,8 +9692,8 @@
                     const now = Date.now();
                     const delta = now - this.lastUpdateTime;
                     if (delta > 0) {
-                        const totalPlayTime = parseInt(localStorage.getItem('totalPlayTime') || 0) + delta;
-                        localStorage.setItem('totalPlayTime', totalPlayTime);
+                        const totalPlayTime = getSetting('totalPlayTime', 0) + delta;
+                        setSetting('totalPlayTime', totalPlayTime);
                         // 如果当前在个人页面，更新显示
                         if (profilePage.style.display === 'block') {
                             updateProfileStats();
@@ -9802,10 +10070,25 @@
         const biliResultsCount = document.getElementById('biliResultsCount');
         const biliPlaylistBtn = document.getElementById('biliPlaylistBtn');
         
+        // QQ音乐搜索元素
+        const qqSearchInput = document.getElementById('qqSearchInput');
+        const qqSearchBtn = document.getElementById('qqSearchBtn');
+        const qqSearchClear = document.getElementById('qqSearchClear');
+        const qqSongList = document.getElementById('qqSongList');
+        const qqEmptyState = document.getElementById('qqEmptyState');
+        const qqLoadMoreContainer = document.getElementById('qqLoadMoreContainer');
+        const qqLoadMoreBtn = document.getElementById('qqLoadMoreBtn');
+        const qqHistorySection = document.getElementById('qqHistorySection');
+        const qqHistoryList = document.getElementById('qqHistoryList');
+        const qqClearHistoryBtn = document.getElementById('qqClearHistoryBtn');
+        const qqPlaylistBtn = document.getElementById('qqPlaylistBtn');
+        
         // 通用元素
         const tokenInput = document.getElementById('tokenInput');
         const wyPageSizeInput = document.getElementById('wyPageSizeInput');
         const biliPageSizeInput = document.getElementById('biliPageSizeInput');
+        const qqPageSizeInput = document.getElementById('qqPageSizeInput');
+        const modalQQPageSizeInput = document.getElementById('modalQQPageSizeInput');
         const modalOverlay = document.getElementById('modalOverlay');
         const playlistContent = document.getElementById('playlistContent');
         
@@ -9813,11 +10096,13 @@
         const homePage = document.getElementById('homePage');
         const wyPage = document.getElementById('wyPage');
         const biliPage = document.getElementById('biliPage');
+        const qqPage = document.getElementById('qqPage');
         const profilePage = document.getElementById('profilePage');
         const settingsPage = document.getElementById('settingsPage');
         const navHome = document.getElementById('navHome');
         const navWy = document.getElementById('navWy');
         const navBili = document.getElementById('navBili');
+        const navQQ = document.getElementById('navQQ');
         const navProfile = document.getElementById('navProfile');
         const navSettings = document.getElementById('navSettings');
 
@@ -9834,9 +10119,26 @@
 
         function formatTime(seconds) {
             if (!seconds || isNaN(seconds)) return '00:00';
-            const mins = Math.floor(seconds / 60);
+            const hours = Math.floor(seconds / 3600);
+            const mins = Math.floor((seconds % 3600) / 60);
             const secs = Math.floor(seconds % 60);
-            return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+            if (hours > 0) {
+                return `${hours.toString().padStart(2, '0')}:${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+            } else {
+                return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+            }
+        }
+
+        function formatNumber(num) {
+            if (num >= 100000000) {
+                return (num / 100000000).toFixed(1) + '亿';
+            } else if (num >= 10000) {
+                return (num / 10000).toFixed(1) + 'w';
+            } else if (num >= 1000) {
+                return (num / 1000).toFixed(1) + 'k';
+            } else {
+                return num.toString();
+            }
         }
 
         // 多弹窗提示系统
@@ -10200,9 +10502,9 @@
         tokenInput.addEventListener('change', function() {
             yunzhiToken = this.value.trim();
             if (yunzhiToken) {
-                setStorageItem('yunzhi_token', yunzhiToken);
+                setSetting('yunzhiToken', yunzhiToken);
             } else {
-                setStorageItem('yunzhi_token', '');
+                setSetting('yunzhiToken', '');
             }
             showToast('设置已保存', 'success');
             triggerSync();
@@ -10215,7 +10517,7 @@
             if (value > 20) value = 20;
             this.value = value;
             wyPageSize = value;
-            setStorageItem('wyPageSize', value);
+            setSetting('wyPageSize', value);
             showToast('网易云搜索数量设置已保存', 'success');
             triggerSync();
         });
@@ -10227,8 +10529,20 @@
             if (value > 50) value = 50;
             this.value = value;
             biliPageSize = value;
-            setStorageItem('biliPageSize', value);
+            setSetting('biliPageSize', value);
             showToast('B站搜索数量设置已保存', 'success');
+            triggerSync();
+        });
+
+        qqPageSizeInput.value = qqPageSize;
+        qqPageSizeInput.addEventListener('change', function() {
+            let value = parseInt(this.value);
+            if (isNaN(value) || value < 1) value = 1;
+            if (value > 50) value = 50;
+            this.value = value;
+            qqPageSize = value;
+            setSetting('qqPageSize', value);
+            showToast('QQ音乐搜索数量设置已保存', 'success');
             triggerSync();
         });
 
@@ -10251,6 +10565,7 @@ biliPlaylistBtn.addEventListener('click', () => {
             homePage.style.display = 'none';
             wyPage.style.display = 'none';
             biliPage.style.display = 'none';
+            qqPage.style.display = 'none';
             profilePage.style.display = 'none';
             settingsPage.style.display = 'none';
             
@@ -10266,6 +10581,9 @@ biliPlaylistBtn.addEventListener('click', () => {
             } else if (pageId === 'bili') {
                 biliPage.style.display = 'block';
                 activePage = biliPage;
+            } else if (pageId === 'qq') {
+                qqPage.style.display = 'block';
+                activePage = qqPage;
             } else if (pageId === 'profile') {
                 profilePage.style.display = 'block';
                 activePage = profilePage;
@@ -10288,6 +10606,7 @@ biliPlaylistBtn.addEventListener('click', () => {
             navHome.classList.remove('active');
             navWy.classList.remove('active');
             navBili.classList.remove('active');
+            navQQ.classList.remove('active');
             navSettings.classList.remove('active');
             navProfile.classList.remove('active');
             let activeItem;
@@ -10300,6 +10619,9 @@ biliPlaylistBtn.addEventListener('click', () => {
             } else if (pageId === 'bili') {
                 navBili.classList.add('active');
                 activeItem = navBili;
+            } else if (pageId === 'qq') {
+                navQQ.classList.add('active');
+                activeItem = navQQ;
             } else if (pageId === 'settings') {
                 navSettings.classList.add('active');
                 activeItem = navSettings;
@@ -10370,6 +10692,11 @@ biliPlaylistBtn.addEventListener('click', () => {
             switchPage('bili');
         });
 
+        navQQ.addEventListener('click', (e) => {
+            e.preventDefault();
+            switchPage('qq');
+        });
+
         navSettings.addEventListener('click', (e) => {
             e.preventDefault();
             switchPage('settings');
@@ -10438,13 +10765,51 @@ biliSearchInput.addEventListener('keypress', (e) => {
     }
 });
 
+// QQ音乐搜索相关事件
+qqSearchInput.addEventListener('input', function() {
+    qqSearchClear.classList.toggle('show', this.value.length > 0);
+});
+
+qqSearchClear.addEventListener('click', () => {
+    qqSearchInput.value = '';
+    qqSearchClear.classList.remove('show');
+    qqSearchInput.focus();
+});
+
+qqSearchBtn.addEventListener('click', () => {
+    currentPlatform = 'qq';
+    qqSearchPageNum = 1;
+    performSearch('qq');
+});
+
+qqSearchInput.addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') {
+        currentPlatform = 'qq';
+        qqSearchPageNum = 1;
+        performSearch('qq');
+    }
+});
+
 // 加载搜索历史 - 两个页面共用同一个历史记录
 function loadSearchHistory(platform) {
     // 使用统一的历史记录key
     const historyKey = 'searchHistory';
-    const searchHistory = JSON.parse(getStorageItem(historyKey, '[]') || '[]');
-    const historySection = platform === 'wy' ? wyHistorySection : biliHistorySection;
-    const historyList = platform === 'wy' ? wyHistoryList : biliHistoryList;
+    const searchHistory = getSetting(historyKey, []) || [];
+    let historySection, historyList, searchInput;
+    
+    if (platform === 'wy') {
+        historySection = wyHistorySection;
+        historyList = wyHistoryList;
+        searchInput = wySearchInput;
+    } else if (platform === 'bili') {
+        historySection = biliHistorySection;
+        historyList = biliHistoryList;
+        searchInput = biliSearchInput;
+    } else if (platform === 'qq') {
+        historySection = qqHistorySection;
+        historyList = qqHistoryList;
+        searchInput = qqSearchInput;
+    }
     
     if (searchHistory.length > 0) {
         historySection.classList.add('show');
@@ -10455,15 +10820,9 @@ function loadSearchHistory(platform) {
         // 只绑定当前平台的历史记录项
         historyList.querySelectorAll('.history-item').forEach(item => {
             item.addEventListener('click', function() {
-                if (platform === 'wy') {
-                    wySearchInput.value = this.textContent;
-                    currentPlatform = 'wy';
-                    performSearch('wy');
-                } else {
-                    biliSearchInput.value = this.textContent;
-                    currentPlatform = 'bili';
-                    performSearch('bili');
-                }
+                searchInput.value = this.textContent;
+                currentPlatform = platform;
+                performSearch(platform);
             });
         });
     } else {
@@ -10475,23 +10834,24 @@ function loadSearchHistory(platform) {
 function addSearchHistory(keyword, platform) {
     // 使用统一的历史记录key
     const historyKey = 'searchHistory';
-    let searchHistory = JSON.parse(getStorageItem(historyKey, '[]') || '[]');
+    let searchHistory = getSetting(historyKey, []) || [];
     
     const index = searchHistory.indexOf(keyword);
     if (index > -1) searchHistory.splice(index, 1);
     searchHistory.unshift(keyword);
     if (searchHistory.length > 10) searchHistory.pop();
-    setStorageItem(historyKey, JSON.stringify(searchHistory));
-    // 刷新两个平台的历史记录显示
+    setSetting(historyKey, searchHistory);
+    // 刷新三个平台的历史记录显示
     loadSearchHistory('wy');
     loadSearchHistory('bili');
+    loadSearchHistory('qq');
     triggerSync();
 }
 
 // 清空搜索历史
 wyClearHistoryBtn.addEventListener('click', function() {
     showConfirm('确定要清空搜索历史吗？', function() {
-        setStorageItem('searchHistory', '[]');
+        setSetting('searchHistory', []);
         loadSearchHistory('wy');
         loadSearchHistory('bili');
         showToast('历史记录已清空', 'success');
@@ -10500,9 +10860,21 @@ wyClearHistoryBtn.addEventListener('click', function() {
 
 biliClearHistoryBtn.addEventListener('click', function() {
     showConfirm('确定要清空搜索历史吗？', function() {
-        setStorageItem('searchHistory', '[]');
+        setSetting('searchHistory', []);
         loadSearchHistory('wy');
         loadSearchHistory('bili');
+        loadSearchHistory('qq');
+        showToast('历史记录已清空', 'success');
+    });
+});
+
+// QQ音乐清空历史记录
+qqClearHistoryBtn.addEventListener('click', function() {
+    showConfirm('确定要清空搜索历史吗？', function() {
+        setSetting('searchHistory', []);
+        loadSearchHistory('wy');
+        loadSearchHistory('bili');
+        loadSearchHistory('qq');
         showToast('历史记录已清空', 'success');
     });
 });
@@ -10510,6 +10882,7 @@ biliClearHistoryBtn.addEventListener('click', function() {
 // 初始化搜索历史
 loadSearchHistory('wy');
 loadSearchHistory('bili');
+loadSearchHistory('qq');
 
 // 加载更多按钮事件
 // 网易云加载更多 - 使用Promise和错误恢复机制
@@ -10539,6 +10912,28 @@ biliLoadMoreBtn.addEventListener('click', () => {
     searchPageNum++;
     performSearch('bili', searchPageNum);
 });
+
+// QQ音乐加载更多
+qqLoadMoreBtn.addEventListener('click', () => {
+    if (!qqHasNextPage) {
+        showToast('没有更多歌曲了', 'info');
+        return;
+    }
+    
+    qqSearchPageNum++;
+    qqLoadMoreBtn.disabled = true;
+    qqLoadMoreBtn.innerHTML = '加载中 <i class="fas fa-spinner fa-spin"></i>';
+    
+    performSearch('qq', qqSearchPageNum).then(() => {
+        qqLoadMoreBtn.disabled = false;
+        qqLoadMoreBtn.innerHTML = '加载更多 <i class="fas fa-chevron-down"></i>';
+    }).catch(() => {
+        qqLoadMoreBtn.disabled = false;
+        qqLoadMoreBtn.innerHTML = '加载更多 <i class="fas fa-chevron-down"></i>';
+        // 加载失败时恢复页码
+        qqSearchPageNum--;
+    });
+});
         
         // 登录相关变量
         let isAutoSyncingLocked = false;   // 自动同步锁，防止登录过程中上传旧数据
@@ -10552,6 +10947,47 @@ biliLoadMoreBtn.addEventListener('click', () => {
         // 自动同步定时器ID
         let autoSyncInterval = null;
         let lastUploadDataHash = null;
+        
+        // 全局加载遮罩
+        let globalLoadingOverlay = null;
+        
+        function showGlobalLoading(message = '正在同步数据...') {
+            if (!globalLoadingOverlay) {
+                globalLoadingOverlay = document.createElement('div');
+                globalLoadingOverlay.id = 'globalLoadingOverlay';
+                globalLoadingOverlay.style.cssText = `
+                    position: fixed;
+                    top: 0;
+                    left: 0;
+                    right: 0;
+                    bottom: 0;
+                    background: rgba(0, 0, 0, 0.7);
+                    backdrop-filter: blur(4px);
+                    z-index: 10000;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    flex-direction: column;
+                    gap: 16px;
+                    font-family: 'DM Sans', sans-serif;
+                    color: white;
+                `;
+                globalLoadingOverlay.innerHTML = `
+                    <div class="spinner" style="width: 48px; height: 48px; border-width: 4px;"></div>
+                    <span id="globalLoadingMessage" style="font-size: 14px;">正在同步数据...</span>
+                `;
+                document.body.appendChild(globalLoadingOverlay);
+            }
+            const msgSpan = globalLoadingOverlay.querySelector('#globalLoadingMessage');
+            if (msgSpan) msgSpan.textContent = message;
+            globalLoadingOverlay.style.display = 'flex';
+        }
+        
+        function hideGlobalLoading() {
+            if (globalLoadingOverlay) {
+                globalLoadingOverlay.style.display = 'none';
+            }
+        }
 
         // 星空主题变量
         let starCtx, starCanvas, starW, starH;
@@ -10582,7 +11018,7 @@ biliLoadMoreBtn.addEventListener('click', () => {
             if (currentTheme && currentTheme.startsWith('star')) {
                 const newTheme = `star${index}`;
                 currentTheme = newTheme;
-                setStorageItem('theme', newTheme);
+                setSetting('theme', newTheme);
             }
             
             // 重置动画状态
@@ -10606,12 +11042,12 @@ biliLoadMoreBtn.addEventListener('click', () => {
             const data = {
                 playHistory: playHistory,
                 searchHistory: searchHistory,
-                totalPlayTime: localStorage.getItem('totalPlayTime') || 0,
+                totalPlayTime: getSetting('totalPlayTime', 0),
                 wyPageSize: wyPageSize,
                 biliPageSize: biliPageSize,
                 yunzhiToken: yunzhiToken,
                 theme: currentTheme,
-                navbarShowText: getStorageItem('navbarShowText', 'true') === 'true',
+                navbarShowText: getSetting('navbarShowText', true),
                 defaultPage: defaultPage
             };
             return JSON.stringify(data);
@@ -10689,13 +11125,13 @@ biliLoadMoreBtn.addEventListener('click', () => {
 
         // 初始化主题
         function initTheme() {
-            let savedTheme = getStorageItem('theme');
+            let savedTheme = getSetting('theme');
             if (!savedTheme) savedTheme = 'dark';
             
             // 兼容旧版 'star' 主题
             if (savedTheme === 'star') {
                 savedTheme = 'star0';
-                setStorageItem('theme', savedTheme);
+                setSetting('theme', savedTheme);
             }
             
             currentTheme = savedTheme;
@@ -10828,7 +11264,7 @@ biliLoadMoreBtn.addEventListener('click', () => {
                 
                 // 保存主题设置
                 currentTheme = effectiveTheme;
-                setStorageItem('theme', effectiveTheme);
+                setSetting('theme', effectiveTheme);
                 
                 // 更新主题切换按钮状态
                 updateThemeToggleButtons();
@@ -10916,9 +11352,23 @@ biliLoadMoreBtn.addEventListener('click', () => {
             modalDefaultPageInput.value = defaultPage;
             modalDefaultPageInput.addEventListener('change', function() {
                 defaultPage = this.value;
-                setStorageItem('defaultPage', defaultPage);
+            setSetting('defaultPage', defaultPage);
                 updateDefaultPageInputs(defaultPage);
                 showToast('默认页面设置已保存', 'success');
+                triggerSync();
+            });
+        }
+
+        if (modalQQPageSizeInput) {
+            modalQQPageSizeInput.value = qqPageSize;
+            modalQQPageSizeInput.addEventListener('change', function() {
+                let value = parseInt(this.value);
+                if (isNaN(value) || value < 1) value = 1;
+                if (value > 50) value = 50;
+                this.value = value;
+                qqPageSize = value;
+                setSetting('qqPageSize', value);
+                showToast('QQ音乐搜索数量设置已保存', 'success');
                 triggerSync();
             });
         }
@@ -10979,7 +11429,7 @@ biliLoadMoreBtn.addEventListener('click', () => {
                 customSelect.addEventListener('change', (e) => {
                     const value = e.detail;
                     defaultPage = value;
-                    setStorageItem('defaultPage', defaultPage);
+                    setSetting('defaultPage', defaultPage);
                     updateDefaultPageInputs(defaultPage);
                     showToast('默认页面设置已保存', 'success');
                 });
@@ -11001,7 +11451,7 @@ biliLoadMoreBtn.addEventListener('click', () => {
             defaultPageInput.value = defaultPage;
             defaultPageInput.addEventListener('change', function() {
                 defaultPage = this.value;
-                setStorageItem('defaultPage', defaultPage);
+                setSetting('defaultPage', defaultPage);
                 updateDefaultPageInputs(defaultPage);
                 showToast('默认页面设置已保存', 'success');
             });
@@ -11080,6 +11530,17 @@ biliLoadMoreBtn.addEventListener('click', () => {
                     page: page,
                     limit: biliPageSize
                 });
+            } else if (platform === 'qq') {
+                // 检查是否设置了Token
+                if (!yunzhiToken) {
+                    throw new Error('未设置Token，请前往设置配置云智API Token，或切换到B站API使用');
+                }
+                return makeApiRequest(`${API_BASE}/hqyyid.php`, {
+                    name: sanitizedKeyword,
+                    type: 'qq',
+                    page: page,
+                    limit: qqPageSize
+                });
             }
             // 检查是否设置了Token
             if (!yunzhiToken) {
@@ -11122,6 +11583,15 @@ biliLoadMoreBtn.addEventListener('click', () => {
                     }
                     result.data.url = audioUrl;
                 }
+            } else if (targetPlatform === 'qq') {
+                // 检查是否设置了Token
+                if (!yunzhiToken) {
+                    throw new Error('未设置Token，请前往设置配置云智API Token，或切换到B站API使用');
+                }
+                result = await makeApiRequest(`${API_BASE}/yyjhss.php`, {
+                    id: songId,
+                    type: 'qq'
+                }, !skipCache); // 如果跳过缓存，也不使用API缓存
             } else {
                 // 检查是否设置了Token
                 if (!yunzhiToken) {
@@ -11141,13 +11611,31 @@ biliLoadMoreBtn.addEventListener('click', () => {
             if (isSearching) return;
             isSearching = true;
 
-            const searchInput = platform === 'wy' ? wySearchInput : biliSearchInput;
-            const searchBtn = platform === 'wy' ? wySearchBtn : biliSearchBtn;
-            const emptyState = platform === 'wy' ? wyEmptyState : biliEmptyState;
-            const songList = platform === 'wy' ? wySongList : biliSongList;
-            const loadMoreContainer = platform === 'wy' ? wyLoadMoreContainer : biliLoadMoreContainer;
-            const resultsCount = platform === 'wy' ? wyResultsCount : biliResultsCount;
-            const loadingOverlay = platform === 'wy' ? document.getElementById('wyLoadingOverlay') : document.getElementById('biliLoadingOverlay');
+            let searchInput, searchBtn, emptyState, songList, loadMoreContainer, resultsCount, loadingOverlay;
+            if (platform === 'wy') {
+                searchInput = wySearchInput;
+                searchBtn = wySearchBtn;
+                emptyState = wyEmptyState;
+                songList = wySongList;
+                loadMoreContainer = wyLoadMoreContainer;
+                resultsCount = wyResultsCount;
+                loadingOverlay = document.getElementById('wyLoadingOverlay');
+            } else if (platform === 'bili') {
+                searchInput = biliSearchInput;
+                searchBtn = biliSearchBtn;
+                emptyState = biliEmptyState;
+                songList = biliSongList;
+                loadMoreContainer = biliLoadMoreContainer;
+                resultsCount = biliResultsCount;
+                loadingOverlay = document.getElementById('biliLoadingOverlay');
+            } else if (platform === 'qq') {
+                searchInput = qqSearchInput;
+                searchBtn = qqSearchBtn;
+                emptyState = qqEmptyState;
+                songList = qqSongList;
+                loadMoreContainer = qqLoadMoreContainer;
+                loadingOverlay = document.getElementById('qqLoadingOverlay');
+            }
 
             const keyword = searchInput.value.trim();
             if (!keyword) {
@@ -11219,6 +11707,27 @@ biliLoadMoreBtn.addEventListener('click', () => {
                         if (loadMoreContainer) {
                             loadMoreContainer.style.display = wyHasNextPage ? 'block' : 'none';
                         }
+                    } else if (platform === 'qq') {
+                        const pageSize = qqPageSize;
+                        const hasData = rawSongList.length > 0;
+
+                        if (page > 1 && rawSongList.length === 0) {
+                            // 加载更多时返回空数据 → 无更多页
+                            qqHasNextPage = false;
+                            loadMoreContainer.style.display = 'none';
+                            showToast('已经没有更多歌曲了', 'info');
+                            return Promise.resolve();
+                        } else if (rawSongList.length > 0) {
+                            // 判断是否还有下一页：返回数量小于期望数量则无更多
+                            qqHasNextPage = rawSongList.length >= pageSize;
+                        } else if (page === 1 && rawSongList.length === 0) {
+                            qqHasNextPage = false;
+                        }
+
+                        // 根据 qqHasNextPage 控制“加载更多”按钮显示
+                        if (loadMoreContainer) {
+                            loadMoreContainer.style.display = qqHasNextPage ? 'block' : 'none';
+                        }
                     }
 
                     // 2. 如果提取到的数组为空，且是第一页，则视为无结果（不抛出异常）
@@ -11259,7 +11768,14 @@ biliLoadMoreBtn.addEventListener('click', () => {
                         }));
 
                         // 根据平台使用不同的搜索数量限制
-                        const pageSize = platform === 'bili' ? biliPageSize : wyPageSize;
+                        let pageSize;
+                        if (platform === 'bili') {
+                            pageSize = biliPageSize;
+                        } else if (platform === 'qq') {
+                            pageSize = qqPageSize;
+                        } else {
+                            pageSize = wyPageSize;
+                        }
 
                         // 限制每次加载的歌曲数量
                         const limitedData = normalizedData.slice(0, pageSize);
@@ -11402,12 +11918,14 @@ biliLoadMoreBtn.addEventListener('click', () => {
 
             // 检查是否是B站图片域名
             const isBiliPic = processedUrl.includes('hdslb.com') || processedUrl.includes('bilibili.com');
+            // 检查是否是QQ音乐图片域名
+            const isQQPic = processedUrl.includes('y.gtimg.cn');
 
             // 使用Image对象预加载
             const img = new Image();
             
-            // 对非B站图片尝试跨域加载，B站图片不设置crossOrigin以避免跨域问题
-            if (!isBiliPic) {
+            // 对非B站和非QQ音乐图片尝试跨域加载
+            if (!isBiliPic && !isQQPic) {
                 img.crossOrigin = 'anonymous';
             }
             
@@ -11446,8 +11964,8 @@ biliLoadMoreBtn.addEventListener('click', () => {
                 }
             };
             
-            // 对于B站图片，尝试通过添加referrerPolicy来解决403问题
-            if (isBiliPic) {
+            // 对于B站和QQ音乐图片，尝试通过添加referrerPolicy来解决403问题
+            if (isBiliPic || isQQPic) {
                 img.referrerPolicy = 'no-referrer';
             }
             
@@ -11455,7 +11973,14 @@ biliLoadMoreBtn.addEventListener('click', () => {
         }
 
         function renderSongList(songs, startIndex = 0, platform = currentPlatform) {
-            const songList = platform === 'wy' ? wySongList : biliSongList;
+            let songList;
+            if (platform === 'wy') {
+                songList = wySongList;
+            } else if (platform === 'bili') {
+                songList = biliSongList;
+            } else if (platform === 'qq') {
+                songList = qqSongList;
+            }
             
             songs.forEach((song, index) => {
                 const li = document.createElement('li');
@@ -11515,7 +12040,7 @@ biliLoadMoreBtn.addEventListener('click', () => {
                 songList.appendChild(li);
                 
                 // 立即加载封面（解决 B 站封面在 GitHub Pages 上不自动加载的问题）
-                loadCoverForLazyLoading(li, song.id);
+                loadCoverForLazyLoading(li, song.id, platform);
             });
             
             // 初始化懒加载
@@ -11562,15 +12087,29 @@ biliLoadMoreBtn.addEventListener('click', () => {
             });
         }
 
-        function loadCoverForLazyLoading(songItem, songId) {
+        function loadCoverForLazyLoading(songItem, songId, platform = currentPlatform) {
             // 从搜索结果中获取封面URL
-            // 尝试从当前平台的搜索结果中查找
-            let songData = searchResults[currentPlatform].find(s => String(s.id) === String(songId));
+            // 尝试从指定平台的搜索结果中查找
+            let songData = searchResults[platform].find(s => String(s.id) === String(songId));
             
-            // 如果没找到，尝试从另一个平台的搜索结果中查找
+            // 如果没找到，尝试从其他平台的搜索结果中查找
             if (!songData) {
-                const otherPlatform = currentPlatform === 'wy' ? 'bili' : 'wy';
-                songData = searchResults[otherPlatform].find(s => String(s.id) === String(songId));
+                if (platform === 'wy') {
+                    songData = searchResults.bili.find(s => String(s.id) === String(songId));
+                    if (!songData) {
+                        songData = searchResults.qq.find(s => String(s.id) === String(songId));
+                    }
+                } else if (platform === 'bili') {
+                    songData = searchResults.wy.find(s => String(s.id) === String(songId));
+                    if (!songData) {
+                        songData = searchResults.qq.find(s => String(s.id) === String(songId));
+                    }
+                } else if (platform === 'qq') {
+                    songData = searchResults.wy.find(s => String(s.id) === String(songId));
+                    if (!songData) {
+                        songData = searchResults.bili.find(s => String(s.id) === String(songId));
+                    }
+                }
             }
             
             if (songData && songData.pic) {
@@ -11718,8 +12257,8 @@ biliLoadMoreBtn.addEventListener('click', () => {
                     const now = Date.now();
                     const delta = now - player.lastUpdateTime;
                     if (delta > 0) {
-                        const totalPlayTime = parseInt(localStorage.getItem('totalPlayTime') || 0) + delta;
-                        localStorage.setItem('totalPlayTime', totalPlayTime);
+                        const totalPlayTime = getSetting('totalPlayTime', 0) + delta;
+                        setSetting('totalPlayTime', totalPlayTime);
                         if (profilePage.style.display === 'block') updateProfileStats();
                     }
                     player.lastUpdateTime = null;
@@ -11824,7 +12363,7 @@ biliLoadMoreBtn.addEventListener('click', () => {
                     if (historyIndex !== -1) {
                         playHistory[historyIndex].url = result.data.url;
                         if (result.data.lrc) playHistory[historyIndex].lrc = result.data.lrc;
-                        setStorageItem('playHistory', JSON.stringify(playHistory));
+                        setSetting('playHistory', playHistory);
                     }
                     // 构造新歌曲对象并播放
                     const song = {
@@ -11972,7 +12511,7 @@ biliLoadMoreBtn.addEventListener('click', () => {
                 playHistory = playHistory.slice(0, 50);
             }
             // 保存到本地存储
-            setStorageItem('playHistory', JSON.stringify(playHistory));
+            setSetting('playHistory', playHistory);
             triggerSync();
         }
 
@@ -12048,10 +12587,18 @@ biliLoadMoreBtn.addEventListener('click', () => {
             // 计算创建歌单数量
             const totalPlaylists = myPlaylists.length;
             // 计算总播放时长
-            const totalPlayTimeMs = parseInt(localStorage.getItem('totalPlayTime') || 0);
-            const totalMinutes = Math.floor(totalPlayTimeMs / 60000);
+            const totalPlayTimeMs = getSetting('totalPlayTime', 0);
+            const totalHours = Math.floor(totalPlayTimeMs / 3600000);
+            const totalMinutes = Math.floor((totalPlayTimeMs % 3600000) / 60000);
             const totalSeconds = Math.floor((totalPlayTimeMs % 60000) / 1000);
-            const totalPlayTime = totalMinutes > 0 ? `${totalMinutes}分${totalSeconds}秒` : `${totalSeconds}秒`;
+            let totalPlayTime;
+            if (totalHours > 0) {
+                totalPlayTime = `${totalHours}小时${totalMinutes}分${totalSeconds}秒`;
+            } else if (totalMinutes > 0) {
+                totalPlayTime = `${totalMinutes}分${totalSeconds}秒`;
+            } else {
+                totalPlayTime = `${totalSeconds}秒`;
+            }
 
             // 更新DOM
             document.getElementById('totalPlays').textContent = totalPlays;
