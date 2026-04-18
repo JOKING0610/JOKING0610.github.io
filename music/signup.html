@@ -116,6 +116,10 @@
                 <label for="confirmPassword">确认密码</label>
                 <input type="password" id="confirmPassword" name="confirmPassword" placeholder="请再次输入密码" required>
             </div>
+            <div class="form-group">
+                <label for="secretKey">注册密钥</label>
+                <input type="text" id="secretKey" name="secretKey" placeholder="请输入注册密钥" required>
+            </div>
             <button type="submit">创建账号</button>
         </form>
         <div id="message" class="message" style="display: none;"></div>
@@ -141,6 +145,7 @@
             const username = document.getElementById('username').value;
             const password = document.getElementById('password').value;
             const confirmPassword = document.getElementById('confirmPassword').value;
+            const secretKey = document.getElementById('secretKey').value;
             
             // 验证输入
             if (!username || username.length < 2) {
@@ -158,6 +163,11 @@
                 return;
             }
             
+            if (!secretKey) {
+                showMessage('请输入注册密钥', 'error');
+                return;
+            }
+            
             // 显示创建中消息
             showMessage('账号创建中...', 'success');
             
@@ -165,7 +175,8 @@
                 // 调用 Supabase 函数创建账号
                 const { data, error } = await supabaseClient.rpc('create_vip_user', {
                     _username: username,
-                    _password: password
+                    _password: password,
+                    _key: secretKey
                 });
                 
                 if (error) {
