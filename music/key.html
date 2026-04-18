@@ -1,0 +1,1177 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>密钥管理工具</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #0a0a0f;
+            --bg-secondary: #12121a;
+            --bg-card: #1a1a24;
+            --bg-card-hover: #222230;
+            --border-color: #2a2a3a;
+            --text-primary: #e8e8f0;
+            --text-secondary: #8888a0;
+            --text-muted: #55556a;
+            --accent: #6366f1;
+            --accent-hover: #818cf8;
+            --accent-glow: rgba(99, 102, 241, 0.3);
+            --success: #22c55e;
+            --success-glow: rgba(34, 197, 94, 0.3);
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --danger-glow: rgba(239, 68, 68, 0.3);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Noto Sans SC', sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                radial-gradient(ellipse 80% 50% at 20% 40%, rgba(99, 102, 241, 0.08) 0%, transparent 50%),
+                radial-gradient(ellipse 60% 40% at 80% 60%, rgba(139, 92, 246, 0.06) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 40px 20px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 50px;
+        }
+
+        .header-icon {
+            width: 80px;
+            height: 80px;
+            margin: 0 auto 24px;
+            background: linear-gradient(135deg, var(--accent), #8b5cf6);
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 8px 32px var(--accent-glow);
+            animation: float 3s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-8px); }
+        }
+
+        .header-icon svg {
+            width: 40px;
+            height: 40px;
+            fill: white;
+        }
+
+        .header h1 {
+            font-size: 32px;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--text-primary), var(--text-secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 12px;
+        }
+
+        .header p {
+            color: var(--text-secondary);
+            font-size: 14px;
+            letter-spacing: 0.5px;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 16px;
+            margin-bottom: 40px;
+        }
+
+        @media (max-width: 768px) {
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        .stat-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 20px;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-4px);
+            border-color: var(--accent);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+        }
+
+        .stat-value {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 36px;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 8px;
+        }
+
+        .stat-label {
+            font-size: 12px;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .stat-card.total .stat-value { color: var(--accent); }
+        .stat-card.unused .stat-value { color: var(--success); }
+        .stat-card.used .stat-value { color: var(--warning); }
+        .stat-card.expired .stat-value { color: var(--danger); }
+
+        .main-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            padding: 32px;
+            margin-bottom: 24px;
+        }
+
+        .section-title {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+
+        .section-title svg {
+            width: 24px;
+            height: 24px;
+            fill: var(--accent);
+        }
+
+        .section-title h2 {
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .generate-section {
+            display: flex;
+            gap: 16px;
+            align-items: flex-end;
+        }
+
+        @media (max-width: 600px) {
+            .generate-section {
+                flex-direction: column;
+            }
+        }
+
+        .form-group {
+            flex: 1;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 13px;
+            color: var(--text-secondary);
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+
+        .input-wrapper {
+            position: relative;
+        }
+
+        input[type="text"],
+        input[type="number"] {
+            width: 100%;
+            padding: 14px 16px;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            color: var(--text-primary);
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px var(--accent-glow);
+        }
+
+        input::placeholder {
+            color: var(--text-muted);
+        }
+
+        .btn {
+            padding: 14px 28px;
+            border: none;
+            border-radius: 10px;
+            font-family: 'Noto Sans SC', sans-serif;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn svg {
+            width: 18px;
+            height: 18px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--accent), #8b5cf6);
+            color: white;
+            box-shadow: 0 4px 16px var(--accent-glow);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 24px var(--accent-glow);
+        }
+
+        .btn-primary:active {
+            transform: translateY(0);
+        }
+
+        .btn-secondary {
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+            border: 1px solid var(--border-color);
+        }
+
+        .btn-secondary:hover {
+            border-color: var(--accent);
+            background: var(--bg-card-hover);
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, var(--danger), #dc2626);
+            color: white;
+            box-shadow: 0 4px 16px var(--danger-glow);
+        }
+
+        .btn-danger:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 24px var(--danger-glow);
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, var(--success), #16a34a);
+            color: white;
+            box-shadow: 0 4px 16px var(--success-glow);
+        }
+
+        .btn-success:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 24px var(--success-glow);
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none !important;
+        }
+
+        .keys-section {
+            margin-top: 32px;
+        }
+
+        .keys-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        .keys-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .key-item {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 16px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            transition: all 0.3s ease;
+        }
+
+        .key-item:hover {
+            border-color: var(--accent);
+        }
+
+        .key-info {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .key-value {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 14px;
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .key-value .copy-btn {
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 4px;
+            opacity: 0.5;
+            transition: all 0.3s ease;
+        }
+
+        .key-value .copy-btn:hover {
+            opacity: 1;
+        }
+
+        .key-value .copy-btn svg {
+            width: 16px;
+            height: 16px;
+            fill: var(--text-secondary);
+        }
+
+        .key-meta {
+            font-size: 12px;
+            color: var(--text-muted);
+            display: flex;
+            gap: 16px;
+        }
+
+        .key-status {
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .key-status.unused {
+            background: rgba(34, 197, 94, 0.15);
+            color: var(--success);
+        }
+
+        .key-status.used {
+            background: rgba(245, 158, 11, 0.15);
+            color: var(--warning);
+        }
+
+        .key-status.expired {
+            background: rgba(239, 68, 68, 0.15);
+            color: var(--danger);
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: var(--text-muted);
+        }
+
+        .empty-state svg {
+            width: 64px;
+            height: 64px;
+            fill: var(--text-muted);
+            margin-bottom: 16px;
+            opacity: 0.5;
+        }
+
+        .empty-state p {
+            font-size: 14px;
+        }
+
+        .toast {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%) translateY(100px);
+            padding: 14px 28px;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 500;
+            opacity: 0;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .toast.show {
+            transform: translateX(-50%) translateY(0);
+            opacity: 1;
+        }
+
+        .toast.success {
+            background: var(--success);
+            color: white;
+            box-shadow: 0 8px 32px var(--success-glow);
+        }
+
+        .toast.error {
+            background: var(--danger);
+            color: white;
+            box-shadow: 0 8px 32px var(--danger-glow);
+        }
+
+        .toast svg {
+            width: 20px;
+            height: 20px;
+            fill: white;
+        }
+
+        .loading {
+            display: inline-block;
+            width: 18px;
+            height: 18px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .footer {
+            text-align: center;
+            margin-top: 40px;
+            padding-top: 24px;
+            border-top: 1px solid var(--border-color);
+            color: var(--text-muted);
+            font-size: 12px;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .fade-in {
+            animation: fadeIn 0.4s ease forwards;
+        }
+
+        .stagger-1 { animation-delay: 0.1s; opacity: 0; }
+        .stagger-2 { animation-delay: 0.2s; opacity: 0; }
+        .stagger-3 { animation-delay: 0.3s; opacity: 0; }
+        .stagger-4 { animation-delay: 0.4s; opacity: 0; }
+
+        .tabs {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 20px;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 16px;
+        }
+
+        .tab-btn {
+            padding: 10px 20px;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            color: var(--text-secondary);
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .tab-btn svg {
+            width: 16px;
+            height: 16px;
+            fill: currentColor;
+        }
+
+        .tab-btn:hover {
+            border-color: var(--accent);
+            color: var(--text-primary);
+        }
+
+        .tab-btn.active {
+            background: var(--accent);
+            border-color: var(--accent);
+            color: white;
+        }
+
+        .key-item .used-by {
+            font-size: 12px;
+            color: var(--accent);
+            font-weight: 500;
+        }
+
+        .no-copy .copy-btn {
+            display: none;
+        }
+
+        .delete-btn {
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 4px;
+            opacity: 0.5;
+            transition: all 0.3s ease;
+        }
+
+        .delete-btn:hover {
+            opacity: 1;
+        }
+
+        .delete-btn svg {
+            width: 16px;
+            height: 16px;
+            fill: var(--danger);
+        }
+
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .modal-overlay.show {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .modal {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 32px;
+            max-width: 400px;
+            width: 90%;
+            text-align: center;
+            transform: scale(0.9);
+            transition: transform 0.3s ease;
+        }
+
+        .modal-overlay.show .modal {
+            transform: scale(1);
+        }
+
+        .modal-icon {
+            width: 60px;
+            height: 60px;
+            margin: 0 auto 20px;
+            background: rgba(239, 68, 68, 0.15);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-icon svg {
+            width: 30px;
+            height: 30px;
+            fill: var(--danger);
+        }
+
+        .modal h3 {
+            font-size: 20px;
+            color: var(--text-primary);
+            margin-bottom: 12px;
+        }
+
+        .modal p {
+            font-size: 14px;
+            color: var(--text-secondary);
+            margin-bottom: 24px;
+        }
+
+        .modal-buttons {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+        }
+
+        .modal-buttons .btn {
+            min-width: 100px;
+        }
+
+        .expires-group {
+            display: flex;
+            gap: 12px;
+            align-items: flex-end;
+        }
+
+        .expires-group .form-group {
+            flex: 1;
+        }
+
+        .expires-group select {
+            width: 100%;
+            padding: 14px 16px;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            color: var(--text-primary);
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .expires-group select:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px var(--accent-glow);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="header-icon">
+                <svg viewBox="0 0 24 24"><path d="M12 2C9.24 2 7 4.24 7 7v3H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8a2 2 0 0 0-2-2h-1V7c0-2.76-2.24-5-5-5zm0 2c1.65 0 3 1.35 3 3v3H9V7c0-1.65 1.35-3 3-3zm0 10a2 2 0 1 1 0 4 2 2 0 0 1 0-4z"/></svg>
+            </div>
+            <h1>密钥管理工具</h1>
+            <p>零柒零音乐 - 注册密钥生成与管理</p>
+        </div>
+
+        <div class="stats-grid">
+            <div class="stat-card total fade-in stagger-1">
+                <div class="stat-value" id="statTotal">-</div>
+                <div class="stat-label">总密钥数</div>
+            </div>
+            <div class="stat-card unused fade-in stagger-2">
+                <div class="stat-value" id="statUnused">-</div>
+                <div class="stat-label">未使用</div>
+            </div>
+            <div class="stat-card used fade-in stagger-3">
+                <div class="stat-value" id="statUsed">-</div>
+                <div class="stat-label">已使用</div>
+            </div>
+            <div class="stat-card expired fade-in stagger-4">
+                <div class="stat-value" id="statExpired">-</div>
+                <div class="stat-label">已过期</div>
+            </div>
+        </div>
+
+        <div class="main-card fade-in">
+            <div class="section-title">
+                <svg viewBox="0 0 24 24"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
+                <h2>生成新密钥</h2>
+            </div>
+            <div class="expires-group">
+                <div class="form-group">
+                    <label>生成数量</label>
+                    <input type="number" id="generateCount" value="1" min="1" max="20">
+                </div>
+                <div class="form-group">
+                    <label>有效期</label>
+                    <select id="expiresDuration">
+                        <option value="1">1 分钟</option>
+                        <option value="5">5 分钟</option>
+                        <option value="10">10 分钟</option>
+                        <option value="30">30 分钟</option>
+                        <option value="60">1 小时</option>
+                        <option value="180">3 小时</option>
+                        <option value="360">6 小时</option>
+                        <option value="720">12 小时</option>
+                        <option value="1440" selected>1 天</option>
+                        <option value="4320">3 天</option>
+                        <option value="10080" selected>7 天</option>
+                        <option value="20160">14 天</option>
+                        <option value="43200">30 天</option>
+                    </select>
+                </div>
+                <button class="btn btn-primary" id="generateBtn" onclick="generateKeys()">
+                    <svg viewBox="0 0 24 24"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
+                    <span>生成密钥</span>
+                </button>
+                <button class="btn btn-danger" id="cleanupBtn" onclick="cleanupExpired()">
+                    <svg viewBox="0 0 24 24"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg>
+                    <span>清理过期</span>
+                </button>
+            </div>
+        </div>
+
+        <div class="main-card fade-in" style="animation-delay: 0.3s; opacity: 0;">
+            <div class="keys-section">
+                <div class="keys-header">
+                    <div class="section-title" style="margin-bottom: 0;">
+                        <svg viewBox="0 0 24 24"><path d="M12 2C9.24 2 7 4.24 7 7v3H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8a2 2 0 0 0-2-2h-1V7c0-2.76-2.24-5-5-5zm0 2c1.65 0 3 1.35 3 3v3H9V7c0-1.65 1.35-3 3-3zm0 10a2 2 0 1 1 0 4 2 2 0 0 1 0-4z"/></svg>
+                        <h2>密钥列表</h2>
+                    </div>
+                    <button class="btn btn-secondary" onclick="loadAllData()">
+                        <svg viewBox="0 0 24 24"><path d="M17.65 6.35A7.958 7.958 0 0 0 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08A5.99 5.99 0 0 1 12 18c-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/></svg>
+                        <span>刷新</span>
+                    </button>
+                </div>
+                <div class="tabs">
+                    <button class="tab-btn active" onclick="switchTab('all')" id="tabAll">
+                        <svg viewBox="0 0 24 24"><path d="M4 6H2v14c0 1.1.9 2 2 2h14v-2H4V6zm16-4H8c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H8V4h12v12z"/></svg>
+                        <span>全部</span>
+                    </button>
+                    <button class="tab-btn" onclick="switchTab('unused')" id="tabUnused">
+                        <svg viewBox="0 0 24 24"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
+                        <span>未使用</span>
+                    </button>
+                    <button class="tab-btn" onclick="switchTab('used')" id="tabUsed">
+                        <svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
+                        <span>已使用</span>
+                    </button>
+                </div>
+                <div class="keys-list" id="allKeysList">
+                    <div class="empty-state">
+                        <svg viewBox="0 0 24 24"><path d="M12 2C9.24 2 7 4.24 7 7v3H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8a2 2 0 0 0-2-2h-1V7c0-2.76-2.24-5-5-5zm0 2c1.65 0 3 1.35 3 3v3H9V7c0-1.65 1.35-3 3-3z"/></svg>
+                        <p>暂无密钥记录</p>
+                    </div>
+                </div>
+                <div class="keys-list" id="keysList" style="display: none;">
+                    <div class="empty-state">
+                        <svg viewBox="0 0 24 24"><path d="M12 2C9.24 2 7 4.24 7 7v3H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8a2 2 0 0 0-2-2h-1V7c0-2.76-2.24-5-5-5zm0 2c1.65 0 3 1.35 3 3v3H9V7c0-1.65 1.35-3 3-3z"/></svg>
+                        <p>暂无未使用密钥</p>
+                    </div>
+                </div>
+                <div class="keys-list" id="usedKeysList" style="display: none;">
+                    <div class="empty-state">
+                        <svg viewBox="0 0 24 24"><path d="M12 2C9.24 2 7 4.24 7 7v3H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8a2 2 0 0 0-2-2h-1V7c0-2.76-2.24-5-5-5zm0 2c1.65 0 3 1.35 3 3v3H9V7c0-1.65 1.35-3 3-3z"/></svg>
+                        <p>暂无已使用密钥</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="footer">
+            零柒零音乐 © 2026
+        </div>
+    </div>
+
+    <div class="toast" id="toast">
+        <svg viewBox="0 0 24 24" id="toastIcon"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>
+        <span id="toastText">操作成功</span>
+    </div>
+
+    <div class="modal-overlay" id="deleteModal">
+        <div class="modal">
+            <div class="modal-icon">
+                <svg viewBox="0 0 24 24"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg>
+            </div>
+            <h3>确认删除</h3>
+            <p id="deleteModalText">确定要删除这个密钥吗？此操作无法撤销。</p>
+            <div class="modal-buttons">
+                <button class="btn btn-secondary" onclick="closeDeleteModal()">取消</button>
+                <button class="btn btn-danger" id="confirmDeleteBtn">删除</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const SUPABASE_URL = "https://yeogthpysbqgehjkayaf.supabase.co";
+        const SUPABASE_ANON_KEY = "sb_publishable_WoO50Mbz0Rhfy0nPugE3vA_5UP__SYX";
+        
+        let supabaseClient;
+
+        async function initSupabase() {
+            if (!supabaseClient) {
+                supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+                    auth: { storageKey: null, autoRefreshToken: false, persistSession: false }
+                });
+            }
+            return supabaseClient;
+        }
+
+        async function loadStats() {
+            try {
+                await initSupabase();
+                const { data, error } = await supabaseClient.rpc('get_registration_key_stats');
+                if (error) throw error;
+                if (data && data.success) {
+                    const stats = data.stats;
+                    document.getElementById('statTotal').textContent = stats.total || 0;
+                    document.getElementById('statUnused').textContent = stats.unused || 0;
+                    document.getElementById('statUsed').textContent = stats.used || 0;
+                    document.getElementById('statExpired').textContent = stats.expired || 0;
+                }
+            } catch (error) {
+                console.error('加载统计数据失败:', error);
+            }
+        }
+
+        let currentTab = 'all';
+
+        function switchTab(tab) {
+            currentTab = tab;
+            document.getElementById('tabAll').classList.toggle('active', tab === 'all');
+            document.getElementById('tabUnused').classList.toggle('active', tab === 'unused');
+            document.getElementById('tabUsed').classList.toggle('active', tab === 'used');
+            document.getElementById('allKeysList').style.display = tab === 'all' ? 'flex' : 'none';
+            document.getElementById('keysList').style.display = tab === 'unused' ? 'flex' : 'none';
+            document.getElementById('usedKeysList').style.display = tab === 'used' ? 'flex' : 'none';
+            
+            if (tab === 'all') {
+                loadAllKeys();
+            } else if (tab === 'unused') {
+                loadUnusedKeys();
+            } else {
+                loadUsedKeys();
+            }
+        }
+
+        async function loadAllKeys() {
+            const keysList = document.getElementById('allKeysList');
+            keysList.innerHTML = '<div class="empty-state"><p>加载中...</p></div>';
+            
+            try {
+                await initSupabase();
+                const { data, error } = await supabaseClient.rpc('get_all_registration_keys');
+                if (error) throw error;
+                
+                if (!data || !data.success || !data.keys || data.keys.length === 0) {
+                    keysList.innerHTML = `
+                        <div class="empty-state">
+                            <svg viewBox="0 0 24 24"><path d="M12 2C9.24 2 7 4.24 7 7v3H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8a2 2 0 0 0-2-2h-1V7c0-2.76-2.24-5-5-5zm0 2c1.65 0 3 1.35 3 3v3H9V7c0-1.65 1.35-3 3-3z"/></svg>
+                            <p>暂无密钥记录</p>
+                        </div>
+                    `;
+                    return;
+                }
+
+                keysList.innerHTML = data.keys.map((key, index) => {
+                    let statusClass = 'unused';
+                    let statusText = '未使用';
+                    if (key.is_used) {
+                        statusClass = 'used';
+                        statusText = '已使用';
+                    } else if (key.is_expired) {
+                        statusClass = 'expired';
+                        statusText = '已过期';
+                    }
+                    
+                    return `
+                    <div class="key-item fade-in" style="animation-delay: ${index * 0.05}s; opacity: 0;">
+                        <div class="key-info">
+                            <div class="key-value">
+                                <span>${key.secret_key}</span>
+                                <button class="copy-btn" onclick="copyKey('${key.secret_key}')" title="复制">
+                                    <svg viewBox="0 0 24 24"><path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/></svg>
+                                </button>
+                                <button class="delete-btn" onclick="openDeleteModal('${key.id}', '${key.secret_key}')" title="删除">
+                                    <svg viewBox="0 0 24 24"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg>
+                                </button>
+                            </div>
+                            <div class="key-meta">
+                                <span>创建: ${formatDate(key.created_at)}</span>
+                                <span>过期: ${formatDate(key.expires_at)}</span>
+                                ${key.is_used ? `<span class="used-by">使用者: ${key.used_by_username || '未知'}</span>` : ''}
+                            </div>
+                        </div>
+                        <div class="key-status ${statusClass}">${statusText}</div>
+                    </div>
+                `}).join('');
+            } catch (error) {
+                console.error('加载所有密钥列表失败:', error);
+                keysList.innerHTML = '<div class="empty-state"><p>加载失败，请重试</p></div>';
+            }
+        }
+
+        async function loadAllData() {
+            await loadStats();
+            if (currentTab === 'all') {
+                await loadAllKeys();
+            } else if (currentTab === 'unused') {
+                await loadUnusedKeys();
+            } else {
+                await loadUsedKeys();
+            }
+        }
+
+        async function loadUnusedKeys() {
+            const keysList = document.getElementById('keysList');
+            keysList.innerHTML = '<div class="empty-state"><p>加载中...</p></div>';
+            
+            try {
+                await initSupabase();
+                const { data, error } = await supabaseClient.rpc('get_unused_registration_keys');
+                if (error) throw error;
+                
+                if (!data || !data.success || !data.keys || data.keys.length === 0) {
+                    keysList.innerHTML = `
+                        <div class="empty-state">
+                            <svg viewBox="0 0 24 24"><path d="M12 2C9.24 2 7 4.24 7 7v3H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8a2 2 0 0 0-2-2h-1V7c0-2.76-2.24-5-5-5zm0 2c1.65 0 3 1.35 3 3v3H9V7c0-1.65 1.35-3 3-3z"/></svg>
+                            <p>暂无未使用的密钥</p>
+                        </div>
+                    `;
+                    return;
+                }
+
+                keysList.innerHTML = data.keys.map((key, index) => `
+                    <div class="key-item fade-in" style="animation-delay: ${index * 0.05}s; opacity: 0;">
+                        <div class="key-info">
+                            <div class="key-value">
+                                <span>${key.secret_key}</span>
+                                <button class="copy-btn" onclick="copyKey('${key.secret_key}')" title="复制">
+                                    <svg viewBox="0 0 24 24"><path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/></svg>
+                                </button>
+                                <button class="delete-btn" onclick="openDeleteModal('${key.id}', '${key.secret_key}')" title="删除">
+                                    <svg viewBox="0 0 24 24"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg>
+                                </button>
+                            </div>
+                            <div class="key-meta">
+                                <span>创建: ${formatDate(key.created_at)}</span>
+                                <span>过期: ${formatDate(key.expires_at)}</span>
+                            </div>
+                        </div>
+                        <div class="key-status unused">未使用</div>
+                    </div>
+                `).join('');
+            } catch (error) {
+                console.error('加载密钥列表失败:', error);
+                keysList.innerHTML = '<div class="empty-state"><p>加载失败，请重试</p></div>';
+            }
+        }
+
+        async function loadUsedKeys() {
+            const keysList = document.getElementById('usedKeysList');
+            keysList.innerHTML = '<div class="empty-state"><p>加载中...</p></div>';
+            
+            try {
+                await initSupabase();
+                const { data, error } = await supabaseClient.rpc('get_used_registration_keys');
+                if (error) throw error;
+                
+                if (!data || !data.success || !data.keys || data.keys.length === 0) {
+                    keysList.innerHTML = `
+                        <div class="empty-state">
+                            <svg viewBox="0 0 24 24"><path d="M12 2C9.24 2 7 4.24 7 7v3H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8a2 2 0 0 0-2-2h-1V7c0-2.76-2.24-5-5-5zm0 2c1.65 0 3 1.35 3 3v3H9V7c0-1.65 1.35-3 3-3z"/></svg>
+                            <p>暂无已使用密钥</p>
+                        </div>
+                    `;
+                    return;
+                }
+
+                keysList.innerHTML = data.keys.map((key, index) => `
+                    <div class="key-item fade-in" style="animation-delay: ${index * 0.05}s; opacity: 0;">
+                        <div class="key-info">
+                            <div class="key-value">
+                                <span>${key.secret_key}</span>
+                                <button class="delete-btn" onclick="openDeleteModal('${key.id}', '${key.secret_key}')" title="删除">
+                                    <svg viewBox="0 0 24 24"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg>
+                                </button>
+                            </div>
+                            <div class="key-meta">
+                                <span>创建: ${formatDate(key.created_at)}</span>
+                                <span>使用: ${formatDate(key.used_at)}</span>
+                                <span class="used-by">使用者: ${key.used_by_username || '未知'}</span>
+                            </div>
+                        </div>
+                        <div class="key-status used">已使用</div>
+                    </div>
+                `).join('');
+            } catch (error) {
+                console.error('加载已使用密钥列表失败:', error);
+                keysList.innerHTML = '<div class="empty-state"><p>加载失败，请重试</p></div>';
+            }
+        }
+
+        async function generateKeys() {
+            const btn = document.getElementById('generateBtn');
+            const count = parseInt(document.getElementById('generateCount').value) || 1;
+            const expiresMinutes = parseInt(document.getElementById('expiresDuration').value) || 10080;
+            
+            if (count < 1 || count > 20) {
+                showToast('生成数量需在1-20之间', 'error');
+                return;
+            }
+
+            btn.disabled = true;
+            btn.innerHTML = '<span class="loading"></span><span>生成中...</span>';
+
+            try {
+                await initSupabase();
+                const generatedKeys = [];
+                
+                for (let i = 0; i < count; i++) {
+                    const { data, error } = await supabaseClient.rpc('generate_registration_key', { _expires_minutes: expiresMinutes });
+                    if (error) throw error;
+                    if (data && data.success) {
+                        generatedKeys.push(data.key);
+                    }
+                }
+
+                showToast(`成功生成 ${generatedKeys.length} 个密钥`, 'success');
+                await loadStats();
+                await loadAllKeys();
+            } catch (error) {
+                console.error('生成密钥失败:', error);
+                showToast(`生成失败: ${error.message}`, 'error');
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '<svg viewBox="0 0 24 24"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg><span>生成密钥</span>';
+            }
+        }
+
+        async function cleanupExpired() {
+            const btn = document.getElementById('cleanupBtn');
+            btn.disabled = true;
+            btn.innerHTML = '<span class="loading"></span><span>清理中...</span>';
+
+            try {
+                await initSupabase();
+                const { data, error } = await supabaseClient.rpc('cleanup_expired_registration_keys');
+                if (error) throw error;
+
+                const count = data?.deleted_count || 0;
+                showToast(`已清理 ${count} 个过期密钥`, 'success');
+                await loadStats();
+                await loadUnusedKeys();
+            } catch (error) {
+                console.error('清理过期密钥失败:', error);
+                showToast(`清理失败: ${error.message}`, 'error');
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '<svg viewBox="0 0 24 24"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg><span>清理过期</span>';
+            }
+        }
+
+        function copyKey(key) {
+            navigator.clipboard.writeText(key).then(() => {
+                showToast('密钥已复制到剪贴板', 'success');
+            }).catch(() => {
+                showToast('复制失败', 'error');
+            });
+        }
+
+        function formatDate(dateStr) {
+            if (!dateStr) return '-';
+            const date = new Date(dateStr);
+            return date.toLocaleDateString('zh-CN', { 
+                year: 'numeric', 
+                month: '2-digit', 
+                day: '2-digit',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+        }
+
+        let pendingDeleteKeyId = null;
+
+        function openDeleteModal(keyId, keyValue) {
+            pendingDeleteKeyId = keyId;
+            document.getElementById('deleteModalText').textContent = `确定要删除密钥 "${keyValue}" 吗？此操作无法撤销。`;
+            document.getElementById('deleteModal').classList.add('show');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeDeleteModal() {
+            pendingDeleteKeyId = null;
+            document.getElementById('deleteModal').classList.remove('show');
+            document.body.style.overflow = '';
+        }
+
+        async function confirmDeleteKey() {
+            if (!pendingDeleteKeyId) return;
+            
+            const btn = document.getElementById('confirmDeleteBtn');
+            btn.disabled = true;
+            btn.innerHTML = '<span class="loading"></span>';
+
+            try {
+                await initSupabase();
+                const { data, error } = await supabaseClient.rpc('delete_registration_key', { _key_id: pendingDeleteKeyId });
+                if (error) throw error;
+                
+                if (data && data.success) {
+                    showToast('密钥删除成功', 'success');
+                    closeDeleteModal();
+                    await loadStats();
+                    await loadAllKeys();
+                } else {
+                    showToast(data?.error || '删除失败', 'error');
+                }
+            } catch (error) {
+                console.error('删除密钥失败:', error);
+                showToast(`删除失败: ${error.message}`, 'error');
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '删除';
+            }
+        }
+
+        document.getElementById('confirmDeleteBtn').addEventListener('click', confirmDeleteKey);
+
+        function showToast(message, type = 'success') {
+            const toast = document.getElementById('toast');
+            const toastText = document.getElementById('toastText');
+            const toastIcon = document.getElementById('toastIcon');
+            
+            toastText.textContent = message;
+            toast.className = `toast ${type}`;
+            
+            if (type === 'success') {
+                toastIcon.innerHTML = '<path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>';
+            } else {
+                toastIcon.innerHTML = '<path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/>';
+            }
+            
+            toast.classList.add('show');
+            
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            loadStats();
+            loadAllKeys();
+        });
+    </script>
+</body>
+</html>
