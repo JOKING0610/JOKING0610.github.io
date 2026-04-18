@@ -269,7 +269,7 @@
         .logo {
             display: inline-flex;
             align-items: center;
-            gap: 12px;
+            gap: 20px;
             margin-bottom: 8px;
         }
 
@@ -1159,7 +1159,7 @@
             inset: 0;
             background: var(--overlay);
             backdrop-filter: blur(4px);
-            z-index: 1003;
+            z-index: 1002;
             opacity: 0;
             visibility: hidden;
             pointer-events: none;
@@ -1202,6 +1202,27 @@
         /* 确认弹窗层级高于其他模态框 */
         .confirm-modal {
             z-index: 1006 !important;
+            width: 90%;
+            max-width: 360px;
+            height: auto;
+            max-height: 80vh;
+        }
+
+        .confirm-modal .modal-header {
+            padding: 16px 20px;
+        }
+
+        .confirm-modal .modal-title {
+            font-size: 16px;
+        }
+
+        .confirm-modal .modal-body {
+            padding: 16px 20px;
+        }
+
+        .confirm-modal #confirmMessage {
+            font-size: 14px;
+            margin-bottom: 16px;
         }
 
         .modal-header {
@@ -1249,6 +1270,91 @@
             overflow-y: auto;
             padding: 20px 22px;
             max-height: none;
+        }
+
+        .modal-footer {
+            display: flex;
+            justify-content: center;
+            padding: 16px 22px;
+            border-top: 1px solid var(--border);
+            flex-shrink: 0;
+        }
+
+        /* 账号异处登录模态框的特殊样式 */
+        #sessionExpiredModal {
+            width: 100vw;
+            height: 100vh;
+            max-width: 100vw;
+            max-height: 100vh;
+            z-index: 1007 !important;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background: rgba(0, 0, 0, 0.9);
+            color: white;
+            border-radius: 0 !important;
+        }
+
+        #sessionExpiredModal .modal-content {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+        }
+
+        #sessionExpiredModal .modal-header {
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+            padding: 20px;
+            width: 100%;
+        }
+
+        #sessionExpiredModal .modal-body {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 40px 20px;
+        }
+
+        #sessionExpiredModal .modal-footer {
+            border-top: 1px solid rgba(255, 255, 255, 0.2);
+            padding: 20px;
+            width: 100%;
+            display: flex;
+            justify-content: center;
+        }
+
+        /* 更换头像模态框的特殊样式 */
+        #editAvatarModal {
+            width: 420px;
+            max-width: 95%;
+            height: auto;
+            max-height: 85vh;
+        }
+
+        #editAvatarModal .modal-body {
+            overflow-y: auto;
+            max-height: calc(85vh - 120px);
+        }
+
+        #editAvatarModal .modal-footer {
+            display: flex;
+            justify-content: flex-end;
+            gap: 12px;
+            padding: 16px 20px;
+        }
+
+        #editAvatarModal .modal-footer .btn-gray {
+            position: static;
+        }
+
+        #editAvatarModal .modal-footer .btn-blue {
+            position: static;
         }
 
         /* 针对移动端微调，避免过小边距 */
@@ -1500,7 +1606,7 @@
             align-items: center;
             justify-content: space-between;
             padding: 12px 14px;
-            background: var(--bg);
+            background: transparent;
             border: 1px solid var(--border);
             border-radius: var(--radius-md);
             font-size: 14px;
@@ -1572,7 +1678,7 @@
 
         /* 深色主题适配 */
         html.dark-theme .custom-select-trigger {
-            background: var(--bg);
+            background: transparent;
             border-color: var(--border);
             color: var(--text);
         }
@@ -1849,7 +1955,7 @@
             top: 20px;
             left: 50%;
             transform: translateX(-50%);
-            z-index: 1005;
+            z-index: 9999;
             display: flex;
             flex-direction: column;
             gap: 12px;
@@ -2088,7 +2194,6 @@
             align-items: center;
             gap: 1.4px;
             color: var(--text-secondary);
-            text-decoration: none;
             padding: 7px 18.2px;
             border-radius: 100px;
             transition: color 0.3s ease;
@@ -2448,18 +2553,106 @@
                 align-items: center;
                 gap: 24px;
             }
-            
+
             .fullscreen-player-left {
                 flex: 1 1 100%;
                 max-width: 100%;
                 align-items: center;
                 text-align: center;
             }
-            
+
             .fullscreen-lyrics-container {
                 flex: 1 1 100%;
                 max-width: 100%;
                 min-width: auto;
+            }
+        }
+
+        @media (min-width: 641px) and (max-width: 768px) {
+            .fullscreen-player-content {
+                gap: 16px;
+                padding: 50px 24px 24px;
+                align-items: stretch;
+                justify-content: space-between;
+            }
+
+            .fullscreen-player-main {
+                flex-direction: row;
+                align-items: center;
+                justify-content: center;
+                gap: 24px;
+                flex: 1;
+                width: 100%;
+                max-width: 100%;
+                min-height: 0;
+            }
+
+            .fullscreen-player-progress-section {
+                flex: 0 0 auto;
+                width: 100%;
+                margin-top: auto;
+            }
+
+            .fullscreen-player-left {
+                flex: 0 0 auto;
+                max-width: 280px;
+                align-items: center;
+                text-align: center;
+            }
+
+            .fullscreen-player-cover {
+                width: 200px;
+                height: 200px;
+                margin-bottom: 12px;
+            }
+
+            .fullscreen-player-cover i {
+                font-size: 55px;
+            }
+
+            .fullscreen-lyrics-container {
+                flex: 1 1 auto;
+                max-width: none;
+                min-width: 0;
+                overflow-y: auto;
+                max-height: calc(100vh - 280px);
+            }
+
+            .fullscreen-lyrics-container::-webkit-scrollbar {
+                width: 6px;
+            }
+
+            .fullscreen-lyrics-container::-webkit-scrollbar-thumb {
+                background: var(--primary);
+                border-radius: 3px;
+            }
+
+            .fullscreen-player-info {
+                text-align: center;
+            }
+
+            .fullscreen-player-title {
+                font-size: 18px;
+            }
+
+            .fullscreen-player-artist {
+                font-size: 14px;
+            }
+
+            .fullscreen-player-progress-section {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 12px;
+            }
+
+            .fullscreen-player-controls {
+                flex-direction: row;
+                justify-content: center;
+                gap: 12px;
+            }
+
+            .fullscreen-player-time {
+                font-size: 12px;
             }
         }
 
@@ -2588,6 +2781,23 @@
         }
         html.dark-theme .fullscreen-lyrics-container {
             background: rgba(255,255,255,0.03);
+        }
+
+        /* 歌词容器滚动条样式 */
+        .fullscreen-lyrics-container::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        .fullscreen-lyrics-container::-webkit-scrollbar-track {
+            background: rgba(128, 128, 128, 0.1);
+            border-radius: 3px;
+        }
+        .fullscreen-lyrics-container::-webkit-scrollbar-thumb {
+            background: var(--primary);
+            border-radius: 3px;
+        }
+        .fullscreen-lyrics-container::-webkit-scrollbar-thumb:hover {
+            background: var(--primary-hover, var(--primary));
         }
         .fullscreen-lyrics-header {
             font-size: 13px;
@@ -2948,21 +3158,29 @@
 
         .stats-section {
             margin-bottom: 32px;
+            width: calc(100% + 32px);
+            margin-left: -16px;
+            margin-right: -16px;
+            padding-left: 16px;
+            padding-right: 16px;
         }
 
         .stats-grid {
             display: grid;
-            grid-template-columns: repeat(3, 1fr);
+            grid-template-columns: repeat(1, 1fr);
             gap: 16px;
         }
 
         .stat-item {
-            text-align: center;
+            text-align: left;
             padding: 20px 16px;
             background: var(--surface);
             border-radius: var(--radius-lg);
-            box-shadow: var(--shadow-sm);
+            box-shadow: 0px 1px 3px 0px rgba(0, 0, 0, 0.25);
             border: 1px solid var(--border);
+            display: grid;
+            width: auto;
+            min-height: 140px;
         }
 
         .stat-icon {
@@ -3014,6 +3232,115 @@
             display: flex;
             flex-direction: column;
             gap: 8px;
+        }
+
+        .avatar-history-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+            gap: 20px;
+            max-height: 240px;
+            overflow-y: auto;
+            padding-right: 4px;
+        }
+
+        .avatar-history-list::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .avatar-history-list::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .avatar-history-list::-webkit-scrollbar-thumb {
+            background: var(--border);
+            border-radius: 3px;
+        }
+
+        .avatar-history-item {
+            display: grid;
+            flex-direction: column;
+            text-align: center;
+            border-radius: var(--radius-md);
+            overflow: hidden;
+            border: 1px solid var(--border);
+            padding: 8px;
+            background: var(--surface);
+            width: 100px;
+            height: 120px;
+        }
+
+        .avatar-history-img {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            object-fit: cover;
+            margin: 0 auto 8px;
+            display: block;
+        }
+
+        .avatar-history-date {
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+
+        .points-display {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            padding: 20px;
+            text-align: center;
+        }
+
+        .points-total {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .points-value {
+            font-size: 36px;
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        .points-label {
+            font-size: 16px;
+            color: var(--text-secondary);
+        }
+
+        .points-history-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .points-history-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+        }
+
+        .points-history-reason {
+            font-size: 14px;
+            color: var(--text);
+        }
+
+        .points-history-time {
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+
+        .points-history-points {
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--primary);
         }
 
         .recent-item,
@@ -4474,6 +4801,44 @@
             transform: translateY(0);
         }
 
+        .btn-gray {
+            padding: clamp(10px, 1.8vh, 13px) clamp(22px, 3.5vw, 48px);
+            border-radius: 100px;
+            border: none;
+            cursor: pointer;
+            font-family: inherit;
+            font-size: 12px;
+            font-weight: 700;
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+            background: #ffffff;
+            color: var(--text);
+            box-shadow: var(--shadow-md);
+            transition: all 0.25s;
+            position: relative;
+            z-index: 1;
+        }
+
+        .btn-gray:hover {
+            background: #f8f8f8;
+            box-shadow: var(--shadow-lg);
+            transform: translateY(-1px);
+        }
+
+        .btn-gray:active {
+            transform: translateY(0);
+        }
+
+        /* 深色主题下的按钮样式 */
+        html.dark-theme .btn-gray {
+            background: #333333;
+            color: #ffffff;
+        }
+
+        html.dark-theme .btn-gray:hover {
+            background: #444444;
+        }
+
         .btn-full {
             width: 100%;
             text-align: center;
@@ -4631,26 +4996,67 @@
         /* ========== 自定义滚动条 - 全局适配 ========== */
 
         /* 针对 WebKit 浏览器 (Chrome, Safari, Edge) */
-        ::-webkit-scrollbar {
+        /* 全局隐藏浏览器原生滚动条 */
+        html {
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+        }
+
+        html::-webkit-scrollbar {
+            display: none;
+        }
+
+        body::-webkit-scrollbar {
+            display: none;
+        }
+
+        /* 全局自定义滚动条样式 */
+        *::-webkit-scrollbar {
             width: 6px;
             height: 6px;
             background: transparent;
         }
 
-        ::-webkit-scrollbar-track {
+        *::-webkit-scrollbar-track {
             background: var(--border);
             border-radius: 10px;
             margin: 4px;
         }
 
-        ::-webkit-scrollbar-thumb {
+        *::-webkit-scrollbar-thumb {
             background: var(--text-tertiary);
             border-radius: 10px;
             transition: background 0.2s;
         }
 
-        ::-webkit-scrollbar-thumb:hover {
+        *::-webkit-scrollbar-thumb:hover {
             background: var(--text-secondary);
+        }
+
+        /* 积分和积分记录默认隐藏，登录后显示 */
+        #pointsSection,
+        #pointsHistorySection {
+            display: none;
+        }
+
+        /* 个人页面头部调整 */
+        .profile-header {
+            padding: 16px 0 !important;
+            border-bottom: none !important;
+            margin-bottom: 16px !important;
+        }
+        .profile-avatar {
+            width: 60px !important;
+            height: 60px !important;
+            font-size: 24px !important;
+        }
+        .profile-name {
+            font-size: 18px !important;
+            text-align: left !important;
+        }
+        .profile-desc {
+            font-size: 13px !important;
+            text-align: left !important;
         }
 
         /* 公告卡片样式 */
@@ -5804,7 +6210,7 @@
                             <div class="stats-label">站点访问</div>
                             <div class="stats-value-container">
                                 <span id="siteVisitCount">加载中...</span>
-                                <span class="stats-unit">次</span>
+                                <span class="stats-unit" id="siteVisitUnit" style="display: none;">次</span>
                             </div>
                         </div>
                         <button class="stats-refresh-btn" onclick="updateSiteVisitCount()" title="刷新访问次数">
@@ -5982,44 +6388,49 @@
 
         <!-- 个人页面 -->
         <div class="page" id="profilePage" style="display: none;">
-            <div class="profile-header">
-                <div class="profile-info">
-                    <div class="profile-avatar" id="profileAvatar">
+            <div class="profile-header" style="display: flex; justify-content: space-between; align-items: flex-start; padding: 16px 0;">
+                <!-- 左侧：头像和基本信息 -->
+                <div style="display: flex; gap: 16px; align-items: flex-start;">
+                    <div class="profile-avatar" id="profileAvatar" style="width: 60px; height: 60px; font-size: 24px;">
                         <i class="fas fa-user"></i>
                     </div>
-                    <h2 class="profile-name" id="profileName">访客</h2>
-                    <p class="profile-desc" id="profileDesc">登录以同步您的音乐数据</p>
-                    <button class="login-action-btn" id="profileLoginBtn" onclick="openLoginPage()">
-                        <i class="fas fa-sign-in-alt"></i> 登录 / 注册
-                    </button>
-                    <div style="display: flex; gap: 8px; margin-top: 8px;">
-
-                        <button class="login-action-btn" id="editAvatarBtn" style="display: none;">
-                            <i class="fas fa-camera"></i> 更换头像
+                    <div style="display: flex; flex-direction: column; gap: 8px;">
+                        <div>
+                            <h2 class="profile-name" id="profileName" style="margin-bottom: 4px;">访客</h2>
+                            <p class="profile-desc" id="profileDesc" style="font-size: 13px;">登录以同步您的音乐数据</p>
+                        </div>
+                        <button class="login-action-btn" id="profileLoginBtn" onclick="openLoginPage()">
+                            <i class="fas fa-sign-in-alt"></i> 登录 / 注册
                         </button>
-                        <button class="login-action-btn logout" id="profileLogoutBtn" onclick="logout()" style="display: none;">
-                            <i class="fas fa-sign-out-alt"></i> 退出登录
-                        </button>
+                        <div style="display: flex; gap: 8px;">
+                            <button class="login-action-btn" id="editAvatarBtn" style="display: none;">
+                                <i class="fas fa-camera"></i> 更换头像
+                            </button>
+                            <button class="login-action-btn logout" id="profileLogoutBtn" onclick="confirmLogout()" style="display: none;">
+                                <i class="fas fa-sign-out-alt"></i> 退出登录
+                            </button>
+                        </div>
                     </div>
                 </div>
+                <!-- 右侧：设置按钮 -->
+                <button class="icon-btn" id="profileSettingsBtn" style="width: 40px; height: 40px;" title="设置">
+                    <i class="fas fa-cog"></i>
+                </button>
             </div>
 
             <div class="stats-section">
                 <div class="stats-grid">
                     <div class="stat-item">
-                        <div class="stat-icon">
-                            <i class="fas fa-play-circle"></i>
+                        <div style="display: flex; align-items: center; justify-content: flex-start; gap: 8px; margin-bottom: 12px; white-space: nowrap;">
+                            <i class="fas fa-play-circle" style="color: var(--primary); font-size: 20px;"></i>
+                            <span style="font-size: 15px; color: var(--text); white-space: nowrap;">播放次数：</span>
+                            <span class="stat-value" id="totalPlays" style="font-size: 24px; font-weight: 700; margin: 0; white-space: nowrap;">0</span>
                         </div>
-                        <div class="stat-value" id="totalPlays">0</div>
-                        <div class="stat-label">播放次数</div>
-                    </div>
-
-                    <div class="stat-item">
-                        <div class="stat-icon">
-                            <i class="fas fa-clock"></i>
+                        <div style="display: flex; align-items: center; justify-content: flex-start; gap: 8px; white-space: nowrap;">
+                            <i class="fas fa-clock" style="color: var(--primary); font-size: 20px;"></i>
+                            <span style="font-size: 15px; color: var(--text); white-space: nowrap;">播放时长：</span>
+                            <span class="stat-value" id="totalPlayTime" style="font-size: 18px; font-weight: 700; margin: 0; white-space: nowrap;">0</span>
                         </div>
-                        <div class="stat-value" id="totalPlayTime">0</div>
-                        <div class="stat-label">播放时长</div>
                     </div>
                     <div class="stat-item" style="display: none;">
                         <div class="stat-icon">
@@ -6040,6 +6451,32 @@
                     </div>
                 </div>
             </div>
+
+            <div class="section" id="pointsSection">
+                <div class="section-header">
+                    <h3 class="section-title"><i class="fas fa-coins"></i> 我的积分</h3>
+                </div>
+                <div class="points-display" id="pointsDisplay">
+                    <div class="points-total">
+                        <span class="points-value" id="totalPointsValue">0</span>
+                        <span class="points-label">积分</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="section" id="pointsHistorySection">
+                <div class="section-header">
+                    <h3 class="section-title"><i class="fas fa-history"></i> 积分记录</h3>
+                </div>
+                <div class="points-history-list" id="pointsHistoryList">
+                    <div class="empty-state">
+                        <i class="fas fa-coins"></i>
+                        <p>暂无积分记录</p>
+                    </div>
+                </div>
+            </div>
+
+
 
             <div class="section">
                 <div class="section-header">
@@ -6063,8 +6500,11 @@
 
         <!-- 设置页面 -->
         <div class="page" id="settingsPage" style="display: none;">
-            <div class="profile-header">
-                <h2 class="profile-name">设置</h2>
+            <div class="profile-header" style="display: flex; align-items: center; gap: 12px;">
+                <button class="icon-btn" id="settingsBackBtn" style="width: 40px; height: 40px;" title="返回">
+                    <i class="fas fa-arrow-left"></i>
+                </button>
+                <h2 class="profile-name" style="margin: 0;">设置</h2>
             </div>
 
             <div class="section">
@@ -6392,6 +6832,71 @@
         </div>
     </div>
 
+    <!-- 账号异处登录模态框 -->
+    <div class="modal" id="sessionExpiredModal">
+        <div class="modal-header">
+            <h3 class="modal-title">
+                <i class="fas fa-user-shield" style="margin-right: 8px; color: #ef4444;"></i>
+                账号安全提醒
+            </h3>
+        </div>
+        <div class="modal-body">
+            <div style="text-align: center; padding: 20px 0;">
+                <i class="fas fa-exclamation-triangle" style="font-size: 48px; color: #ef4444; margin-bottom: 16px;"></i>
+                <p style="font-size: 16px; color: var(--text); margin-bottom: 8px;">
+                    您的账号已在其他设备登录
+                </p>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn-blue" onclick="closeSessionExpiredModal()">
+                确定
+            </button>
+        </div>
+    </div>
+
+    <!-- 更换头像模态框 -->
+    <div class="modal" id="editAvatarModal">
+        <div class="modal-header">
+            <h3 class="modal-title">
+                <i class="fas fa-camera" style="margin-right: 8px; color: var(--primary);"></i>
+                更换头像
+            </h3>
+            <button class="modal-close" onclick="closeModal('editAvatarModal')">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="modal-body">
+            <div style="padding: 20px 0;">
+                <p style="font-size: 14px; color: var(--text-secondary); margin-bottom: 16px;">
+                    请输入新的头像图片 URL（支持 http/https）
+                </p>
+                <input type="text" id="avatarUrlInput" style="width: 100%; padding: 10px; border: 1px solid var(--border); border-radius: var(--radius-md); font-size: 14px;" placeholder="例如：https://example.com/avatar.jpg">
+            </div>
+            
+            <div style="margin-top: 30px;">
+                <h4 style="font-size: 14px; font-weight: 600; margin-bottom: 12px;">
+                    <i class="fas fa-history" style="margin-right: 6px; color: var(--primary);"></i>
+                    头像历史
+                </h4>
+                <div class="avatar-history-list" id="avatarHistoryList">
+                    <div class="empty-state">
+                        <i class="fas fa-image"></i>
+                        <p>暂无头像历史记录</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn-gray" onclick="closeModal('editAvatarModal')">
+                取消
+            </button>
+            <button class="btn-blue" onclick="confirmAvatarUpdate()">
+                确定
+            </button>
+        </div>
+    </div>
+
     <!-- 登录页面 -->
     <div class="login-page" id="loginPage">
         <div class="auth-box" id="authBox">
@@ -6467,30 +6972,26 @@
 
     <div class="navbar" id="navbar">
         <div class="navbar-pill" id="navbarPill"></div>
-        <a href="#" class="navbar-item" id="navHome" data-i="0">
+        <div class="navbar-item" id="navHome" data-i="0">
                 <i class="fas fa-home"></i>
                 <span>主页</span>
-            </a>
-            <a href="#" class="navbar-item" id="navWy" data-i="1">
+            </div>
+            <div class="navbar-item" id="navWy" data-i="1">
                 <i class="fas fa-compact-disc"></i>
                 <span>网易云</span>
-            </a>
-            <a href="#" class="navbar-item" id="navBili" data-i="2">
+            </div>
+            <div class="navbar-item" id="navBili" data-i="2">
                 <i class="fab fa-bilibili"></i>
                 <span>B站</span>
-            </a>
-            <a href="#" class="navbar-item" id="navQQ" data-i="3">
+            </div>
+            <div class="navbar-item" id="navQQ" data-i="3">
                 <i class="fab fa-qq"></i>
                 <span>QQ音乐</span>
-            </a>
-            <a href="#" class="navbar-item" id="navSettings" data-i="4">
-                <i class="fas fa-cog"></i>
-                <span>设置</span>
-            </a>
-            <a href="#" class="navbar-item" id="navProfile" data-i="5" onclick="handleProfileClick(event)">
+            </div>
+            <div class="navbar-item" id="navProfile" data-i="4">
                 <i class="fas fa-user-astronaut"></i>
                 <span>我的</span>
-            </a>
+            </div>
     </div>
 
     <script>
@@ -6556,24 +7057,50 @@
         async function authRpcCall(rpcName, params) {
             // verify_vip_user 不需要 sessionToken
             if (rpcName !== 'verify_vip_user' && !sessionToken) {
-                console.warn(`RPC ${rpcName} 调用失败: SESSION_MISSING`);
                 throw new Error('SESSION_MISSING');
             }
             const finalParams = { ...params };
             if (rpcName !== 'verify_vip_user') {
                 finalParams._session_token = sessionToken;
             }
-            const { data, error } = await supabaseClient.rpc(rpcName, finalParams);
-            if (error) throw error;
-            // 检查后端返回的会话过期标志
-            if (data && data.success === false && data.error === 'SESSION_EXPIRED') {
-                handleSessionExpired();
-                throw new Error('您的账号已在其他设备登录，请重新登录');
+            
+            try {
+                const { data, error } = await supabaseClient.rpc(rpcName, finalParams);
+                
+                if (error) {
+                    throw error;
+                }
+                
+                // 检查后端返回的会话过期标志
+                if (data && data.success === false && data.error === 'SESSION_EXPIRED') {
+                    handleSessionExpired();
+                    throw new Error('您的账号已在其他设备登录，请重新登录');
+                }
+                
+                return data;
+            } catch (err) {
+                throw err;
             }
-            return data;
         }
 
-        // 会话过期处理：清空本地数据，提示并刷新页面
+        // 关闭账号异处登录模态框
+        function closeSessionExpiredModal() {
+            const modal = document.getElementById('sessionExpiredModal');
+            const overlay = document.getElementById('modalOverlay');
+            if (modal) modal.classList.remove('show');
+            if (overlay) overlay.classList.remove('show');
+            
+            // 恢复页面操作和滚动
+            document.body.style.pointerEvents = 'auto';
+            document.body.style.overflow = 'auto';
+            
+            isSessionExpiredHandling = false;
+            sessionExpiredNotified = false;
+            switchPage('home');
+            location.reload();
+        }
+
+        // 会话过期处理：清空本地数据，显示模态框并刷新页面
         function handleSessionExpired() {
             if (isSessionExpiredHandling) return;
             if (sessionExpiredNotified) return;
@@ -6593,6 +7120,10 @@
             if (sessionRealtimeChannel) {
                 if (supabaseClient) supabaseClient.removeChannel(sessionRealtimeChannel);
                 sessionRealtimeChannel = null;
+            }
+            if (pointsRealtimeChannel) {
+                if (supabaseClient) supabaseClient.removeChannel(pointsRealtimeChannel);
+                pointsRealtimeChannel = null;
             }
             
             // ====== 修复点：先清除登录标志，再清除数据，避免 setStorageItem 写入 guest_ 前缀 ======
@@ -6618,6 +7149,11 @@
             localStorage.removeItem('preferred_playMode');
             localStorage.removeItem('playHistory');   // 直接删除，不通过 setStorageItem
             localStorage.removeItem('searchHistory'); // 直接删除
+            localStorage.removeItem('user_settings'); // 旧的用户设置
+            localStorage.removeItem('user_setting'); // 新的用户设置
+            localStorage.removeItem('user_plays'); // 新的用户播放数据
+            localStorage.removeItem('user_points'); // 新的用户积分数据
+            localStorage.removeItem('user_avatar_history'); // 新的用户头像历史
             
             // 3. 重置内存中的变量
             sessionToken = '';
@@ -6638,6 +7174,8 @@
                 updateProfileStats();
                 loadRecentPlays();
                 loadMyPlaylists();
+                loadAvatarHistory();
+                loadPoints();
             }
             if (player && player.audioElement) {
                 player.audioElement.pause();
@@ -6652,14 +7190,8 @@
             biliSongList.innerHTML = '';
             searchResults = { wy: [], bili: [] };
             
-            showToast('您的账号已在其他设备登录，请重新登录', 'error');
-            
-            setTimeout(() => {
-                isSessionExpiredHandling = false;
-                sessionExpiredNotified = false;
-                switchPage('home');
-                location.reload();
-            }, 4500);
+            // 显示账号异处登录模态框
+            openModal('sessionExpiredModal');
         }
 
         // 停止会话心跳
@@ -6848,8 +7380,13 @@
             startSessionHeartbeat();
             // 订阅实时会话变更
             subscribeToUserSessions();
+            // 订阅积分实时变更
+            subscribeToPointsChanges();
             // 启动短轮询作为备份
             startSessionPolling();
+        
+        // 导航栏鼠标滑动功能
+
 
             // 记录登录日志（使用 authRpcCall）
             try {
@@ -6869,8 +7406,13 @@
             lastUploadDataHash = getCurrentDataHash();
             loadSearchHistory('wy');
             loadSearchHistory('bili');
+            loadSearchHistory('qq');
             updateUserStatsDisplay();
             updateProfileStats();
+            
+            // 加载积分和头像历史数据
+            await loadPoints();
+            await loadAvatarHistory();
             
             hideGlobalLoading();
 
@@ -6921,6 +7463,7 @@
                 // 刷新搜索历史显示
                 loadSearchHistory('wy');
                 loadSearchHistory('bili');
+                loadSearchHistory('qq');
                 updateUserStatsDisplay();
                 updateProfileStats();
 
@@ -7025,14 +7568,15 @@
                         const newBtn = editAvatarBtn.cloneNode(true);
                         editAvatarBtn.parentNode.replaceChild(newBtn, editAvatarBtn);
                         newBtn.addEventListener('click', async () => {
-                            const newAvatarUrl = prompt('请输入新的头像图片 URL（支持 http/https）：');
-                            if (newAvatarUrl && (newAvatarUrl.startsWith('http://') || newAvatarUrl.startsWith('https://'))) {
-                                await updateUserAvatar(newAvatarUrl);
-                            } else if (newAvatarUrl) {
-                                showToast('请输入有效的图片 URL', 'error');
-                            }
+                            // 打开更换头像模态框
+                            openModal('editAvatarModal');
                         });
                     }
+                    // 显示积分和积分记录
+                    const pointsSection = document.getElementById('pointsSection');
+                    const pointsHistorySection = document.getElementById('pointsHistorySection');
+                    if (pointsSection) pointsSection.style.display = 'block';
+                    if (pointsHistorySection) pointsHistorySection.style.display = 'block';
                 } else {
                     profileLoginBtn.style.display = 'flex';
                     profileLogoutBtn.style.display = 'none';
@@ -7042,7 +7586,59 @@
                     if (editAvatarBtn) {
                         editAvatarBtn.style.display = 'none';
                     }
+                    // 隐藏积分和积分记录
+                    const pointsSection = document.getElementById('pointsSection');
+                    const pointsHistorySection = document.getElementById('pointsHistorySection');
+                    if (pointsSection) pointsSection.style.display = 'none';
+                    if (pointsHistorySection) pointsHistorySection.style.display = 'none';
                 }
+            }
+        }
+
+        // 确认更换头像
+        async function confirmAvatarUpdate() {
+            const avatarUrlInput = document.getElementById('avatarUrlInput');
+            const avatarUrl = avatarUrlInput.value.trim();
+            
+            if (!avatarUrl) {
+                showToast('请输入头像 URL', 'error');
+                return;
+            }
+            
+            if (!avatarUrl.startsWith('http://') && !avatarUrl.startsWith('https://')) {
+                showToast('请输入有效的图片 URL', 'error');
+                return;
+            }
+            
+            closeModal('editAvatarModal');
+            
+            // 检查积分是否足够
+            const user = getCurrentUser();
+            if (!user || !user.id) {
+                showToast('请先登录', 'error');
+                return;
+            }
+            
+            try {
+                await initSupabase();
+                // 先检查当前积分（update_user_avatar 内部也会检查，但提前检查可以给出更友好的提示）
+                const pointsData = await authRpcCall('get_user_points', {
+                    _user_id: user.id
+                });
+                
+                if (pointsData && pointsData.success) {
+                    const currentPoints = pointsData.total_points || 0;
+                    if (currentPoints < 100) {
+                        showToast(`当前积分不足！您当前有 ${currentPoints} 积分，更换头像需要 100 积分`, 'error');
+                        return;
+                    }
+                }
+                
+                // 更新头像（内部会自动消耗100积分）
+                await updateUserAvatar(avatarUrl);
+            } catch (error) {
+                console.error('更换头像失败:', error);
+                showToast('更换头像失败', 'error');
             }
         }
 
@@ -7053,12 +7649,27 @@
                 showToast('请先登录', 'error');
                 return;
             }
+            
+            if (!sessionToken) {
+                showToast('会话过期，请重新登录', 'error');
+                return;
+            }
+            
+            console.log('更换头像请求:', {
+                user_id: user.id,
+                avatar_url: avatarUrl,
+                session_token: sessionToken
+            });
+            
             try {
                 await initSupabase();
                 const data = await authRpcCall('update_user_avatar', {
                     _user_id: user.id,
                     _avatar_url: avatarUrl
                 });
+                
+                console.log('更换头像响应:', data);
+                
                 if (data && data.success) {
                     // 更新本地存储
                     localStorage.setItem('userAvatar', avatarUrl);
@@ -7070,12 +7681,28 @@
                     // 刷新页面显示
                     updateLoginStatus();
                     showToast('头像更新成功', 'success');
+                    // 刷新头像历史记录
+                    if (profilePage.style.display === 'block') {
+                        loadAvatarHistory();
+                    }
                     // 可选：同步其他数据（如果需要）
                     await syncUserData(false);
+                    // 实时更新积分显示
+                    if (data.total_points !== undefined) {
+                        const pointsElement = document.getElementById('totalPointsValue');
+                        if (pointsElement) {
+                            pointsElement.textContent = data.total_points;
+                        }
+                        // 刷新积分记录
+                        loadPointsHistory(data.history || []);
+                    }
                 } else {
-                    throw new Error(data?.error || '更新失败');
+                    const errorMessage = data?.error || '更新失败';
+                    console.error('更换头像失败:', errorMessage);
+                    throw new Error(errorMessage);
                 }
             } catch (err) {
+                console.error('更换头像异常:', err);
                 showToast('更新头像失败：' + err.message, 'error');
             }
         }
@@ -7090,6 +7717,29 @@
         function saveUserToGuest() {
             // 直接删除用户数据，不再保存为访客数据
             localStorage.removeItem('user_settings');
+        }
+
+        // 退出登录确认
+        function confirmLogout() {
+            const confirmMessage = document.getElementById('confirmMessage');
+            const confirmBtn = document.getElementById('confirmBtn');
+            
+            if (confirmMessage) {
+                confirmMessage.textContent = '确定要退出登录吗？';
+            }
+            
+            if (confirmBtn) {
+                // 移除之前的事件监听器
+                confirmBtn.onclick = null;
+                // 添加新的事件监听器
+                confirmBtn.onclick = function() {
+                    closeModal('confirmModal');
+                    logout();
+                };
+            }
+            
+            // 显示确认模态框
+            openModal('confirmModal');
         }
 
         // 退出登录
@@ -7116,7 +7766,16 @@
                 sessionRealtimeChannel = null;
             }
 
-            // 2. 尝试撤销会话（网络请求，失败不影响本地清理）
+            // 2. 尝试上传数据（网络请求，失败不影响本地清理）
+            try {
+                if (sessionToken && getCurrentUser()) {
+                    await syncUserData(false);
+                }
+            } catch(e) {
+                console.warn('登出时上传数据失败', e);
+            }
+
+            // 3. 尝试撤销会话（网络请求，失败不影响本地清理）
             try {
                 if (sessionToken && getCurrentUser()) {
                     await supabaseClient.rpc('revoke_session', { _session_token: sessionToken });
@@ -7125,16 +7784,21 @@
                 console.warn('登出时撤销会话失败', e);
             }
 
-            // 3. 清空保存在本地的用户数据
+            // 4. 清空保存在本地的用户数据
             saveUserToGuest();
             
-            // 4. 清除登录相关的本地存储
+            // 5. 清除登录相关的本地存储
             localStorage.removeItem('userLoggedIn');
             localStorage.removeItem('sessionToken');
             localStorage.removeItem('vipUser');
             localStorage.removeItem('username');
             localStorage.removeItem('userAvatar');
             localStorage.removeItem('sessionExpiredFlag');
+            localStorage.removeItem('user_settings'); // 旧的用户设置
+            localStorage.removeItem('user_setting'); // 新的用户设置
+            localStorage.removeItem('user_plays'); // 新的用户播放数据
+            localStorage.removeItem('user_points'); // 新的用户积分数据
+            localStorage.removeItem('user_avatar_history'); // 新的用户头像历史
             
             // 5. 清除全局变量中的用户数据
             sessionToken = '';
@@ -7147,8 +7811,8 @@
             const guestSettings = JSON.parse(localStorage.getItem('guest_settings') || JSON.stringify(DEFAULT_SETTINGS));
             
             // 更新全局变量为访客数据
-            playHistory = guestSettings.playHistory || [];
-            searchHistory = guestSettings.searchHistory || [];
+            playHistory = guestSettings.plays?.playHistory || [];
+            searchHistory = guestSettings.plays?.searchHistory || [];
             wyPageSize = guestSettings.wyPageSize || 20;
             biliPageSize = guestSettings.biliPageSize || 20;
             qqPageSize = guestSettings.qqPageSize || 20;
@@ -7174,11 +7838,39 @@
             if (biliEmptyState) biliEmptyState.style.display = 'block';
             if (qqEmptyState) qqEmptyState.style.display = 'block';
             
+            // 刷新积分和积分记录显示（无论是否在个人页面）
+            const pointsElement = document.getElementById('totalPointsValue');
+            if (pointsElement) {
+                pointsElement.textContent = '0';
+            }
+            
+            const pointsHistoryList = document.getElementById('pointsHistoryList');
+            if (pointsHistoryList) {
+                pointsHistoryList.innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-coins"></i>
+                        <p>暂无积分记录</p>
+                    </div>
+                `;
+            }
+            
+            const avatarHistoryList = document.getElementById('avatarHistoryList');
+            if (avatarHistoryList) {
+                avatarHistoryList.innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-image"></i>
+                        <p>暂无头像历史记录</p>
+                    </div>
+                `;
+            }
+            
             // 如果当前在个人页面，刷新个人页面显示
             if (profilePage && profilePage.style.display === 'block') {
                 updateProfileStats();
                 loadRecentPlays();
                 loadMyPlaylists();
+                loadAvatarHistory();
+                loadPoints();
             }
             
             // 如果当前在设置页面，刷新设置项显示
@@ -7238,11 +7930,12 @@
                 return;
             }
 
-            // 获取当前设置
+            // 获取当前设置和播放数据
             const settings = getCurrentSettings();
+            const plays = getCurrentPlays();
             
             // 检查是否有数据需要同步
-            const hasData = settings.playHistory.length > 0 || settings.searchHistory.length > 0 || settings.totalPlayTime > 0 || settings.theme;
+            const hasData = (plays.playHistory?.length || 0) > 0 || (plays.searchHistory?.length || 0) > 0 || (plays.totalPlayTime || 0) > 0 || settings.theme;
             if (!hasData) {
                 if (showNotifications) showToast('无新数据需要同步', 'info');
                 return;
@@ -7260,11 +7953,6 @@
                     yunzhiToken: settings.yunzhiToken || '',
                     navbarShowText: settings.navbarShowText ?? true,
                     defaultPage: settings.defaultPage || 'home',
-                    totalPlayTime: settings.totalPlayTime || 0,
-                    playHistory: settings.playHistory || [],
-                    searchHistory: settings.searchHistory || [],
-                    total_plays: settings.playHistory.length,
-                    total_play_time: settings.totalPlayTime,
                     wy_page_size: settings.wyPageSize || 20,
                     bili_page_size: settings.biliPageSize || 20,
                     qq_page_size: settings.qqPageSize || 20,
@@ -7272,9 +7960,18 @@
                     navbar_show_text: settings.navbarShowText ?? true,
                     default_page: settings.defaultPage || 'home'
                 };
+                
+                const playsObj = {
+                    total_play_time: plays.totalPlayTime || 0,
+                    play_history: plays.playHistory || [],
+                    search_history: plays.searchHistory || [],
+                    total_plays: (plays.playHistory?.length || 0)
+                };
+                
                 const data = await authRpcCall('upsert_user_sync_data_v2', {
                     _user_id: user.id,
-                    _settings: settingsObj
+                    _settings: settingsObj,
+                    _plays: playsObj
                 });
                 if (data && data.success) {
                     if (showNotifications) showToast('数据上传成功！', 'success');
@@ -7305,11 +8002,13 @@
                 if (data && data.success && data.data) {
                     const sync = data.data;
                     const serverSettings = sync.settings || {};
+                    const serverPlays = sync.plays || {};
                     
-                    // 获取本地设置
+                    // 获取本地数据
                     const localSettings = getCurrentSettings();
-                    const localTotalPlayTime = localSettings.totalPlayTime || 0;
-                    const serverTotalPlayTime = serverSettings.totalPlayTime || serverSettings.total_play_time || 0;
+                    const localPlays = getCurrentPlays();
+                    const localTotalPlayTime = localPlays.totalPlayTime || 0;
+                    const serverTotalPlayTime = serverPlays.totalPlayTime || serverPlays.total_play_time || 0;
                     
                     // 比较播放时长：如果本地时长大于服务端时长，保留本地数据并上传
                     if (localTotalPlayTime > serverTotalPlayTime) {
@@ -7319,6 +8018,10 @@
                     }
                     
                     // 服务端时长大于或等于本地，使用服务端数据
+                    // 优先从 plays 字段获取播放数据（新版），其次从 settings.plays 获取（兼容旧版）
+                    const playsData = serverPlays && Object.keys(serverPlays).length > 0 ? serverPlays : (serverSettings.plays || {});
+                    
+                    // 保存设置数据（不含plays）
                     const newSettings = {
                         theme: serverSettings.theme || 'dark',
                         wyPageSize: serverSettings.wyPageSize || serverSettings.wy_page_size || 20,
@@ -7326,16 +8029,21 @@
                         qqPageSize: serverSettings.qqPageSize || serverSettings.qq_page_size || 20,
                         yunzhiToken: serverSettings.yunzhiToken || serverSettings.token || '',
                         navbarShowText: serverSettings.navbarShowText ?? serverSettings.navbar_show_text ?? true,
-                        defaultPage: serverSettings.defaultPage || serverSettings.default_page || 'home',
-                        totalPlayTime: serverSettings.totalPlayTime || serverSettings.total_play_time || 0,
-                        playHistory: serverSettings.playHistory || serverSettings.play_history || [],
-                        searchHistory: serverSettings.searchHistory || serverSettings.search_history || []
+                        defaultPage: serverSettings.defaultPage || serverSettings.default_page || 'home'
                     };
-                    localStorage.setItem('user_settings', JSON.stringify(newSettings));
+                    saveCurrentSettings(newSettings);
+                    
+                    // 保存播放数据
+                    const newPlays = {
+                        totalPlayTime: playsData.totalPlayTime || playsData.total_play_time || 0,
+                        playHistory: playsData.playHistory || playsData.play_history || [],
+                        searchHistory: playsData.searchHistory || playsData.search_history || []
+                    };
+                    saveCurrentPlays(newPlays);
                     
                     // 更新全局变量
-                    playHistory = newSettings.playHistory;
-                    searchHistory = newSettings.searchHistory;
+                    playHistory = newPlays.playHistory;
+                    searchHistory = newPlays.searchHistory;
                     wyPageSize = newSettings.wyPageSize;
                     biliPageSize = newSettings.biliPageSize;
                     qqPageSize = newSettings.qqPageSize;
@@ -7402,7 +8110,6 @@
 
         // 处理"我的"按钮点击
         function handleProfileClick(event) {
-            if (event) event.preventDefault();
             // 直接切换到个人中心页面
             switchPage('profile');
         }
@@ -7449,14 +8156,19 @@
                     startSessionHeartbeat();
                     // 订阅实时会话变更
                     subscribeToUserSessions();
+                    // 订阅积分实时变更
+                    subscribeToPointsChanges();
                     // 启动短轮询作为备份
                     startSessionPolling();
                     if (profilePage.style.display === 'block') {
                         updateProfileStats();
                         loadRecentPlays();
+                        loadAvatarHistory();
+                        loadPoints();
                     }
                     loadSearchHistory('wy');
                     loadSearchHistory('bili');
+                    loadSearchHistory('qq');
                     console.log('自动登录成功，数据已从服务器同步');
                 } else {
                     handleSessionExpired();
@@ -7508,6 +8220,55 @@
                     if (status === 'CHANNEL_ERROR') {
                         // 降级为短轮询
                         startSessionPolling();
+                    }
+                });
+        }
+
+        // 订阅当前用户的积分变更
+        async function subscribeToPointsChanges() {
+            const user = getCurrentUser();
+            if (!user || !user.id) return;
+
+            await initSupabase();
+            if (!supabaseClient) return;
+
+            // 移除旧订阅
+            if (pointsRealtimeChannel) {
+                supabaseClient.removeChannel(pointsRealtimeChannel);
+                pointsRealtimeChannel = null;
+            }
+
+            pointsRealtimeChannel = supabaseClient
+                .channel('points_changes')
+                .on(
+                    'postgres_changes',
+                    {
+                        event: 'UPDATE',
+                        schema: 'public',
+                        table: 'user_points',
+                        filter: `user_id=eq.${user.id}`
+                    },
+                    (payload) => {
+                        if (payload.new && payload.new.total_points !== undefined) {
+                            console.log(`积分实时更新: ${payload.new.total_points}`);
+                            // 更新界面显示
+                            const pointsElement = document.getElementById('totalPointsValue');
+                            if (pointsElement) {
+                                pointsElement.textContent = payload.new.total_points;
+                            }
+                            // 更新本地存储的积分数据
+                            const currentPoints = getCurrentPoints();
+                            currentPoints.totalPoints = payload.new.total_points;
+                            saveCurrentPoints(currentPoints);
+                            // 如果当前在个人页面，刷新积分历史记录
+                            if (profilePage.style.display === 'block') {
+                                loadPointsHistoryOnly();
+                            }
+                        }
+                    }
+                )
+                .subscribe((status) => {
+                    if (status === 'SUBSCRIBED') {
                     }
                 });
         }
@@ -7575,8 +8336,12 @@
             lastRefreshTime = currentTime;
             
             const visitCountElement = document.getElementById('siteVisitCount');
+            const visitUnitElement = document.getElementById('siteVisitUnit');
             if (visitCountElement) {
                 visitCountElement.textContent = '获取中...';
+            }
+            if (visitUnitElement) {
+                visitUnitElement.style.display = 'none';
             }
             
             try {
@@ -7585,6 +8350,9 @@
                     console.warn('Supabase 未初始化，跳过统计');
                     if (visitCountElement) {
                         visitCountElement.textContent = '加载失败';
+                    }
+                    if (visitUnitElement) {
+                        visitUnitElement.style.display = 'none';
                     }
                     showToast('获取访问次数失败：Supabase 未初始化', 'error');
                     return;
@@ -7601,16 +8369,25 @@
                     if (visitCountElement) {
                         visitCountElement.textContent = '加载失败';
                     }
+                    if (visitUnitElement) {
+                        visitUnitElement.style.display = 'none';
+                    }
                     showToast('获取访问次数失败，请稍后重试', 'error');
                 } else {
                     if (visitCountElement) {
                         visitCountElement.textContent = formatNumber(data.view_count);
+                    }
+                    if (visitUnitElement) {
+                        visitUnitElement.style.display = 'inline';
                     }
                 }
             } catch (err) {
                 console.error('获取访问次数出错:', err);
                 if (visitCountElement) {
                     visitCountElement.textContent = '加载失败';
+                }
+                if (visitUnitElement) {
+                    visitUnitElement.style.display = 'none';
                 }
                 showToast('获取访问次数出错，请稍后重试', 'error');
             }
@@ -7639,8 +8416,13 @@
             const modalOverlay = document.getElementById('modalOverlay');
             if (modalOverlay) {
                 modalOverlay.addEventListener('click', () => {
-                    document.querySelectorAll('.modal.show').forEach(m => m.classList.remove('show'));
-                    modalOverlay.classList.remove('show');
+                    const sessionExpiredModal = document.getElementById('sessionExpiredModal');
+                    if (sessionExpiredModal && sessionExpiredModal.classList.contains('show')) {
+                        closeSessionExpiredModal();
+                    } else {
+                        document.querySelectorAll('.modal.show').forEach(m => m.classList.remove('show'));
+                        modalOverlay.classList.remove('show');
+                    }
                 });
             }
 
@@ -7896,20 +8678,24 @@
             yunzhiToken: '',
             navbarShowText: true,
             defaultPage: 'home',
-            totalPlayTime: 0,            // 播放总时长（毫秒）
-            playHistory: [],             // 播放历史数组
-            searchHistory: []            // 搜索历史数组
+            plays: {
+                totalPlayTime: 0,        // 播放总时长（毫秒）
+                playHistory: [],         // 播放历史数组
+                searchHistory: []        // 搜索历史数组
+            }
         };
         
         // 获取当前使用的 settings 对象（guest 或 user）
         function getCurrentSettings() {
             const isLoggedIn = localStorage.getItem('userLoggedIn') === 'true';
             if (isLoggedIn) {
-                let settings = localStorage.getItem('user_settings');
+                let settings = localStorage.getItem('user_setting');
                 if (!settings) {
-                    // 首次登录，使用默认值
-                    settings = JSON.stringify(DEFAULT_SETTINGS);
-                    localStorage.setItem('user_settings', settings);
+                    // 首次登录，使用默认值（不含plays）
+                    const defaultSettings = {...DEFAULT_SETTINGS};
+                    delete defaultSettings.plays;
+                    settings = JSON.stringify(defaultSettings);
+                    localStorage.setItem('user_setting', settings);
                 }
                 return JSON.parse(settings);
             } else {
@@ -7924,21 +8710,106 @@
         
         function saveCurrentSettings(settings) {
             const isLoggedIn = localStorage.getItem('userLoggedIn') === 'true';
-            const key = isLoggedIn ? 'user_settings' : 'guest_settings';
+            const key = isLoggedIn ? 'user_setting' : 'guest_settings';
             localStorage.setItem(key, JSON.stringify(settings));
+        }
+        
+        // 获取当前播放数据（根据登录状态）
+        function getCurrentPlays() {
+            const isLoggedIn = localStorage.getItem('userLoggedIn') === 'true';
+            if (isLoggedIn) {
+                let plays = localStorage.getItem('user_plays');
+                if (!plays) {
+                    plays = JSON.stringify({ totalPlayTime: 0, playHistory: [], searchHistory: [] });
+                    localStorage.setItem('user_plays', plays);
+                }
+                return JSON.parse(plays);
+            } else {
+                const settings = getCurrentSettings();
+                return settings.plays || { totalPlayTime: 0, playHistory: [], searchHistory: [] };
+            }
+        }
+        
+        function saveCurrentPlays(plays) {
+            const isLoggedIn = localStorage.getItem('userLoggedIn') === 'true';
+            if (isLoggedIn) {
+                localStorage.setItem('user_plays', JSON.stringify(plays));
+            } else {
+                const settings = getCurrentSettings();
+                settings.plays = plays;
+                saveCurrentSettings(settings);
+            }
+        }
+        
+        // 获取当前积分数据（根据登录状态）
+        function getCurrentPoints() {
+            const isLoggedIn = localStorage.getItem('userLoggedIn') === 'true';
+            if (isLoggedIn) {
+                let points = localStorage.getItem('user_points');
+                if (!points) {
+                    points = JSON.stringify({ totalPoints: 0, history: [] });
+                    localStorage.setItem('user_points', points);
+                }
+                return JSON.parse(points);
+            } else {
+                return { totalPoints: 0, history: [] };
+            }
+        }
+        
+        function saveCurrentPoints(points) {
+            const isLoggedIn = localStorage.getItem('userLoggedIn') === 'true';
+            if (isLoggedIn) {
+                localStorage.setItem('user_points', JSON.stringify(points));
+            }
+        }
+        
+        // 获取当前头像历史（根据登录状态）
+        function getCurrentAvatarHistory() {
+            const isLoggedIn = localStorage.getItem('userLoggedIn') === 'true';
+            if (isLoggedIn) {
+                let avatarHistory = localStorage.getItem('user_avatar_history');
+                if (!avatarHistory) {
+                    avatarHistory = JSON.stringify([]);
+                    localStorage.setItem('user_avatar_history', avatarHistory);
+                }
+                return JSON.parse(avatarHistory);
+            } else {
+                return [];
+            }
+        }
+        
+        function saveCurrentAvatarHistory(avatarHistory) {
+            const isLoggedIn = localStorage.getItem('userLoggedIn') === 'true';
+            if (isLoggedIn) {
+                localStorage.setItem('user_avatar_history', JSON.stringify(avatarHistory));
+            }
         }
         
         // 获取单个设置项
         function getSetting(key, defaultValue = null) {
+            // 处理播放相关字段
+            const playKeys = ['totalPlayTime', 'playHistory', 'searchHistory'];
+            if (playKeys.includes(key)) {
+                const plays = getCurrentPlays();
+                return plays[key] ?? defaultValue;
+            }
             const settings = getCurrentSettings();
             return settings.hasOwnProperty(key) ? settings[key] : defaultValue;
         }
         
         // 设置单个设置项（自动保存）
         function setSetting(key, value) {
-            const settings = getCurrentSettings();
-            settings[key] = value;
-            saveCurrentSettings(settings);
+            // 处理播放相关字段
+            const playKeys = ['totalPlayTime', 'playHistory', 'searchHistory'];
+            if (playKeys.includes(key)) {
+                const plays = getCurrentPlays();
+                plays[key] = value;
+                saveCurrentPlays(plays);
+            } else {
+                const settings = getCurrentSettings();
+                settings[key] = value;
+                saveCurrentSettings(settings);
+            }
             // 如果是登录状态，触发自动同步
             if (localStorage.getItem('userLoggedIn') === 'true') {
                 triggerSync();
@@ -7984,9 +8855,11 @@
                 yunzhiToken: oldYunzhiToken,
                 navbarShowText: oldNavbarShowText,
                 defaultPage: oldDefaultPage,
-                totalPlayTime: oldTotalPlayTime,
-                playHistory: oldPlayHistory,
-                searchHistory: oldSearchHistory
+                plays: {
+                    totalPlayTime: oldTotalPlayTime,
+                    playHistory: oldPlayHistory,
+                    searchHistory: oldSearchHistory
+                }
             };
 
             // 存储为 guest_settings
@@ -9435,6 +10308,9 @@
                     fullscreenPlayBtn.innerHTML = '<i class="fas fa-pause"></i>';
                 }
                 
+                // 开始听歌时长计时
+                startListeningTimer();
+                
                 // 记录播放开始时间
                 this.lastUpdateTime = Date.now();
                 this.lastStorageUpdate = Date.now();
@@ -9459,6 +10335,8 @@
                     this.lastUpdateTime = null;
                 }
                 this.isPlaying = false;
+                // 停止听歌时长计时
+                stopListeningTimer();
                 this.playBtn.innerHTML = '<i class="fas fa-play"></i>';
                 
                 // 更新全屏播放器播放按钮
@@ -10104,7 +10982,9 @@
         const navBili = document.getElementById('navBili');
         const navQQ = document.getElementById('navQQ');
         const navProfile = document.getElementById('navProfile');
-        const navSettings = document.getElementById('navSettings');
+        
+        // 跟踪当前页面
+        let currentPageId = 'home';
 
         function escapeHTML(str) {
             if (!str) return '';
@@ -10397,12 +11277,39 @@
 
         function openModal(modalId) {
             modalOverlay.classList.add('show');
-            document.getElementById(modalId).classList.add('show');
+            const modal = document.getElementById(modalId);
+            if (modal) {
+                modal.classList.add('show');
+                
+                // 打开更换头像模态框时允许个人页面滚动
+                if (modalId === 'editAvatarModal') {
+                    document.body.style.pointerEvents = 'none';
+                    document.body.style.overflow = 'auto';
+                } else {
+                    // 其他模态框禁用页面滚动
+                    document.body.style.pointerEvents = 'none';
+                    document.body.style.overflow = 'hidden';
+                }
+                modal.style.pointerEvents = 'auto';
+                modalOverlay.style.pointerEvents = 'auto';
+                modal.focus();
+                
+                // 打开更换头像模态框时加载头像历史
+                if (modalId === 'editAvatarModal') {
+                    loadAvatarHistory();
+                }
+            }
         }
 
         function closeModal(modalId) {
             modalOverlay.classList.remove('show');
-            document.getElementById(modalId).classList.remove('show');
+            const modal = document.getElementById(modalId);
+            if (modal) {
+                modal.classList.remove('show');
+                // 恢复页面操作和滚动
+                document.body.style.pointerEvents = 'auto';
+                document.body.style.overflow = 'auto';
+            }
         }
 
         // 自定义确认弹窗
@@ -10494,8 +11401,13 @@
         }
 
         modalOverlay.addEventListener('click', () => {
-            document.querySelectorAll('.modal.show').forEach(m => m.classList.remove('show'));
-            modalOverlay.classList.remove('show');
+            const sessionExpiredModal = document.getElementById('sessionExpiredModal');
+            if (sessionExpiredModal && sessionExpiredModal.classList.contains('show')) {
+                closeSessionExpiredModal();
+            } else {
+                document.querySelectorAll('.modal.show').forEach(m => m.classList.remove('show'));
+                modalOverlay.classList.remove('show');
+            }
         });
 
         tokenInput.value = yunzhiToken;
@@ -10558,9 +11470,18 @@ biliPlaylistBtn.addEventListener('click', () => {
     openModal('playlistModal');
 });
 
+// QQ音乐页面按钮事件
+qqPlaylistBtn.addEventListener('click', () => {
+    renderPlaylist();
+    openModal('playlistModal');
+});
+
         // 页面切换函数
         // 修改 switchPage 函数，在页面显示后刷新该页面的滚动效果
         function switchPage(pageId) {
+            // 更新当前页面ID
+            currentPageId = pageId;
+            
             // 隐藏所有页面
             homePage.style.display = 'none';
             wyPage.style.display = 'none';
@@ -10590,6 +11511,7 @@ biliPlaylistBtn.addEventListener('click', () => {
                 updateProfileStats();
                 loadRecentPlays();
                 loadMyPlaylists();
+                loadPoints();
 
                 // 更新显示统计
                 updateUserStatsDisplay();
@@ -10607,8 +11529,10 @@ biliPlaylistBtn.addEventListener('click', () => {
             navWy.classList.remove('active');
             navBili.classList.remove('active');
             navQQ.classList.remove('active');
-            navSettings.classList.remove('active');
-            navProfile.classList.remove('active');
+            // 设置页面保持个人页面按钮的激活状态
+            if (pageId !== 'settings') {
+                navProfile.classList.remove('active');
+            }
             let activeItem;
             if (pageId === 'home') {
                 navHome.classList.add('active');
@@ -10622,17 +11546,22 @@ biliPlaylistBtn.addEventListener('click', () => {
             } else if (pageId === 'qq') {
                 navQQ.classList.add('active');
                 activeItem = navQQ;
-            } else if (pageId === 'settings') {
-                navSettings.classList.add('active');
-                activeItem = navSettings;
             } else if (pageId === 'profile') {
+                navProfile.classList.add('active');
+                activeItem = navProfile;
+            } else if (pageId === 'settings') {
+                // 设置页面保持个人页面按钮激活
                 navProfile.classList.add('active');
                 activeItem = navProfile;
             }
             
-            // 更新胶囊滑块位置
-            if (activeItem) {
+            // 更新胶囊滑块位置（设置页面不移动胶囊滑块）
+            if (activeItem && pageId !== 'settings') {
                 moveNavbarPill(activeItem);
+                // 个人页面不自动滚动导航栏，保持用户当前视野
+                if (pageId !== 'profile') {
+                    scrollNavItemIntoView(activeItem);
+                }
             }
             
             // 页面显示后，刷新该页面内的滚动效果
@@ -10665,7 +11594,14 @@ biliPlaylistBtn.addEventListener('click', () => {
             const activeItem = document.querySelector('.navbar-item.active');
             if (activeItem) {
                 moveNavbarPill(activeItem, false);
+                // 个人页面按钮不滚动
+                if (activeItem.id !== 'navProfile') {
+                    scrollNavItemIntoView(activeItem);
+                }
             }
+            
+            // 页面初始化时尝试刷新公告（受10分钟间隔限制）
+            loadAnnouncement(false);
         }
         
         // 窗口大小改变时更新胶囊滑块位置
@@ -10677,34 +11613,27 @@ biliPlaylistBtn.addEventListener('click', () => {
         }).observe(document.getElementById('navbar'));
 
         // 导航栏点击事件
-        navHome.addEventListener('click', (e) => {
-            e.preventDefault();
+        navHome.addEventListener('click', () => {
             switchPage('home');
         });
 
-        navWy.addEventListener('click', (e) => {
-            e.preventDefault();
+        navWy.addEventListener('click', () => {
             switchPage('wy');
         });
 
-        navBili.addEventListener('click', (e) => {
-            e.preventDefault();
+        navBili.addEventListener('click', () => {
             switchPage('bili');
         });
 
-        navQQ.addEventListener('click', (e) => {
-            e.preventDefault();
+        navQQ.addEventListener('click', () => {
             switchPage('qq');
         });
 
-        navSettings.addEventListener('click', (e) => {
-            e.preventDefault();
-            switchPage('settings');
-        });
-
-        navProfile.addEventListener('click', (e) => {
-            e.preventDefault();
-            switchPage('profile');
+        navProfile.addEventListener('click', () => {
+            // 如果当前在设置页面，点击个人页面按钮保持在设置页面
+            if (currentPageId !== 'settings') {
+                switchPage('profile');
+            }
         });
 
         // 个人页面设置链接
@@ -10712,6 +11641,22 @@ biliPlaylistBtn.addEventListener('click', () => {
         if (goSettingsBtn) {
             goSettingsBtn.addEventListener('click', () => {
                 switchPage('settings');
+            });
+        }
+
+        // 个人页面右上角设置按钮
+        const profileSettingsBtn = document.getElementById('profileSettingsBtn');
+        if (profileSettingsBtn) {
+            profileSettingsBtn.addEventListener('click', () => {
+                switchPage('settings');
+            });
+        }
+
+        // 设置页面返回按钮
+        const settingsBackBtn = document.getElementById('settingsBackBtn');
+        if (settingsBackBtn) {
+            settingsBackBtn.addEventListener('click', () => {
+                switchPage('profile');
             });
         }
 
@@ -10942,6 +11887,7 @@ qqLoadMoreBtn.addEventListener('click', () => {
         // 会话心跳定时器ID
         let sessionCheckIntervalId = null;
         let sessionRealtimeChannel = null;   // 实时订阅频道
+        let pointsRealtimeChannel = null;   // 积分实时订阅频道
         let lastSessionCheckTime = 0;
         let sessionPollingInterval = null;
         // 自动同步定时器ID
@@ -12280,6 +13226,7 @@ qqLoadMoreBtn.addEventListener('click', () => {
                         playlist.push(song);
                     }
                     addToPlayHistory({ ...song, playedAt: new Date().toISOString() });
+                    addPlayPoints(song.id, song.name);
                     
                     // 对于B站音乐，显示加载提示
                     if (song.platform === 'bili') {
@@ -12331,6 +13278,7 @@ qqLoadMoreBtn.addEventListener('click', () => {
                         playlist.push(song);
                     }
                     addToPlayHistory({ ...song, playedAt: new Date().toISOString() });
+                    addPlayPoints(song.id, song.name);
                     
                     // 对于B站音乐，显示加载提示
                     if (platform === 'bili') {
@@ -12698,6 +13646,336 @@ qqLoadMoreBtn.addEventListener('click', () => {
             });
         }
 
+        // 加载头像历史记录
+        async function loadAvatarHistory() {
+            const avatarHistoryList = document.getElementById('avatarHistoryList');
+            
+            // 如果头像历史列表元素不存在，直接返回
+            if (!avatarHistoryList) {
+                return;
+            }
+            
+            const user = getCurrentUser();
+            if (!user || !user.id) {
+                avatarHistoryList.innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-image"></i>
+                        <p>暂无头像历史记录</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            try {
+                await initSupabase();
+                const data = await authRpcCall('get_user_avatar_history', {
+                    _user_id: user.id
+                });
+                
+                if (data && data.success && data.data) {
+                    const avatarHistory = data.data;
+                    
+                    // 保存到本地存储
+                    saveCurrentAvatarHistory(avatarHistory);
+                    
+                    if (!avatarHistory || avatarHistory.length === 0) {
+                        avatarHistoryList.innerHTML = `
+                            <div class="empty-state">
+                                <i class="fas fa-image"></i>
+                                <p>暂无头像历史记录</p>
+                            </div>
+                        `;
+                        return;
+                    }
+                    
+                    avatarHistoryList.innerHTML = avatarHistory.map(item => {
+                        const date = new Date(item.created_at);
+                        const formattedDate = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+                        
+                        return `
+                            <div class="avatar-history-item" style="cursor: pointer; transition: all 0.2s ease;" onclick="selectHistoryAvatar('${item.avatar_url}')">
+                                <img src="${item.avatar_url}" alt="Avatar" class="avatar-history-img" style="transition: all 0.2s ease;">
+                                <div class="avatar-history-date">${formattedDate}</div>
+                            </div>
+                        `;
+                    }).join('');
+                } else {
+                    console.warn('后端返回数据格式不正确:', data);
+                    // 尝试从本地存储加载
+                    const localAvatarHistory = getCurrentAvatarHistory();
+                    if (localAvatarHistory && localAvatarHistory.length > 0) {
+                        console.log('从本地存储加载头像历史:', localAvatarHistory);
+                        avatarHistoryList.innerHTML = localAvatarHistory.map(item => {
+                            const date = new Date(item.created_at);
+                            const formattedDate = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+                            
+                            return `
+                                <div class="avatar-history-item" style="cursor: pointer; transition: all 0.2s ease;" onclick="selectHistoryAvatar('${item.avatar_url}')">
+                                    <img src="${item.avatar_url}" alt="Avatar" class="avatar-history-img" style="transition: all 0.2s ease;">
+                                    <div class="avatar-history-date">${formattedDate}</div>
+                                </div>
+                            `;
+                        }).join('');
+                    } else {
+                        console.warn('本地存储也没有头像历史数据');
+                        avatarHistoryList.innerHTML = `
+                            <div class="empty-state">
+                                <i class="fas fa-image"></i>
+                                <p>暂无头像历史记录</p>
+                            </div>
+                        `;
+                    }
+                }
+            } catch (error) {
+                console.error('加载头像历史失败:', error);
+                // 尝试从本地存储加载
+                const localAvatarHistory = getCurrentAvatarHistory();
+                if (localAvatarHistory && localAvatarHistory.length > 0) {
+                    console.log('从本地存储加载头像历史:', localAvatarHistory);
+                    avatarHistoryList.innerHTML = localAvatarHistory.map(item => {
+                        const date = new Date(item.created_at);
+                        const formattedDate = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+                        
+                        return `
+                            <div class="avatar-history-item" style="cursor: pointer; transition: all 0.2s ease;" onclick="selectHistoryAvatar('${item.avatar_url}')">
+                                <img src="${item.avatar_url}" alt="Avatar" class="avatar-history-img" style="transition: all 0.2s ease;">
+                                <div class="avatar-history-date">${formattedDate}</div>
+                            </div>
+                        `;
+                    }).join('');
+                } else {
+                    console.warn('本地存储也没有头像历史数据');
+                    avatarHistoryList.innerHTML = `
+                        <div class="empty-state">
+                            <i class="fas fa-image"></i>
+                            <p>暂无头像历史记录</p>
+                        </div>
+                    `;
+                }
+            }
+        }
+        
+        // 选择历史头像
+        function selectHistoryAvatar(avatarUrl) {
+            const avatarUrlInput = document.getElementById('avatarUrlInput');
+            if (avatarUrlInput) {
+                avatarUrlInput.value = avatarUrl;
+                // 为选中的头像添加视觉反馈
+                const avatarHistoryItems = document.querySelectorAll('.avatar-history-item');
+                avatarHistoryItems.forEach(item => {
+                    item.style.border = '2px solid transparent';
+                });
+                // 找到并高亮当前选中的头像
+                avatarHistoryItems.forEach(item => {
+                    const img = item.querySelector('img');
+                    if (img && img.src === avatarUrl) {
+                        item.style.border = '2px solid var(--primary)';
+                        item.style.borderRadius = '8px';
+                    }
+                });
+            }
+        }
+
+        // 积分相关变量
+        let lastPointsSongId = null;
+        let lastPointsTime = 0;
+        let lastListeningCheckTime = 0;
+        let accumulatedListeningSeconds = 0;
+        let listeningIntervalId = null;
+
+        // 加载积分信息
+        // 仅刷新积分历史记录（不重新获取总积分，因为已经实时更新）
+        async function loadPointsHistoryOnly() {
+            const user = getCurrentUser();
+            if (!user || !user.id) return;
+            try {
+                await initSupabase();
+                const data = await authRpcCall('get_user_points', {
+                    _user_id: user.id
+                });
+                if (data && data.success && data.history) {
+                    loadPointsHistory(data.history);
+                    
+                    // 更新本地存储的积分历史
+                    const pointsData = {
+                        totalPoints: data.total_points || 0,
+                        history: data.history || []
+                    };
+                    saveCurrentPoints(pointsData);
+                } else {
+                    // 尝试从本地存储加载
+                    const localPoints = getCurrentPoints();
+                    loadPointsHistory(localPoints.history || []);
+                }
+            } catch (err) {
+                console.error('刷新积分历史失败', err);
+                // 尝试从本地存储加载
+                const localPoints = getCurrentPoints();
+                loadPointsHistory(localPoints.history || []);
+            }
+        }
+
+        async function loadPoints() {
+            const user = getCurrentUser();
+            if (!user || !user.id) {
+                document.getElementById('totalPointsValue').textContent = '0';
+                return;
+            }
+            
+            try {
+                await initSupabase();
+                const data = await authRpcCall('get_user_points', {
+                    _user_id: user.id
+                });
+                
+                if (data && data.success) {
+                    document.getElementById('totalPointsValue').textContent = data.total_points || 0;
+                    loadPointsHistory(data.history || []);
+                    
+                    // 更新本地存储的积分数据
+                    const pointsData = {
+                        totalPoints: data.total_points || 0,
+                        history: data.history || []
+                    };
+                    saveCurrentPoints(pointsData);
+                } else {
+                    // 尝试从本地存储加载
+                    const localPoints = getCurrentPoints();
+                    document.getElementById('totalPointsValue').textContent = localPoints.totalPoints || 0;
+                    loadPointsHistory(localPoints.history || []);
+                }
+            } catch (error) {
+                console.error('加载积分失败:', error);
+                // 尝试从本地存储加载
+                const localPoints = getCurrentPoints();
+                document.getElementById('totalPointsValue').textContent = localPoints.totalPoints || 0;
+                loadPointsHistory(localPoints.history || []);
+            }
+        }
+
+        // 加载积分记录（按时间从新到旧排序，只显示最近10条）
+        function loadPointsHistory(history) {
+            const pointsHistoryList = document.getElementById('pointsHistoryList');
+
+            if (!pointsHistoryList) return;
+
+            // 按时间从新到旧排序
+            const sortedHistory = [...history].sort((a, b) => {
+                const dateA = new Date(a.created_at);
+                const dateB = new Date(b.created_at);
+                return dateB - dateA;
+            });
+
+            // 只取最近10条记录
+            const recentHistory = sortedHistory.slice(0, 10);
+
+            if (recentHistory.length === 0) {
+                pointsHistoryList.innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-coins"></i>
+                        <p>暂无积分记录</p>
+                    </div>
+                `;
+                return;
+            }
+
+            pointsHistoryList.innerHTML = recentHistory.map(item => {
+                const date = new Date(item.created_at);
+                const formattedDate = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')} ${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`;
+                const pointsSign = item.points > 0 ? '+' : '';
+
+                return `
+                    <div class="points-history-item">
+                        <div>
+                            <div class="points-history-reason">${item.reason}</div>
+                            <div class="points-history-time">${formattedDate}</div>
+                        </div>
+                        <div class="points-history-points">${pointsSign}${item.points}</div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // 添加积分（播放歌曲，新歌5积分，重复播放不给积分）
+        async function addPlayPoints(songId, songName) {
+            const user = getCurrentUser();
+            if (!user || !user.id) return;
+            
+            // 避免重复积分（同一首歌短时间不重复积分检查）
+            const now = Date.now();
+            if (songId === lastPointsSongId && now - lastPointsTime < 60000) {
+                return;
+            }
+            lastPointsSongId = songId;
+            lastPointsTime = now;
+            
+            try {
+                await initSupabase();
+                const data = await authRpcCall('add_points', {
+                    _user_id: user.id,
+                    _points: 5,
+                    _reason: `播放新歌：${songName}`,
+                    _song_id: songId
+                });
+                
+                if (data && data.success) {
+                    const pointsElement = document.getElementById('totalPointsValue');
+                    if (pointsElement) pointsElement.textContent = data.total_points;
+                    // 刷新积分记录
+                    loadPointsHistory(data.history || []);
+                }
+            } catch (error) {
+                console.error('添加积分失败:', error);
+            }
+        }
+
+        // 添加积分（听歌时长，每分钟）
+        async function addListeningPoints() {
+            const user = getCurrentUser();
+            if (!user || !user.id) return;
+
+            try {
+                await initSupabase();
+                const data = await authRpcCall('add_points', {
+                    _user_id: user.id,
+                    _points: 1,
+                    _reason: '累计听歌1分钟'
+                });
+
+                if (data && data.success) {
+                    const pointsElement = document.getElementById('totalPointsValue');
+                    if (pointsElement) pointsElement.textContent = data.total_points;
+                    // 刷新积分记录
+                    loadPointsHistory(data.history || []);
+                }
+            } catch (error) {
+                console.error('添加积分失败:', error);
+            }
+        }
+
+        // 开始听歌时长计时
+        function startListeningTimer() {
+            if (listeningIntervalId) return;
+            lastListeningCheckTime = Date.now();
+            listeningIntervalId = setInterval(() => {
+                const now = Date.now();
+                const elapsed = now - lastListeningCheckTime;
+                // 每分钟增加1积分
+                if (elapsed >= 60000) {
+                    lastListeningCheckTime = now;
+                    addListeningPoints();
+                }
+            }, 1000);
+        }
+
+        // 停止听歌时长计时
+        function stopListeningTimer() {
+            if (listeningIntervalId) {
+                clearInterval(listeningIntervalId);
+                listeningIntervalId = null;
+            }
+        }
+
         // 音量控制
         const volumeSlider = document.getElementById('volumeSlider');
         const volumeSliderFill = document.getElementById('volumeSliderFill');
@@ -12734,6 +14012,41 @@ qqLoadMoreBtn.addEventListener('click', () => {
             window.addEventListener('resize', () => { resizeStarCanvas(); regenerateStarBgStars(); });
             generateStarBgStars();
             // starEnabled is now determined by the theme, not localStorage
+        }
+
+        // 禁用全局右键
+        function disableRightClick() {
+            document.addEventListener('contextmenu', (e) => {
+                e.preventDefault();
+            });
+        }
+
+        // 禁用全局拖动
+        function disableDragging() {
+            document.addEventListener('dragstart', (e) => {
+                e.preventDefault();
+            });
+            
+            document.addEventListener('selectstart', (e) => {
+                e.preventDefault();
+            });
+        }
+
+        // 滚动导航栏项到可视区域
+        function scrollNavItemIntoView(item) {
+            if (!item) return;
+            
+            // 个人页面按钮不滚动
+            if (item.id === 'navProfile') {
+                return;
+            }
+            
+            // 其他按钮居中显示
+            item.scrollIntoView({
+                behavior: 'smooth',
+                block: 'nearest',
+                inline: 'center'
+            });
         }
 
         function resizeStarCanvas() {
@@ -12971,13 +14284,49 @@ qqLoadMoreBtn.addEventListener('click', () => {
 
         // 初始化星空画布
         // 加载并显示公告列表（支持多条、自定义时间、空时间不显示、自定义图标）
-        async function loadAnnouncement() {
+        async function loadAnnouncement(forceRefresh = false) {
             const announcementList = document.getElementById('announcementList');
             if (!announcementList) return;
+
+            // 检查是否在刷新限制期内
+            const lastRefreshTime = localStorage.getItem('announcementLastRefresh');
+            const currentTime = Date.now();
+            const refreshInterval = 10 * 60 * 1000; // 10分钟
+
+            if (!forceRefresh && lastRefreshTime) {
+                const timeSinceLastRefresh = currentTime - parseInt(lastRefreshTime);
+                if (timeSinceLastRefresh < refreshInterval) {
+                    // 尝试从localStorage加载
+                    const storedAnnouncements = localStorage.getItem('announcements');
+                    if (storedAnnouncements) {
+                        try {
+                            const data = JSON.parse(storedAnnouncements);
+                            renderAnnouncements(data);
+                            return;
+                        } catch (error) {
+                            // 解析失败，继续从服务器获取
+                        }
+                    }
+                }
+            }
+
+            // 显示加载状态
+            announcementList.innerHTML = '<div class="announcement-loading"><i class="fas fa-spinner fa-spin"></i> 加载中...</div>';
 
             try {
                 await initSupabase();
                 if (!supabaseClient) {
+                    // 尝试从localStorage加载
+                    const storedAnnouncements = localStorage.getItem('announcements');
+                    if (storedAnnouncements) {
+                        try {
+                            const data = JSON.parse(storedAnnouncements);
+                            renderAnnouncements(data);
+                            return;
+                        } catch (error) {
+                            // 解析失败
+                        }
+                    }
                     announcementList.innerHTML = '<div class="announcement-empty"><i class="fas fa-exclamation-circle"></i> 公告加载失败</div>';
                     return;
                 }
@@ -12994,77 +14343,100 @@ qqLoadMoreBtn.addEventListener('click', () => {
 
                 if (error) throw error;
 
-                if (data && data.length > 0) {
-                    let html = '';
-                    for (const item of data) {
-                        // 处理自定义显示时间（若为空则不显示）
-                        let displayTimeStr = '';
-                        if (item.display_time) {
-                            // 处理不同格式的时间字符串，包括CSV文件中的格式
-                            let date;
-                            if (typeof item.display_time === 'string') {
-                                // 处理CSV格式：2026-04-05 20:51:00+00
-                                if (item.display_time.includes(' ')) {
-                                    // 将空格替换为'T'以符合ISO格式
-                                    const isoTime = item.display_time.replace(' ', 'T');
-                                    date = new Date(isoTime);
-                                } else {
-                                    date = new Date(item.display_time);
-                                }
+                // 保存到localStorage
+                if (data) {
+                    localStorage.setItem('announcements', JSON.stringify(data));
+                    localStorage.setItem('announcementLastRefresh', currentTime.toString());
+                }
+
+                renderAnnouncements(data);
+            } catch (error) {
+                console.error('加载公告失败:', error);
+                // 尝试从localStorage加载
+                const storedAnnouncements = localStorage.getItem('announcements');
+                if (storedAnnouncements) {
+                    try {
+                        const data = JSON.parse(storedAnnouncements);
+                        renderAnnouncements(data);
+                        return;
+                    } catch (parseError) {
+                        // 解析失败
+                    }
+                }
+                announcementList.innerHTML = '<div class="announcement-empty"><i class="fas fa-exclamation-circle"></i> 公告加载失败</div>';
+            }
+        }
+
+        function renderAnnouncements(data) {
+            const announcementList = document.getElementById('announcementList');
+            if (!announcementList) return;
+
+            if (data && data.length > 0) {
+                let html = '';
+                for (const item of data) {
+                    // 处理自定义显示时间（若为空则不显示）
+                    let displayTimeStr = '';
+                    if (item.display_time) {
+                        // 处理不同格式的时间字符串，包括CSV文件中的格式
+                        let date;
+                        if (typeof item.display_time === 'string') {
+                            // 处理CSV格式：2026-04-05 20:51:00+00
+                            if (item.display_time.includes(' ')) {
+                                // 将空格替换为'T'以符合ISO格式
+                                const isoTime = item.display_time.replace(' ', 'T');
+                                date = new Date(isoTime);
                             } else {
                                 date = new Date(item.display_time);
                             }
-                            
-                            if (!isNaN(date.getTime())) {
-                                displayTimeStr = `${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,'0')}-${String(date.getDate()).padStart(2,'0')} ${String(date.getHours()).padStart(2,'0')}:${String(date.getMinutes()).padStart(2,'0')}`;
-                            }
+                        } else {
+                            date = new Date(item.display_time);
                         }
                         
-                        // 获取图标类名，默认为 fa-bullhorn
-                        const iconClass = item.icon && item.icon.trim() !== '' ? item.icon : 'fa-bullhorn';
-                        
-                        // 处理公告内容中的图标占位符和链接，例如 {icon:fa-music} -> <i class="fas fa-music"></i>，http://example.com -> <a href="http://example.com">http://example.com</a>
-                        function renderContentWithIcons(content) {
-                            if (!content) return '';
-                            // 转义 HTML 特殊字符，避免 XSS
-                            let escaped = escapeHTML(content);
-                            // 保留行首的空格，将其转换为 &nbsp;
-                            escaped = escaped.replace(/^\s+/gm, (match) => {
-                                return match.replace(/ /g, '&nbsp;');
-                            });
-                            // 将 {icon:xxx} 替换为 Font Awesome 图标，xxx 为图标类名（不含 fas 前缀）
-                            // 匹配模式：{icon:图标名}，图标名只允许字母数字和连字符
-                            escaped = escaped.replace(/\{icon:([a-zA-Z0-9\-]+)\}/g, (match, iconName) => {
-                                return `<i class="fas fa-${iconName}" style="margin:0 2px;"></i>`;
-                            });
-                            // 识别并处理链接，支持 http, https, ftp 协议
-                            escaped = escaped.replace(/(https?:\/\/[\w\-._~:/?#[\]@!$&'()*+,;=.]+)/g, (match, url) => {
-                                return `<a href="${url}" target="_blank" rel="noopener noreferrer" style="color: #3b82f6; text-decoration: underline;">${url}</a>`;
-                            });
-                            // 将换行转为 <br>
-                            return escaped.replace(/\n/g, '<br>');
+                        if (!isNaN(date.getTime())) {
+                            displayTimeStr = `${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,'0')}-${String(date.getDate()).padStart(2,'0')} ${String(date.getHours()).padStart(2,'0')}:${String(date.getMinutes()).padStart(2,'0')}`;
                         }
-                        
-                        const timeHtml = displayTimeStr ? `<span class="announcement-date"><i class="far fa-clock"></i> ${displayTimeStr}</span>` : '';
-                        
-                        html += `
-                            <div class="announcement-item" data-id="${item.id}">
-                                <div class="announcement-title">
-                                    <i class="fas ${iconClass}"></i>
-                                    <span>${renderContentWithIcons(item.title)}</span>
-                                    ${timeHtml}
-                                </div>
-                                ${item.content && item.content.trim() !== '' ? `<div class="announcement-content">${renderContentWithIcons(item.content)}</div>` : ''}
-                            </div>
-                        `;
                     }
-                    announcementList.innerHTML = html;
-                } else {
-                    announcementList.innerHTML = '<div class="announcement-empty"><i class="fas fa-info-circle"></i> 暂无公告</div>';
+                    
+                    // 获取图标类名，默认为 fa-bullhorn
+                    const iconClass = item.icon && item.icon.trim() !== '' ? item.icon : 'fa-bullhorn';
+
+                    // 处理公告内容中的图标占位符和链接
+                    function renderContentWithIcons(content) {
+                        if (!content) return '';
+                        // 转义 HTML 特殊字符，避免 XSS
+                        let escaped = escapeHTML(content);
+                        // 保留行首的空格，将其转换为 &nbsp;
+                        escaped = escaped.replace(/^\s+/gm, (match) => {
+                            return match.replace(/ /g, '&nbsp;');
+                        });
+                        // 将 {icon:xxx} 替换为 Font Awesome 图标
+                        escaped = escaped.replace(/\{icon:([a-zA-Z0-9\-]+)\}/g, (match, iconName) => {
+                            return `<i class="fas fa-${iconName}" style="margin:0 2px;"></i>`;
+                        });
+                        // 识别并处理链接
+                        escaped = escaped.replace(/(https?:\/\/[\w\-._~:/?#[\]@!$&'()*+,;=.]+)/g, (match, url) => {
+                            return `<a href="${url}" target="_blank" rel="noopener noreferrer" style="color: #3b82f6; text-decoration: underline;">${url}</a>`;
+                        });
+                        // 将换行转为 <br>
+                        return escaped.replace(/\n/g, '<br>');
+                    }
+                    
+                    const timeHtml = displayTimeStr ? `<span class="announcement-date"><i class="far fa-clock"></i> ${displayTimeStr}</span>` : '';
+                    
+                    html += `
+                        <div class="announcement-item" data-id="${item.id}">
+                            <div class="announcement-title">
+                                <i class="fas ${iconClass}"></i>
+                                <span>${renderContentWithIcons(item.title)}</span>
+                                ${timeHtml}
+                            </div>
+                            ${item.content && item.content.trim() !== '' ? `<div class="announcement-content">${renderContentWithIcons(item.content)}</div>` : ''}
+                        </div>
+                    `;
                 }
-            } catch (err) {
-                console.warn('公告加载失败', err);
-                announcementList.innerHTML = '<div class="announcement-empty"><i class="fas fa-exclamation-circle"></i> 公告加载失败，请稍后重试</div>';
+                announcementList.innerHTML = html;
+            } else {
+                announcementList.innerHTML = '<div class="announcement-empty"><i class="fas fa-info-circle"></i> 暂无公告</div>';
             }
         }
 
@@ -13074,17 +14446,52 @@ qqLoadMoreBtn.addEventListener('click', () => {
             if (refreshBtn && !refreshBtn.dataset.bound) {
                 refreshBtn.dataset.bound = 'true';
                 refreshBtn.addEventListener('click', () => {
-                    loadAnnouncement();
+                    // 检查刷新限制
+                    const lastRefreshTime = localStorage.getItem('announcementLastRefresh');
+                    const currentTime = Date.now();
+                    const refreshInterval = 10 * 60 * 1000; // 10分钟
+
+                    if (lastRefreshTime) {
+                        const timeSinceLastRefresh = currentTime - parseInt(lastRefreshTime);
+                        if (timeSinceLastRefresh < refreshInterval) {
+                            const remainingTime = Math.ceil((refreshInterval - timeSinceLastRefresh) / 1000);
+                            showToast(`请${remainingTime}秒后再刷新公告`, 'warning');
+                            return;
+                        }
+                    }
+                    
+                    loadAnnouncement(true);
                     showToast('公告已刷新', 'success');
                 });
             }
         }
 
         document.addEventListener('DOMContentLoaded', () => {
+            // 账号登录校验：如果未登录，清空所有用户数据
+            const isLoggedIn = localStorage.getItem('userLoggedIn') === 'true';
+            if (!isLoggedIn) {
+                // 清空所有用户数据
+                localStorage.removeItem('vipUser');
+                localStorage.removeItem('username');
+                localStorage.removeItem('userAvatar');
+                localStorage.removeItem('sessionToken');
+                localStorage.removeItem('user_setting');
+                localStorage.removeItem('user_plays');
+                localStorage.removeItem('user_points');
+                localStorage.removeItem('user_avatar_history');
+                localStorage.removeItem('user_settings'); // 旧的用户设置
+            }
+            
             initStarCanvas();
             // 初始化加载公告
             loadAnnouncement();
             bindAnnouncementRefresh();
+            // 初始化鼠标操控
+    
+            // 禁用全局右键
+            disableRightClick();
+            // 禁用全局拖动
+            disableDragging();
         });
     </script>
     <!-- 下载选项面板 -->
