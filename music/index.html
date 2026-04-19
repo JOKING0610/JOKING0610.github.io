@@ -849,9 +849,7 @@
             transform: translateX(-50%) translateY(150%);
             width: calc(100% - 32px);
             max-width: 600px;
-            background: rgba(255, 255, 255, 0.04);
-            backdrop-filter: blur(2px);
-            -webkit-backdrop-filter: blur(2px);
+            background: rgba(255, 255, 255, 1);
             border: 1px double rgba(51, 51, 51, 0.08);
             border-radius: var(--radius-xl);
             padding: 12px 20px;
@@ -870,7 +868,7 @@
 
         /* 深色主题下的播放器样式 */
         html.dark-theme .player {
-            background: rgba(30, 30, 30, 0.04);
+            background: rgba(30, 30, 30, 1);
             border: 1px double rgba(255, 255, 255, 0.08);
             box-shadow:
                 inset 2px -2px 1px -1px rgba(255, 255, 255, 0.2),
@@ -1201,6 +1199,7 @@
 
         .confirm-modal .modal-body {
             padding: 16px 20px;
+            height: auto;
         }
 
         .confirm-modal #confirmMessage {
@@ -1340,6 +1339,14 @@
             position: static;
         }
 
+        /* 中等屏幕（平板等） */
+        @media (min-width: 641px) and (max-width: 1024px) {
+            /* 中等屏幕确认模态框高度 */
+            .confirm-modal {
+                max-height: 180px;
+            }
+        }
+
         /* 针对移动端微调，避免过小边距 */
         @media (max-width: 640px) {
             .modal {
@@ -1349,6 +1356,83 @@
             .modal-body {
                 padding: 18px 20px;
             }
+            /* 手机端确认模态框——重新构建，确保高度合适且内容居中 */
+            .confirm-modal {
+                max-height: none;                /* 移除最大高度限制 */
+                height: auto;                   /* 高度由内容撑开 */
+                width: 90%;
+                max-width: 360px;               /* 限制最大宽度，保持美观 */
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                border-radius: 20px;
+                box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+            }
+
+            .confirm-modal .modal-header {
+                padding: 18px 20px 8px;          /* 减小底部内边距，让内容更紧凑 */
+                border-bottom: 1px solid var(--border);
+            }
+
+            .confirm-modal .modal-title {
+                font-size: 16px;
+                font-weight: 600;
+            }
+
+            .confirm-modal .modal-body {
+                height: auto !important;         /* 移除固定高度，由内容决定 */
+                max-height: 60vh;               /* 限制最大高度防止溢出屏幕 */
+                padding: 20px 20px 16px !important;
+                overflow-y: auto;               /* 内容过多时可滚动 */
+            }
+
+            #confirmMessage {
+                font-size: 15px;
+                margin-bottom: 20px;
+                line-height: 1.5;
+                text-align: center;
+                color: var(--text);
+            }
+
+            /* 按钮组采用等宽设计，更易点击 */
+            .confirm-modal .modal-body div[style*="display: flex"] {
+                display: flex;
+                gap: 12px;
+                justify-content: center;
+            }
+
+            .confirm-modal .modal-btn {
+                flex: 1;
+                padding: 12px 0;
+                font-size: 15px;
+                font-weight: 500;
+                border-radius: 14px;
+                text-align: center;
+            }
+
+            .modal-btn-cancel {
+                background: var(--surface-elevated);
+                border: 1px solid var(--border);
+                color: var(--text);
+            }
+
+            .modal-btn-confirm {
+                background: #dc2626;
+                color: white;
+                border: none;
+            }
+
+            /* 深色主题适配 */
+            html.dark-theme .modal-btn-confirm {
+                background: #b91c1c;
+            }
+
+            /* 关闭按钮稍大，便于触摸 */
+            .confirm-modal .modal-close {
+                width: 36px;
+                height: 36px;
+                font-size: 16px;
+            }
         }
 
         /* 小屏手机（≤360px）保持相同比例 */
@@ -1356,6 +1440,22 @@
             .modal {
                 width: 90%;
                 height: 90%;
+            }
+            /* 小屏手机确认模态框高度 */
+            .confirm-modal {
+                max-height: none;
+                height: auto;
+                width: 90%;
+                max-width: 320px;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+            }
+            
+            .confirm-modal .modal-body {
+                height: auto !important;
+                max-height: 60vh;
+                padding: 18px 18px 14px !important;
             }
         }
 
@@ -1767,7 +1867,8 @@
         .settings-group.nested {
             border: none;
             box-shadow: none;
-            margin-top: 16px;
+            margin-top: 12px;
+            margin-bottom: 0;
             padding-top: 0;
         }
         
@@ -2492,6 +2593,52 @@
             display: flex;
             gap: 12px;
             align-items: center;
+        }
+
+        /* 可视化画布样式 */
+        .fullscreen-visualizer-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;        /* 保持比例填充，可能裁剪 */
+            pointer-events: none;     /* 让点击穿透到下方控件 */
+            z-index: 0;               /* 位于内容下方 */
+            display: none;
+            background: transparent;
+            border: none;
+            border-radius: 0;
+            backdrop-filter: none;
+            -webkit-backdrop-filter: none;
+            box-shadow: none;
+            opacity: 0.95;            /* 可选半透明效果 */
+            transition: opacity 0.3s ease;
+        }
+
+        .fullscreen-visualizer-canvas.show {
+            display: block;
+        }
+
+        /* 确保全屏播放器内容在画布之上 */
+        .fullscreen-player-content {
+            position: relative;
+            z-index: 1;
+            pointer-events: auto;
+            background: transparent !important;
+        }
+
+        /* 关闭按钮也需要在顶层 */
+        .fullscreen-player-close {
+            z-index: 2;
+        }
+
+        /* 保持全屏播放器原有背景颜色 */
+        .fullscreen-player {
+            background: var(--bg) !important;
+        }
+        .fullscreen-player.show {
+            background: var(--bg) !important;
         }
 
         .fullscreen-player-progress {
@@ -3229,9 +3376,9 @@
 
         .stats-section {
             margin-bottom: 32px;
-            width: calc(100% + 32px);
-            margin-left: -16px;
-            margin-right: -16px;
+            max-width: 800px;
+            margin-left: auto;
+            margin-right: auto;
             padding-left: 16px;
             padding-right: 16px;
         }
@@ -6663,6 +6810,19 @@
                 </div>
                 <div class="settings-group collapsible">
                     <div class="settings-label collapsible-header collapsed" onclick="toggleCollapsible(this)">
+                        <span>可视化设置</span>
+                        <i class="fas fa-chevron-down"></i>
+                    </div>
+                    <div class="collapsible-content collapsed">
+                        <div class="settings-group nested">
+                            <div class="settings-label">频谱条高度百分比</div>
+                            <input type="number" class="settings-input" id="visualizerHeightInput" min="10" max="100" value="80">
+                            <p class="settings-hint">可视化频谱条高度占屏幕高度的百分比，范围10-100</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="settings-group collapsible">
+                    <div class="settings-label collapsible-header collapsed" onclick="toggleCollapsible(this)">
                         <span>导航栏设置</span>
                         <i class="fas fa-chevron-down"></i>
                     </div>
@@ -6864,6 +7024,9 @@
 
     <!-- 全屏播放器 -->
     <div class="fullscreen-player" id="fullscreenPlayer">
+        <!-- 新增：全屏背景可视化画布 -->
+        <canvas id="visualizerCanvas" class="fullscreen-visualizer-canvas"></canvas>
+        
         <button class="fullscreen-player-close" id="fullscreenPlayerClose">
             <i class="fas fa-times"></i>
         </button>
@@ -6942,6 +7105,9 @@
                                 <button class="dropdown-item mode-item" data-mode="loop"><i class="fas fa-repeat"></i> 单曲循环</button>
                             </div>
                         </div>
+                        <button class="fullscreen-player-btn" id="toggleVisualizerBtn" title="音频可视化">
+                            <i class="fas fa-chart-bar"></i>
+                        </button>
                     </div>
                 </div>
             </div>
@@ -8777,6 +8943,9 @@
                 if (sessionRealtimeChannel) {
                     supabaseClient?.removeChannel(sessionRealtimeChannel);
                 }
+                if (player && typeof player.cleanupVisualizer === 'function') {
+                    player.cleanupVisualizer();
+                }
             });
 
             // 初始化登录状态
@@ -10193,6 +10362,16 @@
                 this.onCanPlay = null;          // Bilibil音频可播放监听函数
                 this.onCanPlayThrough = null;   // Bilibil音频可流畅播放监听函数
                 
+                // 可视化相关属性
+                this.visualizerEnabled = false;
+                this.audioCtx = null;
+                this.analyser = null;
+                this.visualizerSource = null;
+                this.visualizerAnimationId = null;
+                this.visualizerCanvas = document.getElementById('visualizerCanvas');
+                this.visualizerCtx = this.visualizerCanvas?.getContext('2d');
+                this.toggleVisualizerBtn = document.getElementById('toggleVisualizerBtn');
+                
                 this.init();
             }
             
@@ -10278,6 +10457,11 @@
                         }
                         showDownloadOptionsPanel(currentSong);
                     });
+                }
+                
+                // 可视化按钮
+                if (this.toggleVisualizerBtn) {
+                    this.toggleVisualizerBtn.addEventListener('click', () => this.toggleVisualizer());
                 }
                 
                 // 全屏播放器进度条
@@ -10691,6 +10875,13 @@
             }
             
             onPlay() {
+                // 确保 AudioContext 运行（避免因自动播放策略挂起导致无声）
+                if (this.visualizerEnabled && this.audioCtx) {
+                    if (this.audioCtx.state === 'suspended') {
+                        this.audioCtx.resume().catch(e => console.warn('resume失败', e));
+                    }
+                }
+                
                 this.retryCount = 0;   // 播放成功时重置重试计数
                 
                 this.isPlaying = true;
@@ -10959,6 +11150,9 @@
             }
             
             setSong(song, retryCount = 0) {
+                // 设置跨域属性，避免可视化时输出静音
+                this.audioElement.crossOrigin = "anonymous";
+                
                 // 先更新当前歌曲的播放时长
                 if (this.lastUpdateTime !== null) {
                     const now = Date.now();
@@ -11306,6 +11500,209 @@
                 if (activeLine) {
                     activeLine.scrollIntoView({ behavior: 'smooth', block: 'center' });
                 }
+            }
+            
+            /**
+             * 初始化音频上下文（必须在用户手势内调用）
+             */
+            async initAudioContext() {
+                if (this.audioCtx) {
+                    if (this.audioCtx.state === 'suspended') {
+                        await this.audioCtx.resume().catch(e => console.warn('恢复AudioContext失败', e));
+                    }
+                    return true;
+                }
+                try {
+                    // 确保 audioElement 已设置跨域（再次保险）
+                    this.audioElement.crossOrigin = "anonymous";
+                    
+                    this.audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                    // 避免重复创建 source（每个 audio 只能创建一个）
+                    if (!this.visualizerSource) {
+                        this.visualizerSource = this.audioCtx.createMediaElementSource(this.audioElement);
+                    }
+                    this.analyser = this.audioCtx.createAnalyser();
+                    this.analyser.fftSize = 256;
+                    this.analyser.smoothingTimeConstant = 0.8;
+                    
+                    this.visualizerSource.connect(this.analyser);
+                    this.analyser.connect(this.audioCtx.destination);
+                    
+                    // 如果 AudioContext 因自动播放策略挂起，等待用户手势恢复
+                    if (this.audioCtx.state === 'suspended') {
+                        console.log('AudioContext 挂起，等待播放手势恢复');
+                    }
+                    return true;
+                } catch (e) {
+                    console.warn('Web Audio 初始化失败', e);
+                    if (e.message.includes('already connected')) {
+                        showToast('音频通道被占用，请刷新页面', 'error');
+                    } else {
+                        showToast('可视化初始化失败', 'error');
+                    }
+                    return false;
+                }
+            }
+
+            /**
+             * 开始绘制可视化频谱
+             */
+            startVisualizer() {
+                if (!this.analyser || !this.visualizerCanvas || !this.visualizerCtx) return;
+                
+                const canvas = this.visualizerCanvas;
+                const ctx = this.visualizerCtx;
+                const analyser = this.analyser;
+                const bufferLength = analyser.frequencyBinCount;
+                const dataArray = new Uint8Array(bufferLength);
+                
+                // 尺寸自适应（每次绘制前更新）
+                const resizeCanvas = () => {
+                    canvas.width = window.innerWidth;
+                    canvas.height = window.innerHeight;
+                };
+                resizeCanvas();
+                window.addEventListener('resize', resizeCanvas);
+                
+                const draw = () => {
+                    if (!this.visualizerEnabled) return;
+
+                    this.visualizerAnimationId = requestAnimationFrame(draw);
+
+                    analyser.getByteFrequencyData(dataArray);
+
+                    const W = canvas.width;
+                    const H = canvas.height;
+
+                    // 清除为完全透明，让背景透出深色底色
+                    ctx.clearRect(0, 0, W, H);
+
+                    // 绘制一层极淡的黑色渐变作为衬底
+                    const gradient = ctx.createLinearGradient(0, 0, 0, H);
+                    gradient.addColorStop(0, 'rgba(10, 15, 30, 0.3)');
+                    gradient.addColorStop(1, 'rgba(5, 8, 20, 0.7)');
+                    ctx.fillStyle = gradient;
+                    ctx.fillRect(0, 0, W, H);
+
+                    // 计算频谱条宽度，确保所有条都能完整显示
+                    const totalBars = Math.floor(bufferLength * 0.9); // 只显示80%的频谱条（移除高频部分）
+                    const barWidth = W / totalBars;
+                    let x = 0;
+
+                    for (let i = 0; i < totalBars; i++) {
+                        const value = dataArray[i];
+                        const percent = value / 255;
+                        // 获取设置的频谱条高度百分比
+                        const visualizerHeightPercent = getSetting('visualizerHeightPercent', 80);
+                        const barHeight = Math.max(2, percent * H * (visualizerHeightPercent / 100));
+
+                        // 从左到右的渐变彩色
+                        const hue = (i / totalBars) * 360; // 0-360度渐变
+                        const saturation = 80 + (i / totalBars) * 20; // 80-100%渐变
+                        const lightness = 50 + percent * 30; // 随强度变化
+                        ctx.fillStyle = `hsla(${hue}, ${saturation}%, ${lightness}%, ${0.6 + percent * 0.4})`;
+
+                        // 发光效果
+                        ctx.shadowColor = `hsl(${hue}, 90%, 70%)`;
+                        ctx.shadowBlur = 15 * percent;
+
+                        // 绘制频谱条，确保不超出画布
+                        const actualBarWidth = Math.min(barWidth - 1, W - x);
+                        if (actualBarWidth > 0) {
+                            ctx.fillRect(x, H - barHeight, actualBarWidth, barHeight);
+                        }
+                        x += barWidth;
+                        if (x >= W) break;
+                    }
+                    ctx.shadowBlur = 0;
+                };
+                
+                draw();
+                
+                // 清理 resize 监听器（在 stopVisualizer 中）
+                this._visualizerResizeHandler = resizeCanvas;
+            }
+
+            /**
+             * 停止可视化绘制
+             */
+            stopVisualizer() {
+                if (this.visualizerAnimationId) {
+                    cancelAnimationFrame(this.visualizerAnimationId);
+                    this.visualizerAnimationId = null;
+                }
+                if (this._visualizerResizeHandler) {
+                    window.removeEventListener('resize', this._visualizerResizeHandler);
+                    this._visualizerResizeHandler = null;
+                }
+                if (this.visualizerCtx && this.visualizerCanvas) {
+                    this.visualizerCtx.clearRect(0, 0, this.visualizerCanvas.width, this.visualizerCanvas.height);
+                }
+            }
+
+            /**
+             * 切换可视化开关
+             */
+            async toggleVisualizer() {
+                if (!this.visualizerCanvas) return;
+                
+                if (!this.visualizerEnabled) {
+                    const audioCtxReady = await this.initAudioContext();
+                    if (!audioCtxReady) return;
+                    
+                    // 关键：若 AudioContext 挂起，必须等待用户手势（通过播放按钮）恢复
+                    if (this.audioCtx.state === 'suspended') {
+                        // 尝试恢复（若在用户手势内则会成功）
+                        await this.audioCtx.resume().catch(() => {
+                            showToast('请先点击播放按钮激活音频', 'warning');
+                        });
+                    }
+                    
+                    this.visualizerEnabled = true;
+                    this.visualizerCanvas.classList.add('show');
+                    this.startVisualizer();
+                    showToast('音频可视化已开启', 'success');
+                    
+                    if (!this.isPlaying) {
+                        this.drawStaticGrid();
+                    }
+                } else {
+                    this.visualizerEnabled = false;
+                    this.stopVisualizer();
+                    this.visualizerCanvas.classList.remove('show');
+                    showToast('音频可视化已关闭', 'info');
+                }
+            }
+
+            /**
+             * 绘制静态网格（无音频数据时）
+             */
+            drawStaticGrid() {
+                if (!this.visualizerCtx || !this.visualizerCanvas) return;
+                const ctx = this.visualizerCtx;
+                const W = this.visualizerCanvas.width;
+                const H = this.visualizerCanvas.height;
+                ctx.clearRect(0, 0, W, H);
+                ctx.fillStyle = '#0f172a';
+                ctx.fillRect(0, 0, W, H);
+                ctx.font = '12px "Segoe UI"';
+                ctx.fillStyle = '#64748b';
+                ctx.textAlign = 'center';
+                ctx.fillText('等待音频播放...', W/2, H/2);
+            }
+
+            /**
+             * 清理可视化资源（在播放器销毁或页面卸载时调用）
+             */
+            cleanupVisualizer() {
+                this.stopVisualizer();
+                if (this.audioCtx && this.audioCtx.state !== 'closed') {
+                    this.audioCtx.close();
+                    this.audioCtx = null;
+                    this.analyser = null;
+                    this.visualizerSource = null;
+                }
+                this.visualizerEnabled = false;
             }
         }
         
@@ -11851,6 +12248,20 @@
             showToast('QQ音乐搜索数量设置已保存', 'success');
             triggerSync();
         });
+
+        // 频谱条高度百分比设置
+        const visualizerHeightInput = document.getElementById('visualizerHeightInput');
+        if (visualizerHeightInput) {
+            visualizerHeightInput.value = getSetting('visualizerHeightPercent', 80);
+            visualizerHeightInput.addEventListener('change', function() {
+                let value = parseInt(this.value);
+                if (isNaN(value) || value < 10) value = 10;
+                if (value > 100) value = 100;
+                this.value = value;
+                setSetting('visualizerHeightPercent', value);
+                showToast('频谱条高度百分比设置已保存', 'success');
+            });
+        }
 
         // 网易云页面按钮事件
 wyPlaylistBtn.addEventListener('click', () => {
