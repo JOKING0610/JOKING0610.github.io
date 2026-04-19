@@ -27,23 +27,6 @@
     
     <!-- Google Fonts with display=swap -->
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <script>
-        // 延迟获取主题，直接使用localStorage
-        setTimeout(() => {
-            try {
-                const isLoggedIn = localStorage.getItem('userLoggedIn') === 'true';
-                // 根据登录状态获取对应的主题键名
-                const themeKey = isLoggedIn ? 'theme' : 'guest_theme';
-                const savedTheme = localStorage.getItem(themeKey);
-                // 默认使用深色主题，除非用户明确选择了浅色
-                if (savedTheme !== 'light') {
-                    document.documentElement.classList.add('dark-theme');
-                }
-            } catch (e) {
-                // 忽略localStorage错误
-            }
-        }, 100);
-    </script>
     <style>
         :root {
             --primary: #000000;
@@ -256,7 +239,7 @@
         .app {
             max-width: 640px;
             margin: 0 auto;
-            padding: 20px 16px 180px;
+            padding: 20px 16px 250px;
             position: relative;
             z-index: 1;
         }
@@ -1704,6 +1687,94 @@
             margin-top: 6px;
         }
 
+        /* ===== 配色方案（提高优先级，确保覆盖默认背景） ===== */
+
+        /* 浅色主题下的背景变体 */
+        html.color-scheme-light-default:not(.dark-theme) {
+            --bg: #ffffff;
+        }
+        html.color-scheme-light-warm:not(.dark-theme) {
+            --bg: #fdf6e3;
+        }
+        html.color-scheme-light-gray:not(.dark-theme) {
+            --bg: #f0f2f5;
+        }
+        html.color-scheme-light-blue:not(.dark-theme) {
+            --bg: #e8f0fe;
+        }
+
+        /* 深色主题下的背景变体 */
+        html.color-scheme-dark-default.dark-theme {
+            --bg: #121212;
+        }
+        html.color-scheme-dark-deep.dark-theme {
+            --bg: #0a0a0a;
+        }
+        html.color-scheme-dark-slate.dark-theme {
+            --bg: #1a1e24;
+        }
+        html.color-scheme-dark-navy.dark-theme {
+            --bg: #0f172a;
+        }
+
+        /* 可收起/展开设置组 */
+        .settings-group.collapsible {
+            border-radius: var(--radius-md);
+            overflow: hidden;
+            box-shadow: var(--shadow-sm);
+            border: 1px solid var(--border);
+        }
+        
+        .collapsible-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            padding: 16px;
+            background: var(--surface);
+            transition: background var(--transition-fast);
+        }
+        
+        .collapsible-header:hover {
+            background: var(--surface-elevated);
+        }
+        
+        .collapsible-header i {
+            transition: transform var(--transition-fast);
+            font-size: 14px;
+            transform: rotate(180deg);
+        }
+        
+        .collapsible-header.collapsed i {
+            transform: rotate(0deg);
+        }
+        
+        .collapsible-content {
+            padding: 0 16px 16px;
+            background: var(--bg);
+            transition: max-height var(--transition-normal), opacity var(--transition-normal);
+            max-height: 500px;
+            opacity: 1;
+            overflow: hidden;
+        }
+        
+        .collapsible-content.collapsed {
+            max-height: 0;
+            opacity: 0;
+            padding: 0 16px;
+        }
+        
+        .settings-group.nested {
+            border: none;
+            box-shadow: none;
+            margin-top: 16px;
+            padding-top: 0;
+        }
+        
+        .settings-group.nested:first-child {
+            margin-top: 0;
+        }
+
         .modal-btn {
             padding: 8px 20px;
             border: none;
@@ -1911,7 +1982,7 @@
             align-items: center;
             gap: 12px;
             box-shadow: var(--shadow-lg);
-            z-index: 1002;
+            z-index: 10001;
             opacity: 0;
             visibility: hidden;
             transition: all 0.25s ease;
@@ -4239,21 +4310,20 @@
             padding: 12px 16px;
             margin-top: 16px;
             box-shadow: var(--shadow-sm);
-            width: 100%;
-            max-width: 400px;
+            width: 90%;
             margin-left: auto;
             margin-right: auto;
         }
 
         @media (max-width: 768px) {
             .home-stats-card {
-                max-width: 300px;
+                padding: 10px 14px;
+                gap: 10px;
             }
         }
 
         @media (max-width: 480px) {
             .home-stats-card {
-                max-width: 250px;
                 padding: 10px 14px;
                 gap: 10px;
             }
@@ -5109,9 +5179,8 @@
 
         /* 公告列表样式 */
         .announcement-list {
-            max-height: 280px;
-            overflow-y: auto;
-            scrollbar-width: thin;
+            max-height: none;
+            overflow-y: visible;
         }
 
         .announcement-item {
@@ -6287,7 +6356,7 @@
             </div>
         </div>
 
-        <!-- B站搜索页面 -->
+        <!-- Bilibil搜索页面 -->
         <div class="page" id="biliPage" style="display: none;">
             <div class="search-container">
                 <div class="search-wrapper">
@@ -6329,7 +6398,7 @@
                         <div class="empty-icon">
                             <i class="fab fa-bilibili"></i>
                         </div>
-                        <p class="empty-title">探索B站音乐区</p>
+                        <p class="empty-title">探索Bilibil音乐区</p>
                         <p class="empty-desc">输入UP主或歌名试试</p>
                     </div>
                 </div>
@@ -6412,10 +6481,6 @@
                         </div>
                     </div>
                 </div>
-                <!-- 右侧：设置按钮 -->
-                <button class="icon-btn" id="profileSettingsBtn" style="width: 40px; height: 40px;" title="设置">
-                    <i class="fas fa-cog"></i>
-                </button>
             </div>
 
             <div class="stats-section">
@@ -6501,9 +6566,7 @@
         <!-- 设置页面 -->
         <div class="page" id="settingsPage" style="display: none;">
             <div class="profile-header" style="display: flex; align-items: center; gap: 12px;">
-                <button class="icon-btn" id="settingsBackBtn" style="width: 40px; height: 40px;" title="返回">
-                    <i class="fas fa-arrow-left"></i>
-                </button>
+
                 <h2 class="profile-name" style="margin: 0;">设置</h2>
             </div>
 
@@ -6547,43 +6610,96 @@
                     </div>
                     <p class="settings-hint">选择星空主题下展示的星座</p>
                 </div>
-                <form class="settings-group" onsubmit="return false;">
-                    <div class="settings-label" style="display: flex; justify-content: space-between; align-items: center;">
-                        <span>API Token</span>
-                        <a href="https://yunzhiapi.cn/user/" target="_blank" style="color: var(--primary); text-decoration: none; font-size: 12px; font-weight: 500; text-transform: none; letter-spacing: 0;">
-                            <i class="fas fa-external-link-alt" style="margin-right: 4px;"></i>获取Token
-                        </a>
+                <!-- 配色方案选择（仅浅色/深色主题时显示） -->
+                <div class="settings-group" id="colorSchemeGroup" style="display: none;">
+                    <div class="settings-label">配色方案</div>
+                    <div class="custom-select" id="colorSchemeSelect">
+                        <div class="custom-select-trigger">
+                            <span class="custom-select-value" id="colorSchemeValue">默认</span>
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M6 9l6 6 6-6"/>
+                            </svg>
+                        </div>
+                        <div class="custom-select-content" id="colorSchemeContent"></div>
                     </div>
-                    <div class="token-input-container">
-                        <input type="password" class="settings-input" id="tokenInput" placeholder="输入云智API Token" autocomplete="new-password">
-                        <button type="button" class="token-toggle-btn" onclick="toggleTokenVisibility('tokenInput')">
-                            <i class="fas fa-eye-slash"></i>
-                        </button>
+                </div>
+                <div class="settings-group collapsible">
+                    <div class="settings-label collapsible-header collapsed" onclick="toggleCollapsible(this)">
+                        <span>音乐搜索设置</span>
+                        <i class="fas fa-chevron-down"></i>
                     </div>
-                    <p class="settings-hint">配置后才能使用网易云音乐</p>
-                </form>
-                <div class="settings-group">
-                    <div class="settings-label">网易云API搜索数量</div>
-                    <input type="number" class="settings-input" id="wyPageSizeInput" min="1" max="20" value="20">
-                    <p class="settings-hint">网易云API每次搜索返回的歌曲数量，最大20</p>
-                </div>
-                <div class="settings-group">
-                    <div class="settings-label">B站API搜索数量</div>
-                    <input type="number" class="settings-input" id="biliPageSizeInput" min="1" max="50" value="20">
-                    <p class="settings-hint">B站API每次搜索返回的歌曲数量，最大50</p>
-                </div>
-                <div class="settings-group">
-                    <div class="settings-label">QQ音乐API搜索数量</div>
-                    <input type="number" class="settings-input" id="qqPageSizeInput" min="1" max="50" value="20">
-                    <p class="settings-hint">QQ音乐API每次搜索返回的歌曲数量，最大50</p>
-                </div>
-                <div class="settings-group">
-                    <div class="settings-label">导航栏显示文本</div>
-                    <div class="toggle-switch">
-                        <input type="checkbox" id="navbarTextToggle">
-                        <label for="navbarTextToggle"></label>
+                    <div class="collapsible-content collapsed">
+                        <form class="settings-group nested" onsubmit="return false;">
+                            <div class="settings-label" style="display: flex; justify-content: space-between; align-items: center;">
+                                <span>API Token</span>
+                                <a href="https://yunzhiapi.cn/user/" target="_blank" style="color: var(--primary); text-decoration: none; font-size: 12px; font-weight: 500; text-transform: none; letter-spacing: 0;">
+                                    <i class="fas fa-external-link-alt" style="margin-right: 4px;"></i>获取Token
+                                </a>
+                            </div>
+                            <div class="token-input-container">
+                                <input type="password" class="settings-input" id="tokenInput" placeholder="输入云智API Token" autocomplete="new-password">
+                                <button type="button" class="token-toggle-btn" onclick="toggleTokenVisibility('tokenInput')">
+                                    <i class="fas fa-eye-slash"></i>
+                                </button>
+                            </div>
+                            <p class="settings-hint">配置后才能使用网易云和QQ音乐</p>
+                        </form>
+                        <div class="settings-group nested">
+                            <div class="settings-label">网易云搜索数量</div>
+                            <input type="number" class="settings-input" id="wyPageSizeInput" min="1" max="20" value="20">
+                            <p class="settings-hint">网易云每次搜索的歌曲数量，最大20</p>
+                        </div>
+                        <div class="settings-group nested">
+                            <div class="settings-label">BiliBili音乐搜索数量</div>
+                            <input type="number" class="settings-input" id="biliPageSizeInput" min="1" max="50" value="20">
+                            <p class="settings-hint">Bilibili音乐每次搜索的歌曲数量，最大50</p>
+                        </div>
+                        <div class="settings-group nested">
+                            <div class="settings-label">QQ音乐搜索数量</div>
+                            <input type="number" class="settings-input" id="qqPageSizeInput" min="1" max="20" value="20">
+                            <p class="settings-hint">QQ音乐每次搜索的歌曲数量，最大20</p>
+                        </div>
                     </div>
-                    <p class="settings-hint">控制导航栏是否显示图标下方的文本</p>
+                </div>
+                <div class="settings-group collapsible">
+                    <div class="settings-label collapsible-header collapsed" onclick="toggleCollapsible(this)">
+                        <span>导航栏设置</span>
+                        <i class="fas fa-chevron-down"></i>
+                    </div>
+                    <div class="collapsible-content collapsed">
+                        <div class="settings-group nested">
+                            <div class="settings-label">导航栏显示文本</div>
+                            <div class="toggle-switch">
+                                <input type="checkbox" id="navbarTextToggle">
+                                <label for="navbarTextToggle"></label>
+                            </div>
+                            <p class="settings-hint">控制导航栏是否显示图标下方的文本</p>
+                        </div>
+                        <div class="settings-group nested">
+                            <div class="settings-label">网易云音乐按钮</div>
+                            <div class="toggle-switch">
+                                <input type="checkbox" id="wyNavToggle" checked>
+                                <label for="wyNavToggle"></label>
+                            </div>
+                            <p class="settings-hint">控制导航栏是否显示网易云音乐按钮</p>
+                        </div>
+                        <div class="settings-group nested">
+                            <div class="settings-label">Bilibili音乐按钮</div>
+                            <div class="toggle-switch">
+                                <input type="checkbox" id="biliNavToggle" checked>
+                                <label for="biliNavToggle"></label>
+                            </div>
+                            <p class="settings-hint">控制导航栏是否显示Bilibil音乐按钮</p>
+                        </div>
+                        <div class="settings-group nested">
+                            <div class="settings-label">QQ音乐按钮</div>
+                            <div class="toggle-switch">
+                                <input type="checkbox" id="qqNavToggle" checked>
+                                <label for="qqNavToggle"></label>
+                            </div>
+                            <p class="settings-hint">控制导航栏是否显示QQ音乐按钮</p>
+                        </div>
+                    </div>
                 </div>
                 <div class="settings-group">
                     <div class="settings-label">默认页面</div>
@@ -6597,7 +6713,7 @@
                         <div class="custom-select-content">
                             <div class="custom-select-item" data-value="home">主页</div>
                             <div class="custom-select-item" data-value="wy">网易云搜索页面</div>
-                            <div class="custom-select-item" data-value="bili">B站搜索页面</div>
+                            <div class="custom-select-item" data-value="bili">Bilibil搜索页面</div>
                             <div class="custom-select-item" data-value="qq">QQ音乐搜索页面</div>
                             <div class="custom-select-item" data-value="profile">个人页面</div>
                         </div>
@@ -6663,29 +6779,29 @@
                         <i class="fas fa-eye-slash"></i>
                     </button>
                 </div>
-                <p class="settings-hint">配置后才能使用网易云音乐</p>
+                <p class="settings-hint">配置后才能使用网易云和QQ音乐</p>
             </form>
             <div class="settings-group">
-                <div class="settings-label">网易云API搜索数量</div>
+                <div class="settings-label">网易云搜索数量</div>
                 <input type="number" class="settings-input" id="modalWyPageSizeInput" min="1" max="20" value="20">
-                <p class="settings-hint">网易云API每次搜索返回的歌曲数量，最大20</p>
+                <p class="settings-hint">网易云每次搜索歌曲数量，最大20</p>
             </div>
             <div class="settings-group">
-                <div class="settings-label">B站API搜索数量</div>
+                <div class="settings-label">Bilibil搜索数量</div>
                 <input type="number" class="settings-input" id="modalBiliPageSizeInput" min="1" max="50" value="20">
-                <p class="settings-hint">B站API每次搜索返回的歌曲数量，最大50</p>
+                <p class="settings-hint">BiliBili音乐每次搜索的歌曲数量，最大50</p>
             </div>
             <div class="settings-group">
-                <div class="settings-label">QQ音乐API搜索数量</div>
-                <input type="number" class="settings-input" id="modalQQPageSizeInput" min="1" max="50" value="20">
-                <p class="settings-hint">QQ音乐API每次搜索返回的歌曲数量，最大50</p>
+                <div class="settings-label">QQ音乐搜索数量</div>
+                <input type="number" class="settings-input" id="modalQQPageSizeInput" min="1" max="20" value="20">
+                <p class="settings-hint">QQ音乐每次搜索的歌曲数量，最大20</p>
             </div>
             <div class="settings-group">
                 <div class="settings-label">默认页面</div>
                 <select class="settings-input" id="modalDefaultPageInput">
                     <option value="home">主页</option>
                     <option value="wy">网易云搜索页面</option>
-                    <option value="bili">B站搜索页面</option>
+                    <option value="bili">Bilibil搜索页面</option>
                     <option value="qq">QQ音乐搜索页面</option>
                     <option value="profile">个人页面</option>
                 </select>
@@ -6913,7 +7029,7 @@
             <div class="panel pA" id="pA">
                 <!-- 登录表单 -->
                 <form class="p-inner pA-login" onsubmit="handleLogin(); return false;">
-                    <div class="fp-title">登 入 账 号</div>
+                    <div class="fp-title">登 录 账 号</div>
 
 
                     <div class="field">
@@ -6940,7 +7056,10 @@
                     <div class="field">
                         <input type="password" id="regConfirmPwd" placeholder="确认密码" autocomplete="off">
                     </div>
-                    <button type="submit" class="btn-blue btn-full" style="margin-top: 6px">SIGN UP</button>
+                    <div class="field">
+                        <input type="text" id="regSecretKey" placeholder="注册密钥" autocomplete="off">
+                    </div>
+                    <button type="submit" class="btn-blue btn-full" style="margin-top: 6px">注 册</button>
                 </form>
             </div>
 
@@ -6955,16 +7074,16 @@
                     <div class="o-sub">
                         去注册一个账号，成为尊贵的会员，享受数据同步服务！
                     </div>
-                    <button class="btn-blue" id="toSignup">SIGN UP</button>
+                    <button class="btn-blue" id="toSignup">注册</button>
                 </div>
 
                 <!-- Welcome Back（注册模式） -->
                 <div class="p-inner pB-welcome">
                     <div class="o-title">Welcome Back！</div>
                     <div class="o-sub">
-                        已经有账号了嘛，去登入账号来进入奇妙世界吧！！！
+                        已经有账号了嘛，去登陆账号来进入奇妙世界吧！！！
                     </div>
-                    <button class="btn-blue" id="toSignin">SIGN IN</button>
+                    <button class="btn-blue" id="toSignin">登录</button>
                 </div>
             </div>
         </div>
@@ -6982,13 +7101,17 @@
             </div>
             <div class="navbar-item" id="navBili" data-i="2">
                 <i class="fab fa-bilibili"></i>
-                <span>B站</span>
+                <span>Bilibil</span>
             </div>
             <div class="navbar-item" id="navQQ" data-i="3">
                 <i class="fab fa-qq"></i>
                 <span>QQ音乐</span>
             </div>
-            <div class="navbar-item" id="navProfile" data-i="4">
+            <div class="navbar-item" id="navSettings" data-i="4">
+                <i class="fas fa-cog"></i>
+                <span>设置</span>
+            </div>
+            <div class="navbar-item" id="navProfile" data-i="5">
                 <i class="fas fa-user-astronaut"></i>
                 <span>我的</span>
             </div>
@@ -7297,20 +7420,33 @@
         }
 
         // ---------- 注册（调用 create_vip_user） ----------
-        async function vipSignup(username, password, confirmPwd) {
+        async function vipSignup(username, password, confirmPwd, secretKey) {
             await initSupabase();
-            
+
             const uname = username.trim();
+            const pwd = password.trim();
+            
+            // 用户名验证
             if (!uname) throw new Error("用户名不能为空");
-            if (uname.length < 2) throw new Error("用户名至少2个字符");
-            if (!password) throw new Error("密码不能为空");
-            if (password.length < 6) throw new Error("密码长度至少6位");
-            if (password !== confirmPwd) throw new Error("两次输入的密码不一致");
+            if (uname.length < 1) throw new Error("用户名至少1个字符");
+            if (uname.length > 15) throw new Error("用户名不能超过15个字符");
+            if (uname.includes(' ')) throw new Error("用户名不能包含空格");
+            if (!/^[a-zA-Z0-9\u4e00-\u9fa5]+$/.test(uname)) throw new Error("用户名只能包含字母、数字和中文");
+            
+            // 密码验证
+            if (!pwd) throw new Error("密码不能为空");
+            if (pwd.length < 6) throw new Error("密码长度至少6位");
+            if (pwd.length > 20) throw new Error("密码不能超过20个字符");
+            if (pwd.includes(' ')) throw new Error("密码不能包含空格");
+            
+            if (pwd !== confirmPwd) throw new Error("两次输入的密码不一致");
+            if (!secretKey) throw new Error("注册密钥不能为空");
             if (!supabaseClient) throw new Error("Supabase 客户端未初始化");
 
             const { data, error } = await supabaseClient.rpc('create_vip_user', {
                 _username: uname,
-                _password: password
+                _password: pwd,
+                _key: secretKey
             });
 
             if (error) {
@@ -7318,7 +7454,7 @@
                 throw new Error(`注册失败: ${error.message}`);
             }
             if (!data || !data.success) {
-                throw new Error(data?.error || "注册失败，用户名可能已存在");
+                throw new Error(data?.error || "无效的密钥，请联系管理员获取");
             }
             return data;
         }
@@ -7354,24 +7490,8 @@
                 avatar_url: data.avatar_url || ''
             });
 
-            // 登录后检查avatar_url，若为空则生成默认头像
-            if (!data.avatar_url) {
-                // 生成默认头像（基于用户名的首字母头像）
-                const defaultAvatarUrl = `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(data.username)}&backgroundColor=333333&fontSize=40`;
-                try {
-                    await updateUserAvatar(defaultAvatarUrl);
-                    // 更新本地存储中的头像
-                    localStorage.setItem('userAvatar', defaultAvatarUrl);
-                    const storedUser = getCurrentUser();
-                    if (storedUser) {
-                        storedUser.avatar_url = defaultAvatarUrl;
-                        saveUser(storedUser);
-                    }
-                    updateLoginStatus();
-                } catch (err) {
-                    console.warn('设置默认头像失败', err);
-                }
-            }
+            // 不再自动为新用户创建默认头像
+            // 保持原有的头像状态
 
             isSessionExpiredHandling = false;
             sessionExpiredNotified = false;
@@ -7431,13 +7551,25 @@
             busy = true;
             clearTimeout(timer);
             authBox.classList.toggle('signup-mode', toSignup);
-            timer = setTimeout(() => {
+
+            // 检测是否为手机（屏幕宽度小于768px）
+            const isMobile = window.innerWidth < 768;
+
+            if (isMobile) {
+                // 手机上直接切换，不使用动画
                 pA.classList.toggle('show-reg', toSignup);
                 pB.classList.toggle('show-welcome', toSignup);
-            }, DURATION / 2);
-            setTimeout(() => {
                 busy = false;
-            }, DURATION);
+            } else {
+                // 桌面端使用动画切换
+                timer = setTimeout(() => {
+                    pA.classList.toggle('show-reg', toSignup);
+                    pB.classList.toggle('show-welcome', toSignup);
+                }, DURATION / 2);
+                setTimeout(() => {
+                    busy = false;
+                }, DURATION);
+            }
         }
 
         // 登录功能
@@ -7482,12 +7614,48 @@
 
         // 注册功能
         async function handleRegister() {
-            const username = document.getElementById('regUsername').value.trim();
-            const password = document.getElementById('regPassword').value.trim();
-            const confirmPwd = document.getElementById('regConfirmPwd').value.trim();
+            const rawUsername = document.getElementById('regUsername').value;
+            const rawPassword = document.getElementById('regPassword').value;
+            const rawConfirmPwd = document.getElementById('regConfirmPwd').value;
+            const rawSecretKey = document.getElementById('regSecretKey').value;
+            
+            // 检查空格
+            if (rawUsername.includes(' ')) {
+                showToast('用户名不能包含空格', 'error');
+                return;
+            }
+            if (rawPassword.includes(' ')) {
+                showToast('密码不能包含空格', 'error');
+                return;
+            }
+            if (rawConfirmPwd.includes(' ')) {
+                showToast('确认密码不能包含空格', 'error');
+                return;
+            }
+            
+            const username = rawUsername.trim();
+            const password = rawPassword.trim();
+            const confirmPwd = rawConfirmPwd.trim();
+            const secretKey = rawSecretKey.trim();
 
-            if (!username || !password || !confirmPwd) {
-                showToast('请填写所有字段', 'error');
+            if (!username && !password && !confirmPwd && !secretKey) {
+                showToast('请填写注册信息', 'error');
+                return;
+            }
+            if (!username) {
+                showToast('请输入用户名', 'error');
+                return;
+            }
+            if (!password) {
+                showToast('请输入密码', 'error');
+                return;
+            }
+            if (!confirmPwd) {
+                showToast('请确认密码', 'error');
+                return;
+            }
+            if (!secretKey) {
+                showToast('请输入注册密钥', 'error');
                 return;
             }
 
@@ -7497,7 +7665,7 @@
             }
 
             try {
-                const data = await vipSignup(username, password, confirmPwd);
+                const data = await vipSignup(username, password, confirmPwd, secretKey);
                 if (data && data.success) {
                     showToast('注册成功！正在自动登录...', 'success');
                     // 自动填充登录表单并登录
@@ -7509,9 +7677,16 @@
                 document.getElementById('regUsername').value = '';
                 document.getElementById('regPassword').value = '';
                 document.getElementById('regConfirmPwd').value = '';
+                document.getElementById('regSecretKey').value = '';
                 go(false); // 切换到登录面板
             } catch (error) {
-                showToast(error.message, 'error');
+                if (error.message.includes('用户名') || error.message.includes('already exists')) {
+                    showToast('用户名已存在', 'error');
+                } else if (error.message.includes('密钥') || error.message.includes('key')) {
+                    showToast('注册秘钥无效，请联系管理员获取', 'error');
+                } else {
+                    showToast(error.message, 'error');
+                }
             }
         }
 
@@ -7881,6 +8056,7 @@
                 document.getElementById('tokenInput').value = yunzhiToken;
                 updateNavbarTextVisibility();
                 document.getElementById('navbarTextToggle').checked = guestSettings.navbarShowText ?? true;
+                updateNavbarButtonsVisibility();
             }
             
             // 重新初始化主题（根据访客主题设置）
@@ -7952,12 +8128,18 @@
                     qqPageSize: settings.qqPageSize || 20,
                     yunzhiToken: settings.yunzhiToken || '',
                     navbarShowText: settings.navbarShowText ?? true,
+                    navbarShowWy: settings.navbarShowWy ?? true,
+                    navbarShowBili: settings.navbarShowBili ?? true,
+                    navbarShowQq: settings.navbarShowQq ?? true,
                     defaultPage: settings.defaultPage || 'home',
                     wy_page_size: settings.wyPageSize || 20,
                     bili_page_size: settings.biliPageSize || 20,
                     qq_page_size: settings.qqPageSize || 20,
                     token: settings.yunzhiToken || '',
                     navbar_show_text: settings.navbarShowText ?? true,
+                    navbar_show_wy: settings.navbarShowWy ?? true,
+                    navbar_show_bili: settings.navbarShowBili ?? true,
+                    navbar_show_qq: settings.navbarShowQq ?? true,
                     default_page: settings.defaultPage || 'home'
                 };
                 
@@ -8029,6 +8211,9 @@
                         qqPageSize: serverSettings.qqPageSize || serverSettings.qq_page_size || 20,
                         yunzhiToken: serverSettings.yunzhiToken || serverSettings.token || '',
                         navbarShowText: serverSettings.navbarShowText ?? serverSettings.navbar_show_text ?? true,
+                        navbarShowWy: serverSettings.navbarShowWy ?? serverSettings.navbar_show_wy ?? true,
+                        navbarShowBili: serverSettings.navbarShowBili ?? serverSettings.navbar_show_bili ?? true,
+                        navbarShowQq: serverSettings.navbarShowQq ?? serverSettings.navbar_show_qq ?? true,
                         defaultPage: serverSettings.defaultPage || serverSettings.default_page || 'home'
                     };
                     saveCurrentSettings(newSettings);
@@ -8057,6 +8242,7 @@
                     document.getElementById('tokenInput').value = yunzhiToken;
                     updateNavbarTextVisibility();
                     document.getElementById('navbarTextToggle').checked = newSettings.navbarShowText;
+                    updateNavbarButtonsVisibility();
                     
                     // 更新自定义选择器显示
                     const defaultSelect = document.getElementById('defaultPageSelect');
@@ -8127,6 +8313,117 @@
             if (navbarTextToggle) {
                 navbarTextToggle.checked = showText;
             }
+        }
+        
+        function updateNavbarButtonsVisibility() {
+            const showWy = getSetting('navbarShowWy', true);
+            const showBili = getSetting('navbarShowBili', true);
+            const showQq = getSetting('navbarShowQq', true);
+            
+            const navWy = document.getElementById('navWy');
+            const navBili = document.getElementById('navBili');
+            const navQQ = document.getElementById('navQQ');
+            
+            if (navWy) {
+                navWy.style.display = showWy ? 'flex' : 'none';
+            }
+            if (navBili) {
+                navBili.style.display = showBili ? 'flex' : 'none';
+            }
+            if (navQQ) {
+                navQQ.style.display = showQq ? 'flex' : 'none';
+            }
+            
+            // 检查当前选中的页面是否仍然可见
+            if (currentPageId === 'wy' && !showWy) {
+                switchPage('home');
+            } else if (currentPageId === 'bili' && !showBili) {
+                switchPage('home');
+            } else if (currentPageId === 'qq' && !showQq) {
+                switchPage('home');
+            }
+            
+            // 更新开关状态
+            const wyNavToggle = document.getElementById('wyNavToggle');
+            const biliNavToggle = document.getElementById('biliNavToggle');
+            const qqNavToggle = document.getElementById('qqNavToggle');
+            
+            if (wyNavToggle) {
+                wyNavToggle.checked = showWy;
+            }
+            if (biliNavToggle) {
+                biliNavToggle.checked = showBili;
+            }
+            if (qqNavToggle) {
+                qqNavToggle.checked = showQq;
+            }
+            
+            // 检查是否只剩下一个音乐按钮，如果是则禁用该开关
+            const activeCount = [showWy, showBili, showQq].filter(Boolean).length;
+            if (activeCount === 1) {
+                // 禁用最后一个活跃的开关
+                if (showWy) {
+                    if (wyNavToggle) {
+                        wyNavToggle.disabled = true;
+                        wyNavToggle.parentElement.style.opacity = '0.5';
+                    }
+                } else if (showBili) {
+                    if (biliNavToggle) {
+                        biliNavToggle.disabled = true;
+                        biliNavToggle.parentElement.style.opacity = '0.5';
+                    }
+                } else if (showQq) {
+                    if (qqNavToggle) {
+                        qqNavToggle.disabled = true;
+                        qqNavToggle.parentElement.style.opacity = '0.5';
+                    }
+                }
+            } else {
+                // 启用所有开关
+                if (wyNavToggle) {
+                    wyNavToggle.disabled = false;
+                    wyNavToggle.parentElement.style.opacity = '1';
+                }
+                if (biliNavToggle) {
+                    biliNavToggle.disabled = false;
+                    biliNavToggle.parentElement.style.opacity = '1';
+                }
+                if (qqNavToggle) {
+                    qqNavToggle.disabled = false;
+                    qqNavToggle.parentElement.style.opacity = '1';
+                }
+            }
+            
+            // 更新胶囊滑块位置和长度
+            const activeItem = document.querySelector('.navbar-item.active');
+            if (activeItem) {
+                moveNavbarPill(activeItem, false);
+            }
+        }
+        
+        // 收起/展开设置组
+        function toggleCollapsible(header) {
+            header.classList.toggle('collapsed');
+            const content = header.nextElementSibling;
+            if (content) {
+                content.classList.toggle('collapsed');
+            }
+        }
+        
+        // 自适应调节下拉选项高度
+        function adjustDropdownHeight(content) {
+            if (!content) return;
+            
+            // 计算下拉选项的位置和可用空间
+            const rect = content.getBoundingClientRect();
+            const windowHeight = window.innerHeight;
+            const spaceBelow = windowHeight - rect.top;
+            
+            // 设置最大高度为可用空间的80%，留一些余量
+            const maxHeight = Math.floor(spaceBelow * 0.8);
+            
+            // 应用最大高度
+            content.style.maxHeight = maxHeight + 'px';
         }
 
         // 绑定登录页面事件（在DOM加载完成后）
@@ -8375,7 +8672,7 @@
                     showToast('获取访问次数失败，请稍后重试', 'error');
                 } else {
                     if (visitCountElement) {
-                        visitCountElement.textContent = formatNumber(data.view_count);
+                        visitCountElement.textContent = data.view_count.toLocaleString();
                     }
                     if (visitUnitElement) {
                         visitUnitElement.style.display = 'inline';
@@ -8400,7 +8697,7 @@
             const mSu = document.getElementById('mSu');
 
             if (toSignupBtn) {
-                toSignupBtn.addEventListener('click', () => showToast('联系管理员进行注册', 'info'));
+                toSignupBtn.addEventListener('click', () => go(true));
             }
             if (toSigninBtn) {
                 toSigninBtn.addEventListener('click', () => go(false));
@@ -8409,7 +8706,7 @@
                 mSi.addEventListener('click', () => go(false));
             }
             if (mSu) {
-                mSu.addEventListener('click', () => showToast('联系管理员进行注册', 'info'));
+                mSu.addEventListener('click', () => go(true));
             }
 
             // 绑定模态框事件
@@ -8487,6 +8784,8 @@
             
             // 初始化导航栏文本显示
             updateNavbarTextVisibility();
+            // 初始化导航栏按钮显示
+            updateNavbarButtonsVisibility();
             
             // 添加自动登录验证
             autoLogin();
@@ -8512,6 +8811,98 @@
                         await syncUserData(true);   // 显示上传提示
                     } else {
                         showToast('导航栏文本显示设置已保存', 'success');
+                    }
+                });
+            }
+            
+            // 绑定导航栏按钮显示开关事件
+            const wyNavToggle = document.getElementById('wyNavToggle');
+            const biliNavToggle = document.getElementById('biliNavToggle');
+            const qqNavToggle = document.getElementById('qqNavToggle');
+            
+            if (wyNavToggle) {
+                wyNavToggle.addEventListener('change', async function() {
+                    const showWy = this.checked;
+                    
+                    // 检查是否会导致所有音乐按钮都被关闭
+                    if (!showWy) {
+                        const showBili = getSetting('navbarShowBili', true);
+                        const showQq = getSetting('navbarShowQq', true);
+                        if (!showBili && !showQq) {
+                            // 至少保留一个音乐按钮
+                            this.checked = true;
+                            showToast('至少保留一个音乐界面按钮', 'warning');
+                            return;
+                        }
+                    }
+                    
+                    setSetting('navbarShowWy', showWy);
+                    updateNavbarButtonsVisibility();
+
+                    // 登录状态下自动上传
+                    const isLoggedIn = localStorage.getItem('userLoggedIn') === 'true';
+                    if (isLoggedIn) {
+                        await syncUserData(true);   // 显示上传提示
+                    } else {
+                        showToast('网易云音乐按钮显示设置已保存', 'success');
+                    }
+                });
+            }
+            
+            if (biliNavToggle) {
+                biliNavToggle.addEventListener('change', async function() {
+                    const showBili = this.checked;
+                    
+                    // 检查是否会导致所有音乐按钮都被关闭
+                    if (!showBili) {
+                        const showWy = getSetting('navbarShowWy', true);
+                        const showQq = getSetting('navbarShowQq', true);
+                        if (!showWy && !showQq) {
+                            // 至少保留一个音乐按钮
+                            this.checked = true;
+                            showToast('至少保留一个音乐界面按钮', 'warning');
+                            return;
+                        }
+                    }
+                    
+                    setSetting('navbarShowBili', showBili);
+                    updateNavbarButtonsVisibility();
+
+                    // 登录状态下自动上传
+                    const isLoggedIn = localStorage.getItem('userLoggedIn') === 'true';
+                    if (isLoggedIn) {
+                        await syncUserData(true);   // 显示上传提示
+                    } else {
+                        showToast('Bilibil音乐按钮显示设置已保存', 'success');
+                    }
+                });
+            }
+            
+            if (qqNavToggle) {
+                qqNavToggle.addEventListener('change', async function() {
+                    const showQq = this.checked;
+                    
+                    // 检查是否会导致所有音乐按钮都被关闭
+                    if (!showQq) {
+                        const showWy = getSetting('navbarShowWy', true);
+                        const showBili = getSetting('navbarShowBili', true);
+                        if (!showWy && !showBili) {
+                            // 至少保留一个音乐按钮
+                            this.checked = true;
+                            showToast('至少保留一个音乐界面按钮', 'warning');
+                            return;
+                        }
+                    }
+                    
+                    setSetting('navbarShowQq', showQq);
+                    updateNavbarButtonsVisibility();
+
+                    // 登录状态下自动上传
+                    const isLoggedIn = localStorage.getItem('userLoggedIn') === 'true';
+                    if (isLoggedIn) {
+                        await syncUserData(true);   // 显示上传提示
+                    } else {
+                        showToast('QQ音乐按钮显示设置已保存', 'success');
                     }
                 });
             }
@@ -8677,6 +9068,9 @@
             qqPageSize: 20,
             yunzhiToken: '',
             navbarShowText: true,
+            navbarShowWy: true,
+            navbarShowBili: true,
+            navbarShowQq: true,
             defaultPage: 'home',
             plays: {
                 totalPlayTime: 0,        // 播放总时长（毫秒）
@@ -9301,7 +9695,7 @@
         async function fetchAudioBlobWithRetry(song, retries = 2) {
             // 对于 B 站，直接返回错误，不支持下载
             if (song.platform === 'bili') {
-                throw new Error('B站音乐不支持下载');
+                throw new Error('Bilibil音乐不支持下载');
             }
             
             let currentUrl = player.audioElement?.src;
@@ -9492,13 +9886,13 @@
             
             const zip = new JSZip();
             
-            // 1. 下载歌曲文件（仅网易云，B站跳过）
+            // 1. 下载歌曲文件（仅网易云，Bilibil跳过）
             const songItem = queueItems.find(i => i.id === 'song');
             if (songItem.selected) {
                 if (currentSong.platform === 'bili') {
                     songItem.status = 'error';
-                    songItem.error = 'B站音频需单独下载（打包不支持）';
-                    showToast('B站音频无法打包，将只打包歌词和封面', 'warning');
+                    songItem.error = 'Bilibil音频需单独下载（打包不支持）';
+                    showToast('Bilibil音频无法打包，将只打包歌词和封面', 'warning');
                 } else {
                     songItem.status = 'downloading';
                     updateQueueDisplay();
@@ -9634,9 +10028,9 @@
             try {
                 // 对于 B 站，直接返回错误，不支持下载
                 if (song.platform === 'bili') {
-                    showToast('B站音乐不支持下载', 'warning');
+                    showToast('Bilibil音乐不支持下载', 'warning');
                     isDownloading = false;
-                    return Promise.reject(new Error('B站音乐不支持下载'));
+                    return Promise.reject(new Error('Bilibil音乐不支持下载'));
                 }
 
                 // 网易云等其他平台：使用 fetch 获取 Blob 并保存
@@ -9791,13 +10185,13 @@
                 this.lyricsAutoScrollTimer = null;   // 自动滚动计时器
                 this.userScrolledLyrics = false;     // 用户是否主动滚动过歌词
                 
-                // B站音频加载相关
+                // Bilibil音频加载相关
                 this._autoPlayEnabled = true;   // 是否允许自动播放
                 this._playAttempted = false;    // 是否已尝试播放
-                this._isBiliSong = false;       // 是否为B站歌曲
-                this.onBiliProgress = null;     // B站音频缓冲进度监听函数
-                this.onCanPlay = null;          // B站音频可播放监听函数
-                this.onCanPlayThrough = null;   // B站音频可流畅播放监听函数
+                this._isBiliSong = false;       // 是否为Bilibil歌曲
+                this.onBiliProgress = null;     // Bilibil音频缓冲进度监听函数
+                this.onCanPlay = null;          // Bilibil音频可播放监听函数
+                this.onCanPlayThrough = null;   // Bilibil音频可流畅播放监听函数
                 
                 this.init();
             }
@@ -10092,7 +10486,7 @@
                             finalCoverUrl = finalCoverUrl.replace('http://', 'https://');
                         }
                         
-                        // 判断是否为B站图片
+                        // 判断是否为Bilibil图片
                         const isBiliPic = finalCoverUrl.includes('hdslb.com') || finalCoverUrl.includes('bilibili.com');
                         const referrerAttr = isBiliPic ? ' referrerpolicy="no-referrer"' : '';
                         
@@ -10412,12 +10806,12 @@
                 if (!currentSong) return;
                 if (currentSong.platform === 'bili') {
                     if (this.retryCount >= this.maxRetries) {
-                        showToast('B站音频加载失败，请检查网络或重新搜索', 'error');
+                        showToast('Bilibil音频加载失败，请检查网络或重新搜索', 'error');
                         this.retryCount = 0;
                         return;
                     }
                     this.retryCount++;
-                    showToast(`B站音频加载中，重试 (${this.retryCount}/${this.maxRetries})...`, 'warning');
+                    showToast(`Bilibil音频加载中，重试 (${this.retryCount}/${this.maxRetries})...`, 'warning');
                     setTimeout(async () => {
                         await refreshAndPlaySong(currentSong.id, 'bili');
                     }, this.retryDelay);
@@ -10766,7 +11160,7 @@
                 }
             }
             
-            // 新增：B站音乐缓冲进度显示（可选）
+            // 新增：Bilibil音乐缓冲进度显示（可选）
             onBiliProgress() {
                 const buffered = this.audioElement.buffered;
                 if (buffered.length > 0) {
@@ -10934,7 +11328,7 @@
         const wyResultsCount = document.getElementById('wyResultsCount');
         const wyPlaylistBtn = document.getElementById('wyPlaylistBtn');
         
-        // B站搜索元素
+        // Bilibil搜索元素
         const biliSearchInput = document.getElementById('biliSearchInput');
         const biliSearchBtn = document.getElementById('biliSearchBtn');
         const biliSearchClear = document.getElementById('biliSearchClear');
@@ -11442,7 +11836,7 @@
             this.value = value;
             biliPageSize = value;
             setSetting('biliPageSize', value);
-            showToast('B站搜索数量设置已保存', 'success');
+            showToast('Bilibil搜索数量设置已保存', 'success');
             triggerSync();
         });
 
@@ -11464,7 +11858,7 @@ wyPlaylistBtn.addEventListener('click', () => {
     openModal('playlistModal');
 });
 
-// B站页面按钮事件
+// Bilibil页面按钮事件
 biliPlaylistBtn.addEventListener('click', () => {
     renderPlaylist();
     openModal('playlistModal');
@@ -11529,10 +11923,9 @@ qqPlaylistBtn.addEventListener('click', () => {
             navWy.classList.remove('active');
             navBili.classList.remove('active');
             navQQ.classList.remove('active');
-            // 设置页面保持个人页面按钮的激活状态
-            if (pageId !== 'settings') {
-                navProfile.classList.remove('active');
-            }
+            navProfile.classList.remove('active');
+            navSettings.classList.remove('active');
+            
             let activeItem;
             if (pageId === 'home') {
                 navHome.classList.add('active');
@@ -11550,13 +11943,12 @@ qqPlaylistBtn.addEventListener('click', () => {
                 navProfile.classList.add('active');
                 activeItem = navProfile;
             } else if (pageId === 'settings') {
-                // 设置页面保持个人页面按钮激活
-                navProfile.classList.add('active');
-                activeItem = navProfile;
+                navSettings.classList.add('active');
+                activeItem = navSettings;
             }
             
-            // 更新胶囊滑块位置（设置页面不移动胶囊滑块）
-            if (activeItem && pageId !== 'settings') {
+            // 更新胶囊滑块位置
+            if (activeItem) {
                 moveNavbarPill(activeItem);
                 // 个人页面不自动滚动导航栏，保持用户当前视野
                 if (pageId !== 'profile') {
@@ -11629,11 +12021,12 @@ qqPlaylistBtn.addEventListener('click', () => {
             switchPage('qq');
         });
 
+        navSettings.addEventListener('click', () => {
+            switchPage('settings');
+        });
+
         navProfile.addEventListener('click', () => {
-            // 如果当前在设置页面，点击个人页面按钮保持在设置页面
-            if (currentPageId !== 'settings') {
-                switchPage('profile');
-            }
+            switchPage('profile');
         });
 
         // 个人页面设置链接
@@ -11652,13 +12045,7 @@ qqPlaylistBtn.addEventListener('click', () => {
             });
         }
 
-        // 设置页面返回按钮
-        const settingsBackBtn = document.getElementById('settingsBackBtn');
-        if (settingsBackBtn) {
-            settingsBackBtn.addEventListener('click', () => {
-                switchPage('profile');
-            });
-        }
+
 
         // 网易云搜索相关事件
 wySearchInput.addEventListener('input', function() {
@@ -11685,7 +12072,7 @@ wySearchInput.addEventListener('keypress', (e) => {
     }
 });
 
-// B站搜索相关事件
+// Bilibil搜索相关事件
 biliSearchInput.addEventListener('input', function() {
     biliSearchClear.classList.toggle('show', this.value.length > 0);
 });
@@ -11852,7 +12239,7 @@ wyLoadMoreBtn.addEventListener('click', () => {
     });
 });
 
-// B站加载更多 - 保持原有逻辑不变
+// Bilibil加载更多 - 保持原有逻辑不变
 biliLoadMoreBtn.addEventListener('click', () => {
     searchPageNum++;
     performSearch('bili', searchPageNum);
@@ -12072,37 +12459,57 @@ qqLoadMoreBtn.addEventListener('click', () => {
         // 初始化主题
         function initTheme() {
             let savedTheme = getSetting('theme');
-            if (!savedTheme) savedTheme = 'dark';
+            if (!savedTheme) savedTheme = 'dark0';
             
             // 兼容旧版 'star' 主题
             if (savedTheme === 'star') {
                 savedTheme = 'star0';
                 setSetting('theme', savedTheme);
             }
+            // 兼容旧版 'light' / 'dark' 无数字后缀
+            if (savedTheme === 'light') {
+                savedTheme = 'light0';
+                setSetting('theme', savedTheme);
+            } else if (savedTheme === 'dark') {
+                savedTheme = 'dark0';
+                setSetting('theme', savedTheme);
+            }
             
             currentTheme = savedTheme;
             
-            if (savedTheme.startsWith('star')) {
-                let idx = parseInt(savedTheme.replace('star', '')) || 0;
-                if (idx >= starConstellations.length) idx = 0;
-                currentConstellationIndex = idx;
+            const parsed = parseThemeString(savedTheme);
+            
+            if (parsed.mode === 'star') {
+                currentConstellationIndex = parsed.constellationIdx;
                 document.documentElement.classList.add('dark-theme');
                 applyStarBg(true);
-                updateConstellationSelectSelected(idx);
-                // 更新星座标签
-                const label = document.getElementById('starConstellationLabel');
-                if (label && starConstellations[idx]) {
-                    label.textContent = `${starConstellations[idx].nameCN} · ${starConstellations[idx].name}`;
-                }
-            } else if (savedTheme === 'dark') {
+                updateConstellationSelectSelected(currentConstellationIndex);
+            } else if (parsed.mode === 'dark') {
                 document.documentElement.classList.add('dark-theme');
                 applyStarBg(false);
+                currentColorSchemeId.dark = parsed.schemeId;
+                applyColorScheme('dark');
             } else {
                 document.documentElement.classList.remove('dark-theme');
                 applyStarBg(false);
+                currentColorSchemeId.light = parsed.schemeId;
+                applyColorScheme('light');
             }
             
             updateThemeToggleButtons();
+            toggleColorSchemeGroup(parsed.mode);
+            // 同步下拉菜单显示
+            if (parsed.mode === 'light' || parsed.mode === 'dark') {
+                updateColorSchemeDropdown(parsed.mode);
+            }
+            
+            // 确保 currentColorSchemeId 与 currentTheme 同步
+            const parsedForSync = parseThemeString(currentTheme);
+            if (parsedForSync.mode === 'light') {
+                currentColorSchemeId.light = parsedForSync.schemeId;
+            } else if (parsedForSync.mode === 'dark') {
+                currentColorSchemeId.dark = parsedForSync.schemeId;
+            }
         }
         
         // 更新主题切换按钮状态
@@ -12112,10 +12519,19 @@ qqLoadMoreBtn.addEventListener('click', () => {
             
             if (!themeTogglePill || themeToggleBtns.length === 0) return;
 
+            const parsed = parseThemeString(currentTheme);
             let activeBtn = null;
+            
             themeToggleBtns.forEach(btn => {
                 btn.classList.remove('active');
-                if (btn.dataset.theme === currentTheme || (btn.dataset.theme === 'star' && currentTheme.startsWith('star'))) {
+                const btnTheme = btn.dataset.theme;
+                if (btnTheme === 'star' && parsed.mode === 'star') {
+                    btn.classList.add('active');
+                    activeBtn = btn;
+                } else if (btnTheme === 'light' && parsed.mode === 'light') {
+                    btn.classList.add('active');
+                    activeBtn = btn;
+                } else if (btnTheme === 'dark' && parsed.mode === 'dark') {
                     btn.classList.add('active');
                     activeBtn = btn;
                 }
@@ -12124,12 +12540,10 @@ qqLoadMoreBtn.addEventListener('click', () => {
             if (activeBtn) {
                 const rect = activeBtn.getBoundingClientRect();
                 const parentRect = activeBtn.parentElement.getBoundingClientRect();
-                
                 if (rect.width > 0 && parentRect.width > 0) {
                     themeTogglePill.style.left = (rect.left - parentRect.left) + 'px';
                     themeTogglePill.style.width = rect.width + 'px';
                 } else {
-                    // 元素不可见时，延迟重试
                     setTimeout(() => updateThemeToggleButtons(), 100);
                 }
             }
@@ -12137,9 +12551,12 @@ qqLoadMoreBtn.addEventListener('click', () => {
         
         // 切换主题
         function switchTheme(theme, button) {
-            // 检查是否点击的是当前已选中的主题
-            if (theme === currentTheme) {
-                return; // 如果是当前已选中的主题，则不执行任何操作
+            // 防止重复点击同一主题
+            let targetMode = theme;
+            if (theme === 'star') targetMode = 'star';
+            const currentParsed = parseThemeString(currentTheme);
+            if (currentParsed.mode === targetMode && targetMode !== 'star') {
+                return; // 同一模式不重复切换
             }
             
             // 创建波纹效果
@@ -12149,7 +12566,6 @@ qqLoadMoreBtn.addEventListener('click', () => {
                 const size = Math.max(rect.width, rect.height);
                 const x = event.clientX - rect.left - size / 2;
                 const y = event.clientY - rect.top - size / 2;
-                
                 ripple.style.width = ripple.style.height = size + 'px';
                 ripple.style.left = x + 'px';
                 ripple.style.top = y + 'px';
@@ -12159,68 +12575,61 @@ qqLoadMoreBtn.addEventListener('click', () => {
                 ripple.style.transform = 'scale(0)';
                 ripple.style.animation = 'ripple 0.6s linear';
                 ripple.style.pointerEvents = 'none';
-                
                 button.style.position = 'relative';
                 button.style.overflow = 'hidden';
                 button.appendChild(ripple);
-                
-                // 移除波纹元素
-                setTimeout(() => {
-                    ripple.remove();
-                }, 600);
+                setTimeout(() => ripple.remove(), 600);
             }
             
-            // 处理星空主题：确保格式为 star{index}
-            let effectiveTheme = theme;
+            // 确定新的主题字符串
+            let newThemeStr;
             if (theme === 'star') {
-                // 若点击星空按钮且当前已是星空主题，保持原星座索引
-                if (currentTheme && currentTheme.startsWith('star')) {
-                    const currentIdx = parseInt(currentTheme.replace('star', '')) || 0;
-                    effectiveTheme = `star${currentIdx}`;
-                } else {
-                    effectiveTheme = `star${currentConstellationIndex || 0}`;
-                }
-            } else if (theme === 'light' || theme === 'dark') {
-                effectiveTheme = theme;
+                newThemeStr = `star${currentConstellationIndex}`;
+            } else {
+                const schemeId = currentColorSchemeId[theme] || 'default';
+                newThemeStr = buildThemeString(theme, schemeId);
             }
             
-            // 添加过渡类
             document.documentElement.classList.add('theme-transition');
             
-            // 延迟一小段时间让过渡类生效
             setTimeout(() => {
-                // 应用主题样式
-                if (effectiveTheme.startsWith('star')) {
-                    let idx = parseInt(effectiveTheme.replace('star', '')) || 0;
+                // 应用样式
+                if (newThemeStr.startsWith('star')) {
+                    let idx = parseInt(newThemeStr.replace('star', '')) || 0;
                     if (idx >= starConstellations.length) idx = 0;
                     currentConstellationIndex = idx;
                     document.documentElement.classList.add('dark-theme');
                     applyStarBg(true);
                     updateConstellationSelectSelected(idx);
                     showToast(`星空主题 · ${starConstellations[idx].nameCN}`, 'success');
-                } else if (effectiveTheme === 'dark') {
+                } else if (newThemeStr.startsWith('dark')) {
                     document.documentElement.classList.add('dark-theme');
                     applyStarBg(false);
+                    const parsed = parseThemeString(newThemeStr);
+                    currentColorSchemeId.dark = parsed.schemeId;
+                    applyColorScheme('dark');
                     showToast('深色主题已启用', 'success');
                 } else {
                     document.documentElement.classList.remove('dark-theme');
                     applyStarBg(false);
+                    const parsed = parseThemeString(newThemeStr);
+                    currentColorSchemeId.light = parsed.schemeId;
+                    applyColorScheme('light');
                     showToast('浅色主题已启用', 'success');
                 }
                 
-                // 保存主题设置
-                currentTheme = effectiveTheme;
-                setSetting('theme', effectiveTheme);
-                
-                // 更新主题切换按钮状态
+                currentTheme = newThemeStr;
+                setSetting('theme', newThemeStr);
                 updateThemeToggleButtons();
+                toggleColorSchemeGroup(newThemeStr.startsWith('star') ? 'star' : (newThemeStr.startsWith('dark') ? 'dark' : 'light'));
+                if (!newThemeStr.startsWith('star')) {
+                    updateColorSchemeDropdown(newThemeStr.startsWith('dark') ? 'dark' : 'light');
+                }
                 
-                // 过渡完成后移除过渡类
                 setTimeout(() => {
                     document.documentElement.classList.remove('theme-transition');
                 }, 600);
                 
-                // 同步主题设置
                 triggerSync();
             }, 20);
         }
@@ -12238,6 +12647,156 @@ qqLoadMoreBtn.addEventListener('click', () => {
                 timeout = setTimeout(later, wait);
                 if (callNow) func.apply(this, args);
             };
+        }
+        
+        // ---------- 配色方案管理 ----------
+        const colorSchemes = {
+            light: [
+                { id: 'default', name: '纯白', class: 'color-scheme-light-default' },
+                { id: 'warm', name: '米白', class: 'color-scheme-light-warm' },
+                { id: 'gray', name: '浅灰', class: 'color-scheme-light-gray' },
+                { id: 'blue', name: '淡蓝', class: 'color-scheme-light-blue' }
+            ],
+            dark: [
+                { id: 'default', name: '深灰', class: 'color-scheme-dark-default' },
+                { id: 'deep', name: '暗黑', class: 'color-scheme-dark-deep' },
+                { id: 'slate', name: '灰蓝', class: 'color-scheme-dark-slate' },
+                { id: 'navy', name: '深蓝', class: 'color-scheme-dark-navy' }
+            ]
+        };
+        
+        // ---------- 主题标识解析：light0 → { mode: 'light', schemeId: 'default' } ----------
+        function parseThemeString(themeStr) {
+            if (!themeStr) return { mode: 'dark', schemeId: 'default' };
+            if (themeStr.startsWith('star')) {
+                const idx = parseInt(themeStr.replace('star', '')) || 0;
+                return { mode: 'star', constellationIdx: idx, schemeId: null };
+            }
+            const match = themeStr.match(/^(light|dark)(\d+)$/);
+            if (match) {
+                const mode = match[1];
+                const schemeIndex = parseInt(match[2]);
+                const schemes = colorSchemes[mode];
+                const scheme = schemes[schemeIndex] || schemes[0];
+                return { mode, schemeId: scheme.id };
+            }
+            if (themeStr === 'light') return { mode: 'light', schemeId: 'default' };
+            if (themeStr === 'dark') return { mode: 'dark', schemeId: 'default' };
+            return { mode: 'dark', schemeId: 'default' };
+        }
+        
+        function buildThemeString(mode, schemeId) {
+            if (mode === 'star') {
+                const idx = currentConstellationIndex;
+                return `star${idx}`;
+            }
+            const schemes = colorSchemes[mode];
+            const scheme = schemes.find(s => s.id === schemeId) || schemes[0];
+            const index = schemes.indexOf(scheme);
+            return `${mode}${index}`;
+        }
+        
+        let currentColorSchemeId = {
+            light: localStorage.getItem('colorScheme_light') || 'default',
+            dark: localStorage.getItem('colorScheme_dark') || 'default'
+        };
+        
+        function applyColorScheme(themeType) {
+            const htmlEl = document.documentElement;
+            
+            // 1. 移除所有配色类（包括可能残留的旧类）
+            const allSchemeClasses = [
+                ...Object.values(colorSchemes.light).map(s => s.class),
+                ...Object.values(colorSchemes.dark).map(s => s.class)
+            ];
+            htmlEl.classList.remove(...allSchemeClasses);
+
+            // 2. 仅在浅色/深色主题下添加对应配色类
+            if (themeType === 'light' || themeType === 'dark') {
+                const schemeId = currentColorSchemeId[themeType];
+                const scheme = colorSchemes[themeType].find(s => s.id === schemeId) || colorSchemes[themeType][0];
+                if (scheme) {
+                    htmlEl.classList.add(scheme.class);
+                }
+            }
+        }
+        
+        function updateColorSchemeDropdown(themeType) {
+            // 先同步 currentColorSchemeId 为最新值
+            const parsed = parseThemeString(currentTheme);
+            if (themeType === 'light') {
+                currentColorSchemeId.light = parsed.schemeId;
+            } else if (themeType === 'dark') {
+                currentColorSchemeId.dark = parsed.schemeId;
+            }
+
+            const content = document.getElementById('colorSchemeContent');
+            const valueSpan = document.getElementById('colorSchemeValue');
+            if (!content || !valueSpan) return;
+            
+            const schemes = colorSchemes[themeType] || [];
+            const currentId = currentColorSchemeId[themeType] || 'default';
+            
+            // 清空并重建选项
+            content.innerHTML = '';
+            schemes.forEach(scheme => {
+                const item = document.createElement('div');
+                item.className = 'custom-select-item';
+                if (scheme.id === currentId) item.classList.add('selected');
+                item.dataset.value = scheme.id;
+                item.textContent = scheme.name;
+                item.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    // 更新选中状态
+                    content.querySelectorAll('.custom-select-item').forEach(i => i.classList.remove('selected'));
+                    item.classList.add('selected');
+                    valueSpan.textContent = scheme.name;
+                    
+                    const themeTypeForClick = (currentTheme.startsWith('dark') ? 'dark' : 'light');
+                    currentColorSchemeId[themeTypeForClick] = scheme.id;
+                    const newThemeStr = buildThemeString(themeTypeForClick, scheme.id);
+                    currentTheme = newThemeStr;
+                    setSetting('theme', newThemeStr);
+                    applyColorScheme(themeTypeForClick);
+                    showToast(`背景色已切换为 ${scheme.name}`, 'success');
+                    content.classList.remove('show');
+                    triggerSync();
+                });
+                content.appendChild(item);
+            });
+            
+            const selectedScheme = schemes.find(s => s.id === currentId) || schemes[0];
+            valueSpan.textContent = selectedScheme ? selectedScheme.name : '默认';
+        }
+        
+        function toggleColorSchemeGroup(theme) {
+            const group = document.getElementById('colorSchemeGroup');
+            if (!group) return;
+            if (theme === 'light' || theme === 'dark') {
+                group.style.display = 'block';
+                // 延迟确保 DOM 更新
+                setTimeout(() => {
+                    updateColorSchemeDropdown(theme);
+                    applyColorScheme(theme);
+                }, 10);
+            } else {
+                group.style.display = 'none';
+                const htmlEl = document.documentElement;
+                Object.values(colorSchemes.light).forEach(s => htmlEl.classList.remove(s.class));
+                Object.values(colorSchemes.dark).forEach(s => htmlEl.classList.remove(s.class));
+            }
+        }
+        
+        function initColorScheme() {
+            const savedTheme = getSetting('theme') || 'dark0';
+            const parsed = parseThemeString(savedTheme);
+            let baseTheme;
+            if (parsed.mode === 'star') {
+                baseTheme = 'star';
+            } else {
+                baseTheme = parsed.mode;
+            }
+            toggleColorSchemeGroup(baseTheme);
         }
         
         // 节流函数 - 优化滚动等连续事件
@@ -12333,6 +12892,11 @@ qqLoadMoreBtn.addEventListener('click', () => {
                 trigger.addEventListener('click', (e) => {
                     e.stopPropagation();
                     content.classList.toggle('show');
+                    
+                    // 自适应调节下拉选项高度
+                    if (content.classList.contains('show')) {
+                        adjustDropdownHeight(content);
+                    }
                 });
                 
                 // 点击选项选择值
@@ -12419,6 +12983,14 @@ qqLoadMoreBtn.addEventListener('click', () => {
         // 初始化主题（在DOM加载完成后立即执行）
         initTheme();
         
+        // 确保下拉菜单显示正确
+        setTimeout(() => {
+            const parsedForDropdown = parseThemeString(currentTheme);
+            if (parsedForDropdown.mode === 'light' || parsedForDropdown.mode === 'dark') {
+                updateColorSchemeDropdown(parsedForDropdown.mode);
+            }
+        }, 50);
+        
         // 主题切换按钮事件
         document.addEventListener('click', (e) => {
             const themeBtn = e.target.closest('.theme-toggle-btn');
@@ -12440,7 +13012,7 @@ qqLoadMoreBtn.addEventListener('click', () => {
         });
 
         async function makeApiRequest(url, params, useCache = true) {
-            // 检查是否是B站API
+            // 检查是否是BilibilAPI
             const isBiliApi = url.includes('cenguigui.cn/api/bilibili');
             if (isBiliApi) {
                 // 检查速率限制
@@ -12479,7 +13051,7 @@ qqLoadMoreBtn.addEventListener('click', () => {
             } else if (platform === 'qq') {
                 // 检查是否设置了Token
                 if (!yunzhiToken) {
-                    throw new Error('未设置Token，请前往设置配置云智API Token，或切换到B站API使用');
+                    throw new Error('未设置Token，请前往设置配置云智API Token，或切换到BilibilAPI使用');
                 }
                 return makeApiRequest(`${API_BASE}/hqyyid.php`, {
                     name: sanitizedKeyword,
@@ -12490,7 +13062,7 @@ qqLoadMoreBtn.addEventListener('click', () => {
             }
             // 检查是否设置了Token
             if (!yunzhiToken) {
-                throw new Error('未设置Token，请前往设置配置云智API Token，或切换到B站API使用');
+                throw new Error('未设置Token，请前往设置配置云智API Token，或切换到BilibilAPI使用');
             }
             return makeApiRequest(`${API_BASE}/hqyyid.php`, {
                 name: sanitizedKeyword,
@@ -12524,7 +13096,7 @@ qqLoadMoreBtn.addEventListener('click', () => {
                     let audioUrl = result.data.url;
                     if (audioUrl.startsWith('//')) audioUrl = 'https:' + audioUrl;
                     if (!audioUrl.includes('?') && !audioUrl.includes('.mp3') && !audioUrl.includes('.m4a')) {
-                        // 某些B站音频需要添加参数才能直接播放
+                        // 某些Bilibil音频需要添加参数才能直接播放
                         audioUrl = audioUrl + '?platform=web&otype=json';
                     }
                     result.data.url = audioUrl;
@@ -12532,7 +13104,7 @@ qqLoadMoreBtn.addEventListener('click', () => {
             } else if (targetPlatform === 'qq') {
                 // 检查是否设置了Token
                 if (!yunzhiToken) {
-                    throw new Error('未设置Token，请前往设置配置云智API Token，或切换到B站API使用');
+                    throw new Error('未设置Token，请前往设置配置云智API Token，或切换到BilibilAPI使用');
                 }
                 result = await makeApiRequest(`${API_BASE}/yyjhss.php`, {
                     id: songId,
@@ -12541,7 +13113,7 @@ qqLoadMoreBtn.addEventListener('click', () => {
             } else {
                 // 检查是否设置了Token
                 if (!yunzhiToken) {
-                    throw new Error('未设置Token，请前往设置配置云智API Token，或切换到B站API使用');
+                    throw new Error('未设置Token，请前往设置配置云智API Token，或切换到BilibilAPI使用');
                 }
                 result = await makeApiRequest(`${API_BASE}/yyjhss.php`, {
                     id: songId,
@@ -12685,7 +13257,7 @@ qqLoadMoreBtn.addEventListener('click', () => {
                         `;
                         emptyState.style.display = 'block';
                         if (resultsCount) resultsCount.textContent = '';
-                        // 网易云和B站API都永久显示加载更多按钮
+                        // 网易云和BilibilAPI都永久显示加载更多按钮
                         loadMoreContainer.style.display = 'block';
                         // 重置尝试次数
                         if (platform === 'wy') {
@@ -12702,7 +13274,7 @@ qqLoadMoreBtn.addEventListener('click', () => {
                             }
                         }
 
-                        // 统一字段名，确保B站API返回的字段被正确处理
+                        // 统一字段名，确保BilibilAPI返回的字段被正确处理
                         const normalizedData = rawSongList.map(item => ({
                             ...item,
                             name: item.name || item.title || item.song_name || '未知歌曲',
@@ -12734,7 +13306,7 @@ qqLoadMoreBtn.addEventListener('click', () => {
                         renderSongList(uniqueData, page === 1 ? 0 : searchResults[platform].length - uniqueData.length, platform);
 
                         emptyState.style.display = 'none';
-                        // 网易云和B站API都永久显示加载更多按钮
+                        // 网易云和BilibilAPI都永久显示加载更多按钮
                         loadMoreContainer.style.display = 'block';
                         // 重置尝试次数
                         if (platform === 'wy') {
@@ -12759,7 +13331,7 @@ qqLoadMoreBtn.addEventListener('click', () => {
                         if (resultsCount) {
                             resultsCount.textContent = '';
                         }
-                        // 网易云和B站API都永久显示加载更多按钮
+                        // 网易云和BilibilAPI都永久显示加载更多按钮
                         loadMoreContainer.style.display = 'block';
                         // 重置尝试次数
                         if (platform === 'wy') {
@@ -12774,7 +13346,7 @@ qqLoadMoreBtn.addEventListener('click', () => {
                             loadMoreContainer.style.display = 'none';
                             showToast('已经到底了', 'info');
                         } else {
-                            // B站API：可能是速率限制，不隐藏加载更多按钮
+                            // BilibilAPI：可能是速率限制，不隐藏加载更多按钮
                             emptyState.style.display = 'none';
                             loadMoreContainer.style.display = 'block';
                             showToast('可能达到API速率限制，请稍后再试', 'warning');
@@ -12787,7 +13359,7 @@ qqLoadMoreBtn.addEventListener('click', () => {
                 // 根据错误类型显示不同的提示
                 const errorMessage = error.message || '';
                 if (errorMessage.includes('未设置Token')) {
-                    showToast('未设置Token，请前往设置配置或切换到B站API', 'warning');
+                    showToast('未设置Token，请前往设置配置或切换到BilibilAPI', 'warning');
                 } else {
                     showToast('搜索失败，请重试', 'error');
                 }
@@ -12862,7 +13434,7 @@ qqLoadMoreBtn.addEventListener('click', () => {
                 processedUrl = processedUrl.replace('http://', 'https://');
             }
 
-            // 检查是否是B站图片域名
+            // 检查是否是Bilibil图片域名
             const isBiliPic = processedUrl.includes('hdslb.com') || processedUrl.includes('bilibili.com');
             // 检查是否是QQ音乐图片域名
             const isQQPic = processedUrl.includes('y.gtimg.cn');
@@ -12870,7 +13442,7 @@ qqLoadMoreBtn.addEventListener('click', () => {
             // 使用Image对象预加载
             const img = new Image();
             
-            // 对非B站和非QQ音乐图片尝试跨域加载
+            // 对非Bilibil和非QQ音乐图片尝试跨域加载
             if (!isBiliPic && !isQQPic) {
                 img.crossOrigin = 'anonymous';
             }
@@ -12910,7 +13482,7 @@ qqLoadMoreBtn.addEventListener('click', () => {
                 }
             };
             
-            // 对于B站和QQ音乐图片，尝试通过添加referrerPolicy来解决403问题
+            // 对于Bilibil和QQ音乐图片，尝试通过添加referrerPolicy来解决403问题
             if (isBiliPic || isQQPic) {
                 img.referrerPolicy = 'no-referrer';
             }
@@ -12934,7 +13506,7 @@ qqLoadMoreBtn.addEventListener('click', () => {
                 li.dataset.id = song.id;
                 li.dataset.index = startIndex + index;
                 
-                // 处理B站API返回的字段名差异
+                // 处理BilibilAPI返回的字段名差异
                 const songName = song.name || song.title || '未知歌曲';
                 const songArtist = song.artist || '未知艺术家';
                 
@@ -13112,7 +13684,7 @@ qqLoadMoreBtn.addEventListener('click', () => {
                         // 获取音频URL（支持多个可能的字段名）
                         songData.url = result.data.url || result.data.audio || result.data.play_url || result.data.stream_url;
                         songData.album = result.data.album;
-                        // 支持多个可能的字段名（包括B站API可能的字段名）
+                        // 支持多个可能的字段名（包括BilibilAPI可能的字段名）
                         if (result.data.name || result.data.title) songData.name = result.data.name || result.data.title;
                         if (result.data.artist || result.data.owner || result.data.up || result.data.author || result.data.uploader) {
                             songData.artist = result.data.artist || result.data.owner || result.data.up || result.data.author || result.data.uploader;
@@ -13129,7 +13701,7 @@ qqLoadMoreBtn.addEventListener('click', () => {
                         const placeholder = songItem.querySelector('.cover-placeholder');
                         let coverUrl = null;
                         if (result.data) {
-                            // 支持多个可能的封面字段名（包括B站API可能的字段名）
+                            // 支持多个可能的封面字段名（包括BilibilAPI可能的字段名）
                             coverUrl = result.data.pic || result.data.cover || result.data.thumbnail || result.data.image || result.data.img || result.data.albumPic || result.data.album_pic || result.data.picUrl || result.data.pic_url;
                         }
                         
@@ -13153,7 +13725,7 @@ qqLoadMoreBtn.addEventListener('click', () => {
             // 更新歌曲名称和艺术家
             const songTitle = item.querySelector('.song-title');
             const songArtist = item.querySelector('.song-artist');
-            // 支持多个可能的字段名（包括B站API可能的字段名）
+            // 支持多个可能的字段名（包括BilibilAPI可能的字段名）
             if (data.name || data.title) {
                 songTitle.textContent = escapeHTML(data.name || data.title);
             }
@@ -13166,7 +13738,7 @@ qqLoadMoreBtn.addEventListener('click', () => {
             const placeholder = item.querySelector('.cover-placeholder');
             let coverUrl = null;
             if (data) {
-                // 支持多个可能的封面字段名（包括B站API可能的字段名）
+                // 支持多个可能的封面字段名（包括BilibilAPI可能的字段名）
                 coverUrl = data.pic || data.cover || data.thumbnail || data.image || data.img || data.albumPic || data.album_pic || data.picUrl || data.pic_url;
             }
             
@@ -13228,9 +13800,9 @@ qqLoadMoreBtn.addEventListener('click', () => {
                     addToPlayHistory({ ...song, playedAt: new Date().toISOString() });
                     addPlayPoints(song.id, song.name);
                     
-                    // 对于B站音乐，显示加载提示
+                    // 对于Bilibil音乐，显示加载提示
                     if (song.platform === 'bili') {
-                        showToast('正在加载B站音频，请稍候...', 'info');
+                        showToast('正在加载Bilibil音频，请稍候...', 'info');
                     }
                     
                     // 尝试播放，若失败则刷新链接
@@ -13280,9 +13852,9 @@ qqLoadMoreBtn.addEventListener('click', () => {
                     addToPlayHistory({ ...song, playedAt: new Date().toISOString() });
                     addPlayPoints(song.id, song.name);
                     
-                    // 对于B站音乐，显示加载提示
+                    // 对于Bilibil音乐，显示加载提示
                     if (platform === 'bili') {
-                        showToast('正在加载B站音频...', 'info');
+                        showToast('正在加载Bilibil音频...', 'info');
                     }
                     
                     player.setSong(song);
@@ -13328,7 +13900,7 @@ qqLoadMoreBtn.addEventListener('click', () => {
                 } else {
                     // 尝试备用域名或其他格式
                     if (platform === 'bili') {
-                        showToast('B站音频链接失效，请尝试重新搜索', 'error');
+                        showToast('Bilibil音频链接失效，请尝试重新搜索', 'error');
                     } else {
                         showToast('获取播放链接失败', 'error');
                     }
@@ -14483,6 +15055,8 @@ qqLoadMoreBtn.addEventListener('click', () => {
             }
             
             initStarCanvas();
+            // 初始化配色方案
+            initColorScheme();
             // 初始化加载公告
             loadAnnouncement();
             bindAnnouncementRefresh();
@@ -14492,6 +15066,22 @@ qqLoadMoreBtn.addEventListener('click', () => {
             disableRightClick();
             // 禁用全局拖动
             disableDragging();
+        });
+        
+        // 监听存储变化，同步配色方案
+        window.addEventListener('storage', (e) => {
+            if (e.key === 'theme' || e.key === 'guest_theme') {
+                const newTheme = localStorage.getItem(e.key) || 'dark0';
+                currentTheme = newTheme;
+                const parsed = parseThemeString(newTheme);
+                if (parsed.mode === 'star') {
+                    toggleColorSchemeGroup('star');
+                } else {
+                    toggleColorSchemeGroup(parsed.mode);
+                    updateColorSchemeDropdown(parsed.mode);
+                }
+                updateThemeToggleButtons();
+            }
         });
     </script>
     <!-- 下载选项面板 -->
