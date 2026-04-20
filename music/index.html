@@ -6784,6 +6784,7 @@
                                 </a>
                             </div>
                             <div class="token-input-container">
+                                <input type="text" class="settings-input" style="display:none;" aria-hidden="true" tabindex="-1" autocomplete="username">
                                 <input type="password" class="settings-input" id="tokenInput" placeholder="输入云智API Token" autocomplete="new-password">
                                 <button type="button" class="token-toggle-btn" onclick="toggleTokenVisibility('tokenInput')">
                                     <i class="fas fa-eye-slash"></i>
@@ -11150,8 +11151,12 @@
             }
             
             setSong(song, retryCount = 0) {
-                // 设置跨域属性，避免可视化时输出静音
-                this.audioElement.crossOrigin = "anonymous";
+                // 根据平台设置跨域属性，Bilibili不支持CORS不需要设置
+                if (song.platform !== 'bili') {
+                    this.audioElement.crossOrigin = "anonymous";
+                } else {
+                    this.audioElement.crossOrigin = null;
+                }
                 
                 // 先更新当前歌曲的播放时长
                 if (this.lastUpdateTime !== null) {
@@ -11513,8 +11518,10 @@
                     return true;
                 }
                 try {
-                    // 确保 audioElement 已设置跨域（再次保险）
-                    this.audioElement.crossOrigin = "anonymous";
+                    // 根据平台设置跨域属性，Bilibili不支持CORS不需要设置
+                    if (this.currentSong && this.currentSong.platform !== 'bili') {
+                        this.audioElement.crossOrigin = "anonymous";
+                    }
                     
                     this.audioCtx = new (window.AudioContext || window.webkitAudioContext)();
                     // 避免重复创建 source（每个 audio 只能创建一个）
