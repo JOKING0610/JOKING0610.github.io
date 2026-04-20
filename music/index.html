@@ -11520,8 +11520,10 @@
                     return true;
                 }
                 try {
-                    // 开启可视化时必须设置crossOrigin = "anonymous"，否则无法获取音频数据
-                    this.audioElement.crossOrigin = "anonymous";
+                    // Bilibili音乐不支持CORS，即使开启可视化也不要设置crossOrigin
+                    if (this.currentSong && this.currentSong.platform !== 'bili') {
+                        this.audioElement.crossOrigin = "anonymous";
+                    }
                     
                     this.audioCtx = new (window.AudioContext || window.webkitAudioContext)();
                     // 避免重复创建 source（每个 audio 只能创建一个）
@@ -11670,8 +11672,8 @@
                         });
                     }
                     
-                    // 刷新音频源以应用跨域设置
-                    if (this.currentSong) {
+                    // 只有非Bilibili音乐才需要刷新音频源以应用跨域设置
+                    if (this.currentSong && this.currentSong.platform !== 'bili') {
                         this.audioElement.src = this.currentSong.url;
                         this.audioElement.load();
                         
@@ -11689,10 +11691,17 @@
                     this.visualizerEnabled = true;
                     this.visualizerCanvas.classList.add('show');
                     this.startVisualizer();
-                    showToast('音频可视化已开启', 'success');
                     
-                    if (!this.isPlaying) {
+                    // 对于Bilibili音乐，即使开启可视化也无法获取音频数据
+                    if (this.currentSong && this.currentSong.platform === 'bili') {
+                        showToast('Bilibili音乐不支持音频可视化', 'info');
+                        // 绘制静态网格
                         this.drawStaticGrid();
+                    } else {
+                        showToast('音频可视化已开启', 'success');
+                        if (!this.isPlaying) {
+                            this.drawStaticGrid();
+                        }
                     }
                 } else {
                     // 保存当前播放时间和播放状态
