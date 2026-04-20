@@ -11557,13 +11557,11 @@
              * 开始绘制可视化频谱
              */
             startVisualizer() {
-                if (!this.analyser || !this.visualizerCanvas || !this.visualizerCtx) return;
+                if (!this.visualizerCanvas || !this.visualizerCtx) return;
                 
                 const canvas = this.visualizerCanvas;
                 const ctx = this.visualizerCtx;
-                const analyser = this.analyser;
-                const bufferLength = analyser.frequencyBinCount;
-                const dataArray = new Uint8Array(bufferLength);
+                const isBiliMusic = this.currentSong && this.currentSong.platform === 'bili';
                 
                 // 尺寸自适应（每次绘制前更新）
                 const resizeCanvas = () => {
@@ -11573,12 +11571,38 @@
                 resizeCanvas();
                 window.addEventListener('resize', resizeCanvas);
                 
+                // 为Bilibili音乐生成模拟数据的函数
+                const generateMockData = (length) => {
+                    const data = new Uint8Array(length);
+                    for (let i = 0; i < length; i++) {
+                        // 生成带有波动的随机数据，模拟音乐节奏
+                        const baseValue = 100 + Math.sin(Date.now() * 0.001 + i * 0.1) * 50;
+                        const randomValue = baseValue + Math.random() * 100;
+                        data[i] = Math.min(255, Math.max(0, randomValue));
+                    }
+                    return data;
+                };
+                
+                // 初始化数据数组
+                let bufferLength = 128; // 默认使用128个频谱条
+                if (!isBiliMusic && this.analyser) {
+                    bufferLength = this.analyser.frequencyBinCount;
+                }
+                const dataArray = new Uint8Array(bufferLength);
+                
                 const draw = () => {
                     if (!this.visualizerEnabled) return;
 
                     this.visualizerAnimationId = requestAnimationFrame(draw);
 
-                    analyser.getByteFrequencyData(dataArray);
+                    // 获取数据（真实音频数据或模拟数据）
+                    if (!isBiliMusic && this.analyser) {
+                        this.analyser.getByteFrequencyData(dataArray);
+                    } else {
+                        // 为Bilibili音乐生成模拟数据
+                        const mockData = generateMockData(bufferLength);
+                        dataArray.set(mockData);
+                    }
 
                     const W = canvas.width;
                     const H = canvas.height;
