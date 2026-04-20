@@ -13441,11 +13441,37 @@ qqLoadMoreBtn.addEventListener('click', () => {
             
             const queryString = queryParts.join('&');
             
-            const response = await fetch(`${url}?${queryString}`);
-            if (!response.ok) throw new Error(`请求失败: ${response.status}`);
-            const data = await response.json();
+            // 添加CORS相关的请求头
+            const headers = {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+                'Referer': window.location.origin
+            };
             
-            return data;
+            try {
+                const response = await fetch(`${url}?${queryString}`, {
+                    method: 'GET',
+                    headers: headers,
+                    mode: 'cors',
+                    credentials: 'omit',
+                    referrerPolicy: 'strict-origin-when-cross-origin'
+                });
+                
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    throw new Error(`请求失败: ${response.status} ${errorText}`);
+                }
+                
+                const data = await response.json();
+                return data;
+            } catch (error) {
+                // 对于Bili API的特殊处理
+                if (isBiliApi) {
+                    console.error('Bilibili API调用失败:', error);
+                    throw new Error(`Bilibili API调用失败: ${error.message}\n可能是CORS限制或网络问题，请稍后再试`);
+                }
+                throw error;
+            }
         }
 
         async function searchMusic(keyword, page = 1, platform = currentPlatform) {
