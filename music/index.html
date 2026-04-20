@@ -11151,8 +11151,9 @@
             }
             
             setSong(song, retryCount = 0) {
-                // 根据平台设置跨域属性，Bilibili不支持CORS不需要设置
-                if (song.platform !== 'bili') {
+                // 根据平台和是否开启可视化设置跨域属性
+                // 开启可视化时必须设置crossOrigin = "anonymous"，否则无法获取音频数据
+                if (song.platform !== 'bili' || this.visualizerEnabled) {
                     this.audioElement.crossOrigin = "anonymous";
                 } else {
                     this.audioElement.crossOrigin = null;
@@ -11180,6 +11181,7 @@
                 }
                 
                 this.currentSongId = song.id;
+                this.currentSong = song; // 保存当前歌曲对象
                 this.audioElement.src = song.url;
                 this.applyPlaybackRate();  // 应用倍速设置
                 this.audioElement.preload = 'auto';
@@ -11518,10 +11520,8 @@
                     return true;
                 }
                 try {
-                    // 根据平台设置跨域属性，Bilibili不支持CORS不需要设置
-                    if (this.currentSong && this.currentSong.platform !== 'bili') {
-                        this.audioElement.crossOrigin = "anonymous";
-                    }
+                    // 开启可视化时必须设置crossOrigin = "anonymous"，否则无法获取音频数据
+                    this.audioElement.crossOrigin = "anonymous";
                     
                     this.audioCtx = new (window.AudioContext || window.webkitAudioContext)();
                     // 避免重复创建 source（每个 audio 只能创建一个）
@@ -11654,6 +11654,11 @@
                 if (!this.visualizerCanvas) return;
                 
                 if (!this.visualizerEnabled) {
+                    // 保存当前播放时间和播放状态
+                    const currentTime = this.audioElement.currentTime;
+                    const wasPlaying = this.isPlaying;
+                    
+                    // 初始化音频上下文
                     const audioCtxReady = await this.initAudioContext();
                     if (!audioCtxReady) return;
                     
@@ -11665,6 +11670,22 @@
                         });
                     }
                     
+                    // 刷新音频源以应用跨域设置
+                    if (this.currentSong) {
+                        this.audioElement.src = this.currentSong.url;
+                        this.audioElement.load();
+                        
+                        // 恢复播放位置
+                        if (currentTime > 0) {
+                            this.audioElement.currentTime = currentTime;
+                        }
+                        
+                        // 恢复播放状态
+                        if (wasPlaying) {
+                            this.audioElement.play().catch(err => console.warn('恢复播放失败:', err));
+                        }
+                    }
+                    
                     this.visualizerEnabled = true;
                     this.visualizerCanvas.classList.add('show');
                     this.startVisualizer();
@@ -11674,9 +11695,31 @@
                         this.drawStaticGrid();
                     }
                 } else {
+                    // 保存当前播放时间和播放状态
+                    const currentTime = this.audioElement.currentTime;
+                    const wasPlaying = this.isPlaying;
+                    
                     this.visualizerEnabled = false;
                     this.stopVisualizer();
                     this.visualizerCanvas.classList.remove('show');
+                    
+                    // 刷新音频源以移除跨域设置（针对Bilibili）
+                    if (this.currentSong && this.currentSong.platform === 'bili') {
+                        this.audioElement.crossOrigin = null;
+                        this.audioElement.src = this.currentSong.url;
+                        this.audioElement.load();
+                        
+                        // 恢复播放位置
+                        if (currentTime > 0) {
+                            this.audioElement.currentTime = currentTime;
+                        }
+                        
+                        // 恢复播放状态
+                        if (wasPlaying) {
+                            this.audioElement.play().catch(err => console.warn('恢复播放失败:', err));
+                        }
+                    }
+                    
                     showToast('音频可视化已关闭', 'info');
                 }
             }
