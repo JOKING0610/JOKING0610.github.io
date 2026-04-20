@@ -11151,9 +11151,9 @@
             }
             
             setSong(song, retryCount = 0) {
-                // 根据平台和是否开启可视化设置跨域属性
-                // 开启可视化时必须设置crossOrigin = "anonymous"，否则无法获取音频数据
-                if (song.platform !== 'bili' || this.visualizerEnabled) {
+                // 根据平台设置跨域属性
+                // Bilibili音乐不支持CORS，即使开启可视化也不要设置crossOrigin
+                if (song.platform !== 'bili') {
                     this.audioElement.crossOrigin = "anonymous";
                 } else {
                     this.audioElement.crossOrigin = null;
@@ -11526,16 +11526,20 @@
                     }
                     
                     this.audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-                    // 避免重复创建 source（每个 audio 只能创建一个）
-                    if (!this.visualizerSource) {
-                        this.visualizerSource = this.audioCtx.createMediaElementSource(this.audioElement);
-                    }
                     this.analyser = this.audioCtx.createAnalyser();
                     this.analyser.fftSize = 256;
                     this.analyser.smoothingTimeConstant = 0.8;
                     
-                    this.visualizerSource.connect(this.analyser);
-                    this.analyser.connect(this.audioCtx.destination);
+                    // 对于非Bilibili音乐，使用MediaElementSource获取真实音频数据
+                    if (this.currentSong && this.currentSong.platform !== 'bili') {
+                        // 避免重复创建 source（每个 audio 只能创建一个）
+                        if (!this.visualizerSource) {
+                            this.visualizerSource = this.audioCtx.createMediaElementSource(this.audioElement);
+                        }
+                        this.visualizerSource.connect(this.analyser);
+                        this.analyser.connect(this.audioCtx.destination);
+                    }
+                    // 对于Bilibili音乐，不使用MediaElementSource，直接使用模拟数据
                     
                     // 如果 AudioContext 因自动播放策略挂起，等待用户手势恢复
                     if (this.audioCtx.state === 'suspended') {
