@@ -1339,6 +1339,80 @@
             position: static;
         }
 
+        /* 本地图片上传样式 */
+        .avatar-upload-section {
+            margin-top: 20px;
+        }
+
+        .avatar-upload-divider {
+            display: flex;
+            align-items: center;
+            margin: 20px 0;
+        }
+
+        .avatar-upload-divider::before,
+        .avatar-upload-divider::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: var(--border);
+        }
+
+        .avatar-upload-divider span {
+            padding: 0 12px;
+            font-size: 12px;
+            color: var(--text-tertiary);
+        }
+
+        .avatar-local-upload {
+            border: 2px dashed var(--border);
+            border-radius: var(--radius-lg);
+            padding: 24px;
+            text-align: center;
+            cursor: pointer;
+            transition: all var(--transition-fast);
+            background: var(--surface);
+        }
+
+        .avatar-local-upload:hover {
+            border-color: var(--primary);
+            background: var(--surface-elevated);
+        }
+
+        .avatar-upload-content {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .avatar-preview-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .avatar-upload-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 8px 16px;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            font-size: 14px;
+            color: var(--text);
+            cursor: pointer;
+            transition: all var(--transition-fast);
+            margin-top: 12px;
+        }
+
+        .avatar-upload-btn:hover {
+            background: var(--primary);
+            border-color: var(--primary);
+            color: white;
+        }
+
         /* 中等屏幕（平板等） */
         @media (min-width: 641px) and (max-width: 1024px) {
             /* 中等屏幕确认模态框高度 */
@@ -3376,11 +3450,12 @@
 
         .stats-section {
             margin-bottom: 32px;
+            width: 100%;
+            padding-left: 16px;
+            padding-right: 16px;
             max-width: 800px;
             margin-left: auto;
             margin-right: auto;
-            padding-left: 16px;
-            padding-right: 16px;
         }
 
         .stats-grid {
@@ -3397,7 +3472,7 @@
             box-shadow: 0px 1px 3px 0px rgba(0, 0, 0, 0.25);
             border: 1px solid var(--border);
             display: grid;
-            width: auto;
+            width: 100%;
             min-height: 140px;
         }
 
@@ -3420,6 +3495,133 @@
 
         .section {
             margin-bottom: 32px;
+            width: 100%;
+            padding-left: 16px;
+            padding-right: 16px;
+        }
+
+        /* 大屏设备（>1024px）适配 */
+        @media (min-width: 1025px) {
+            .stats-section,
+            .section {
+                padding-left: 24px;
+                padding-right: 24px;
+            }
+            
+            .stats-grid {
+                grid-template-columns: repeat(1, 1fr);
+                gap: 20px;
+            }
+            
+            .stat-item {
+                padding: 24px 20px;
+                min-height: 160px;
+            }
+            
+            .points-display {
+                padding: 24px;
+            }
+            
+            .points-value {
+                font-size: 40px;
+            }
+        }
+
+        /* 中等屏幕（769px-1024px）适配 */
+        @media (min-width: 769px) and (max-width: 1024px) {
+            .stats-section,
+            .section {
+                padding-left: 20px;
+                padding-right: 20px;
+            }
+            
+            .stats-grid {
+                grid-template-columns: repeat(1, 1fr);
+                gap: 16px;
+            }
+            
+            .stat-item {
+                padding: 20px 16px;
+                min-height: 140px;
+            }
+        }
+
+        /* 小屏手机（≤480px）适配 */
+        @media (max-width: 480px) {
+            .stats-section,
+            .section {
+                padding-left: 12px;
+                padding-right: 12px;
+                margin-bottom: 24px;
+            }
+            
+            .stats-grid {
+                gap: 12px;
+            }
+            
+            .stat-item {
+                padding: 16px 12px;
+                min-height: 120px;
+            }
+            
+            .points-display {
+                padding: 16px;
+            }
+            
+            .points-value {
+                font-size: 28px;
+            }
+            
+            .section-title {
+                font-size: 15px;
+            }
+            
+            .recent-item {
+                padding: 10px;
+                gap: 10px;
+            }
+            
+            .recent-cover {
+                width: 44px;
+                height: 44px;
+            }
+        }
+
+        /* 极小屏手机（≤360px）进一步优化 */
+        @media (max-width: 360px) {
+            .stats-section,
+            .section {
+                padding-left: 10px;
+                padding-right: 10px;
+                margin-bottom: 20px;
+            }
+            
+            .stat-item {
+                padding: 14px 10px;
+                min-height: 110px;
+            }
+            
+            .points-display {
+                padding: 14px;
+            }
+            
+            .points-value {
+                font-size: 24px;
+            }
+            
+            .section-title {
+                font-size: 14px;
+            }
+            
+            .recent-item {
+                padding: 8px;
+                gap: 8px;
+            }
+            
+            .recent-cover {
+                width: 40px;
+                height: 40px;
+            }
         }
 
         .section-header {
@@ -4457,7 +4659,8 @@
             padding: 12px 16px;
             margin-top: 16px;
             box-shadow: var(--shadow-sm);
-            width: 90%;
+            max-width: 800px;
+            width: 100%;
             margin-left: auto;
             margin-right: auto;
         }
@@ -5281,11 +5484,39 @@
             background: var(--surface);
             border: 1px solid var(--border);
             border-radius: var(--radius-lg);
-            padding: 16px 20px;
+            padding: 16px 16px;
             margin: 20px auto 0;
             max-width: 800px;
             box-shadow: var(--shadow-sm);
             transition: all var(--transition-normal);
+        }
+
+        /* 大屏设备（>1024px）适配 */
+        @media (min-width: 1025px) {
+            .home-announcement {
+                padding: 16px 24px;
+            }
+        }
+
+        /* 中等屏幕（769px-1024px）适配 */
+        @media (min-width: 769px) and (max-width: 1024px) {
+            .home-announcement {
+                padding: 16px 20px;
+            }
+        }
+
+        /* 小屏手机（≤480px）适配 */
+        @media (max-width: 480px) {
+            .home-announcement {
+                padding: 16px 12px;
+            }
+        }
+
+        /* 极小屏手机（≤360px）进一步优化 */
+        @media (max-width: 360px) {
+            .home-announcement {
+                padding: 14px 10px;
+            }
         }
 
         .announcement-header {
@@ -6987,21 +7218,7 @@
         </div>
     </div>
 
-    <div class="modal confirm-modal" id="confirmModal">
-        <div class="modal-header">
-            <h3 class="modal-title">确认操作</h3>
-            <button class="modal-close" onclick="closeModal('confirmModal')">
-                <i class="fas fa-times"></i>
-            </button>
-        </div>
-        <div class="modal-body">
-            <p id="confirmMessage" style="margin-bottom: 20px; font-size: 14px; color: var(--text);"></p>
-            <div style="display: flex; gap: 10px; justify-content: flex-end;">
-                <button class="modal-btn modal-btn-cancel" onclick="closeModal('confirmModal')">取消</button>
-                <button class="modal-btn modal-btn-confirm" id="confirmBtn">确定</button>
-            </div>
-        </div>
-    </div>
+    <!-- 确认模态框已移除 -->
 
     <div class="toast" id="toast">
         <i class="fas fa-circle-check"></i>
@@ -7157,6 +7374,29 @@
                     请输入新的头像图片 URL（支持 http/https）
                 </p>
                 <input type="text" id="avatarUrlInput" style="width: 100%; padding: 10px; border: 1px solid var(--border); border-radius: var(--radius-md); font-size: 14px;" placeholder="例如：https://example.com/avatar.jpg">
+            </div>
+            
+            <div class="avatar-upload-section">
+                <div class="avatar-upload-divider">
+                    <span>或</span>
+                </div>
+                <p style="font-size: 14px; color: var(--text-secondary); margin-bottom: 12px;">
+                    上传本地图片作为头像
+                </p>
+                <div class="avatar-local-upload" id="avatarLocalUpload" onclick="document.getElementById('avatarFileInput').click()">
+                    <input type="file" id="avatarFileInput" accept="image/*" style="display: none;" onchange="handleAvatarFileSelect(event)">
+                    <div class="avatar-upload-content" id="avatarUploadContent">
+                        <i class="fas fa-cloud-upload-alt" style="font-size: 32px; color: var(--text-tertiary); margin-bottom: 8px;"></i>
+                        <p style="font-size: 14px; color: var(--text-secondary);">点击选择图片</p>
+                        <p style="font-size: 12px; color: var(--text-tertiary);">支持 JPG、PNG、GIF 格式</p>
+                    </div>
+                    <div class="avatar-preview-container" id="avatarPreviewContainer" style="display: none;">
+                        <img id="avatarPreviewImg" src="" alt="预览" style="max-width: 100%; max-height: 150px; border-radius: var(--radius-md);">
+                    </div>
+                </div>
+                <button class="avatar-upload-btn" id="avatarUploadBtn" onclick="document.getElementById('avatarFileInput').click()" style="display: none;">
+                    <i class="fas fa-upload" style="margin-right: 6px;"></i> 选择图片
+                </button>
             </div>
             
             <div style="margin-top: 30px;">
@@ -7939,17 +8179,143 @@
             }
         }
 
+        // 处理本地图片选择
+        let selectedAvatarFile = null;
+
+        function handleAvatarFileSelect(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            // 检查文件类型
+            if (!file.type.startsWith('image/')) {
+                showToast('请选择图片文件', 'error');
+                return;
+            }
+
+            // 检查文件大小（限制为 2MB）
+            if (file.size > 2 * 1024 * 1024) {
+                showToast('图片大小不能超过 2MB', 'error');
+                return;
+            }
+
+            selectedAvatarFile = file;
+
+            // 显示预览
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const previewContainer = document.getElementById('avatarPreviewContainer');
+                const uploadContent = document.getElementById('avatarUploadContent');
+                const previewImg = document.getElementById('avatarPreviewImg');
+
+                if (previewContainer && uploadContent && previewImg) {
+                    previewImg.src = e.target.result;
+                    previewContainer.style.display = 'flex';
+                    uploadContent.style.display = 'none';
+                }
+            };
+            reader.readAsDataURL(file);
+
+            // 清空 URL 输入框
+            const avatarUrlInput = document.getElementById('avatarUrlInput');
+            if (avatarUrlInput) {
+                avatarUrlInput.value = '';
+            }
+        }
+
+        // 清除头像预览
+        function clearAvatarPreview() {
+            selectedAvatarFile = null;
+            const previewContainer = document.getElementById('avatarPreviewContainer');
+            const uploadContent = document.getElementById('avatarUploadContent');
+            const fileInput = document.getElementById('avatarFileInput');
+
+            if (previewContainer) previewContainer.style.display = 'none';
+            if (uploadContent) uploadContent.style.display = 'flex';
+            if (fileInput) fileInput.value = '';
+        }
+
+        // 将本地图片通过 API 上传并更新头像
+        async function updateAvatarWithLocalFile() {
+            if (!selectedAvatarFile) {
+                showToast('请选择本地图片', 'error');
+                return;
+            }
+
+            closeModal('editAvatarModal');
+
+            const user = getCurrentUser();
+            if (!user || !user.id) {
+                showToast('请先登录', 'error');
+                return;
+            }
+
+            try {
+                // 显示加载提示
+                showToast('正在上传图片...', 'info');
+
+                // 创建 FormData 并添加文件
+                const formData = new FormData();
+                formData.append('image', selectedAvatarFile);
+                formData.append('outputFormat', 'webp'); // 使用 WebP 格式获得更好的压缩率
+
+                // 发送上传请求
+                const response = await fetch('https://img.scdn.io/api/v1.php', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                // 处理响应
+                const result = await response.json();
+
+                if (result.success) {
+                    // 使用 API 返回的图片 URL
+                    const avatarUrl = result.url;
+
+                    // 检查积分是否足够
+                    await initSupabase();
+                    const pointsData = await authRpcCall('get_user_points', {
+                        _user_id: user.id
+                    });
+
+                    if (pointsData && pointsData.success) {
+                        const currentPoints = pointsData.total_points || 0;
+                        if (currentPoints < 100) {
+                            showToast(`当前积分不足！您当前有 ${currentPoints} 积分，更换头像需要 100 积分`, 'error');
+                            return;
+                        }
+                    }
+
+                    // 更新头像（内部会自动消耗100积分）
+                    await updateUserAvatar(avatarUrl);
+
+                    // 清除预览
+                    clearAvatarPreview();
+                } else {
+                    throw new Error(result.message || '上传失败');
+                }
+            } catch (error) {
+                console.error('上传图片失败:', error);
+                showToast(`上传图片失败: ${error.message}`, 'error');
+            }
+        }
+
         // 确认更换头像
         async function confirmAvatarUpdate() {
             const avatarUrlInput = document.getElementById('avatarUrlInput');
             const avatarUrl = avatarUrlInput.value.trim();
             
-            if (!avatarUrl) {
-                showToast('请输入头像 URL', 'error');
+            // 如果有本地文件选中，则使用本地文件
+            if (selectedAvatarFile) {
+                await updateAvatarWithLocalFile();
                 return;
             }
             
-            if (!avatarUrl.startsWith('http://') && !avatarUrl.startsWith('https://')) {
+            if (!avatarUrl) {
+                showToast('请输入头像 URL 或选择本地图片', 'error');
+                return;
+            }
+            
+            if (!avatarUrl.startsWith('http://') && !avatarUrl.startsWith('https://') && !avatarUrl.startsWith('data:')) {
                 showToast('请输入有效的图片 URL', 'error');
                 return;
             }
@@ -8065,25 +8431,8 @@
 
         // 退出登录确认
         function confirmLogout() {
-            const confirmMessage = document.getElementById('confirmMessage');
-            const confirmBtn = document.getElementById('confirmBtn');
-            
-            if (confirmMessage) {
-                confirmMessage.textContent = '确定要退出登录吗？';
-            }
-            
-            if (confirmBtn) {
-                // 移除之前的事件监听器
-                confirmBtn.onclick = null;
-                // 添加新的事件监听器
-                confirmBtn.onclick = function() {
-                    closeModal('confirmModal');
-                    logout();
-                };
-            }
-            
-            // 显示确认模态框
-            openModal('confirmModal');
+            // 直接执行退出登录，不再显示确认模态框
+            logout();
         }
 
         // 退出登录
