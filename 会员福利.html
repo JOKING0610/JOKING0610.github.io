@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>会员福利</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background-color: #f0f0f0;
+            font-family: Arial, sans-serif;
+        }
+
+        .image-container {
+            max-width: 90%;
+            max-height: 90vh;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+            background-color: #fff;
+            padding: 10px;
+        }
+
+        .image-container img {
+            display: block;
+            max-width: 100%;
+            height: auto;
+            border-radius: 8px;
+            object-fit: contain;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="image-container">
+        <img src="https://free.picui.cn/free/2026/04/22/69e8ebbe43ddc.png"
+             alt="展示图片"
+             loading="lazy"
+             onerror="this.style.display='none';this.parentElement.innerHTML='<p style=\'padding:40px;color:#999;text-align:center;\'>图片加载失败，请检查链接是否有效</p>';" />
+    </div>
+
+</body>
+</html>
