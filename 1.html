@@ -1,0 +1,580 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=2.0, user-scalable=yes">
+  <title></title>
+  <style>
+    :root {
+      --paper-bg: #fdf8f0;
+      --paper-width: 720px;
+      --content-left: 40px;
+      --content-right: 40px;
+      --line-height: 31px;
+      --lines-per-page: 18;
+      --font-size: 17px;
+      --line-color: #000000;
+      --red-line-color: #c44a4a;
+      --red-line-left: 32px;
+      --text-color: #2c2416;
+      --page-shadow: 0 2px 20px rgba(0,0,0,0.12), 0 1px 4px rgba(0,0,0,0.08);
+      --button-bg: #f5efe6;
+      --button-hover: #ebe0d2;
+      --button-active: #ddd2c0;
+      --left-padding: 8px;
+    }
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body {
+      min-height:100vh; display:flex; flex-direction:column; align-items:center; justify-content:center;
+      background:#e8e0d5;
+      background-image:
+        radial-gradient(ellipse at 30% 20%, #f0e8db 0%, transparent 60%),
+        radial-gradient(ellipse at 70% 80%, #e2d8c8 0%, transparent 60%),
+        linear-gradient(180deg, #e6ddd0 0%, #ece4d8 30%, #e3d9cb 70%, #e9e1d4 100%);
+      font-family:'SimSun','宋体','Noto Serif SC',monospace; padding:20px; -webkit-font-smoothing:antialiased;
+    }
+    body::before {
+      content:''; position:fixed; top:0;left:0;right:0;bottom:0; pointer-events:none; z-index:0;
+      background:
+        repeating-linear-gradient(2deg, transparent, transparent 3px, rgba(139,90,43,0.015) 3px, rgba(139,90,43,0.015) 4px),
+        repeating-linear-gradient(92deg, transparent, transparent 120px, rgba(160,120,80,0.02) 120px, rgba(160,120,80,0.02) 121px);
+      opacity:0.7;
+    }
+    .app-container { position:relative; z-index:1; display:flex; flex-direction:column; align-items:center; gap:20px; width:100%; max-width:850px; }
+    .toolbar-bottom {
+      display:flex; align-items:center; justify-content:center; gap:12px; flex-wrap:wrap;
+      background:rgba(255,255,255,0.55); backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px);
+      border-radius:40px; padding:10px 20px; box-shadow:0 2px 12px rgba(0,0,0,0.06);
+      border:1px solid rgba(180,160,140,0.25); margin-top:4px;
+    }
+    .btn {
+      display:inline-flex; align-items:center; justify-content:center; gap:6px; padding:10px 20px;
+      border:1px solid rgba(160,140,120,0.35); border-radius:24px; background:var(--button-bg);
+      color:#4a3525; cursor:pointer; font-family:inherit; font-size:15px; font-weight:500;
+      letter-spacing:0.5px; transition:all 0.25s cubic-bezier(0.4,0,0.2,1);
+      user-select:none; -webkit-tap-highlight-color:transparent; white-space:nowrap; min-width:44px;
+    }
+    .btn:hover { background:var(--button-hover); border-color:rgba(140,110,85,0.5); transform:translateY(-1px); box-shadow:0 4px 12px rgba(0,0,0,0.08); }
+    .btn:active { background:var(--button-active); transform:translateY(0); box-shadow:0 2px 4px rgba(0,0,0,0.06); transition:all 0.1s ease; }
+    .btn:disabled { opacity:0.4; cursor:not-allowed; pointer-events:none; filter:grayscale(30%); }
+    .btn-icon { width:40px; height:40px; padding:0; border-radius:50%; font-size:18px; min-width:unset; }
+    .btn-icon svg { width:18px; height:18px; flex-shrink:0; }
+    .page-indicator {
+      display:flex; align-items:center; gap:8px; font-size:15px; color:#5c4330; font-weight:500;
+      letter-spacing:0.5px; min-width:100px; justify-content:center; user-select:none;
+    }
+    .page-indicator .current-page { font-size:22px; font-weight:700; color:#3d2618; line-height:1; }
+    .page-indicator .separator { color:#b89a80; margin:0 2px; }
+    .page-indicator .total-pages { color:#7a5e48; }
+    .paper-wrapper {
+      position:relative; width:var(--paper-width); flex-shrink:0;
+      transition:transform 0.35s cubic-bezier(0.4,0,0.2,1), opacity 0.3s ease;
+    }
+    .paper-wrapper.page-transitioning { opacity:0; transform:translateY(8px); }
+    .paper {
+      position:relative; width:100%; background:var(--paper-bg); box-shadow:var(--page-shadow);
+      border-radius:2px; padding:30px 0 30px 0; min-height:660px;
+      background-image:
+        repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(180,160,130,0.015) 2px, rgba(180,160,130,0.015) 3px),
+        repeating-linear-gradient(90deg, transparent, transparent 40px, rgba(175,155,125,0.012) 40px, rgba(175,155,125,0.012) 41px);
+      background-color:var(--paper-bg); border:1px solid rgba(180,155,125,0.2);
+    }
+    .paper::before {
+      content:''; position:absolute; left:var(--red-line-left); top:28px; bottom:28px;
+      width:1.5px; background:var(--red-line-color); opacity:0.7; border-radius:0.5px; z-index:2;
+      box-shadow:1px 0 0 rgba(196,74,74,0.15), -1px 0 0 rgba(196,74,74,0.08);
+    }
+    .paper-content-grid {
+      display:grid; grid-template-rows:repeat(18, var(--line-height)); grid-template-columns:1fr;
+      margin:0 var(--content-right) 0 var(--content-left); position:relative; z-index:1;
+      background-image: repeating-linear-gradient(to bottom,
+        transparent,
+        transparent calc(var(--line-height) - 1px),
+        var(--line-color) calc(var(--line-height) - 1px),
+        var(--line-color) var(--line-height));
+      background-position:0 0; background-size:100% var(--line-height); border-top:1px solid var(--line-color);
+    }
+    .line-cell {
+      display:block; height:var(--line-height); line-height:var(--line-height);
+      padding:0 6px 0 var(--left-padding,8px); font-size:var(--font-size); color:var(--text-color);
+      font-family:inherit; word-spacing:0;
+      text-align:justify; text-justify:inter-ideograph; text-align-last:left;
+      white-space:normal; word-break:break-word; overflow-wrap:break-word; overflow:hidden; position:relative; z-index:1;
+    }
+    .image-cell { display:flex; align-items:center; justify-content:center; overflow:hidden; position:relative; z-index:1; background:transparent; margin:1px 4px; border-radius:2px; }
+    .image-cell img { display:block; width:100%; height:100%; object-fit:contain; max-width:100%; max-height:100%; padding:2px; background:transparent; box-shadow:none; border:none; border-radius:2px; }
+
+    @media (max-width:750px) {
+      .paper-wrapper { width:94vw; }
+      :root { --paper-width:94vw; --content-left:30px; --content-right:30px; --red-line-left:24px; --font-size:15px; --line-height:27px; --left-padding:6px; }
+      .line-cell { padding:0 4px 0 var(--left-padding); font-size:15px; }
+      .paper-content-grid { margin-left:30px; margin-right:30px; grid-template-rows:repeat(18, 27px); }
+      .paper { padding:24px 0 24px 0; min-height:auto; }
+      .paper::before { top:22px; bottom:22px; }
+      .toolbar-bottom { gap:8px; padding:8px 14px; border-radius:32px; }
+      .btn { padding:8px 14px; font-size:13px; border-radius:20px; }
+      .btn-icon { width:34px; height:34px; font-size:15px; }
+      .page-indicator { font-size:13px; min-width:80px; }
+      .page-indicator .current-page { font-size:18px; }
+    }
+    @media (max-width:420px) {
+      .paper-wrapper { width:98vw; }
+      :root { --paper-width:98vw; --content-left:20px; --content-right:20px; --red-line-left:16px; --font-size:14px; --line-height:24px; --left-padding:4px; }
+      .line-cell { padding:0 2px 0 var(--left-padding); font-size:14px; }
+      .paper-content-grid { margin-left:20px; margin-right:20px; grid-template-rows:repeat(18, 24px); }
+      .paper { padding:20px 0 20px 0; }
+      .paper::before { top:18px; bottom:18px; }
+      .toolbar-bottom { gap:4px; padding:6px 10px; border-radius:28px; }
+      .btn { padding:6px 10px; font-size:12px; border-radius:16px; letter-spacing:0; }
+      .btn-icon { width:30px; height:30px; font-size:13px; }
+      .page-indicator { font-size:12px; min-width:60px; gap:4px; }
+      .page-indicator .current-page { font-size:16px; }
+    }
+    @media print {
+      body { background:white; padding:0; }
+      .toolbar-bottom, .keyboard-hint { display:none!important; }
+      .paper-wrapper { box-shadow:none; width:100%; max-width:100%; }
+      .paper { box-shadow:none; border:none; background:white; }
+      .paper::before, .paper::after { opacity:0.5; }
+      .app-container { gap:0; max-width:100%; }
+    }
+  </style>
+</head>
+<body>
+<div class="app-container">
+  <div class="paper-wrapper" id="paperWrapper" aria-label="信纸">
+    <div class="paper" id="paper">
+      <div class="paper-content-grid" id="paperGrid" role="list" aria-label="书信内容"></div>
+    </div>
+  </div>
+  <div class="toolbar-bottom" role="toolbar" aria-label="翻页工具栏">
+    <button class="btn btn-icon" id="btnFirst" title="首页" aria-label="首页">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="11 17 6 12 11 7"></polyline><polyline points="18 17 13 12 18 7"></polyline>
+      </svg>
+    </button>
+    <button class="btn btn-icon" id="btnPrev" title="上一页" aria-label="上一页">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="15 18 9 12 15 6"></polyline>
+      </svg>
+    </button>
+    <div class="page-indicator" aria-live="polite">
+      <span>第</span><span class="current-page" id="currentPageDisplay">1</span>
+      <span class="separator">/</span><span class="total-pages" id="totalPagesDisplay">1</span><span>页</span>
+    </div>
+    <button class="btn btn-icon" id="btnNext" title="下一页" aria-label="下一页">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="9 18 15 12 9 6"></polyline>
+      </svg>
+    </button>
+    <button class="btn btn-icon" id="btnLast" title="末页" aria-label="末页">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="13 17 18 12 13 7"></polyline><polyline points="6 17 11 12 6 7"></polyline>
+      </svg>
+    </button>
+  </div>
+</div>
+
+<script>
+  (function() {
+    // 示例书信，展示嵌套 [pos] 用法
+    const letterContent = `
+亲爱的朋友：
+
+[pos=1,mid]←左滑查看我想对你说的话[/pos]
+
+[page=2]
+[img:https://free.picui.cn/free/2026/05/04/69f7ea80e1cb8.gif height=6]
+来杯好茶🍵摇一摇😘摇一摇😆摇一摇😆吉星高照爻一爻🥰爻一爻😍爻一爻😍茶香绕😉推个牌☺️接财到🤩来财🤑来财🤑来🤑上签在手😘举杯共饮😋皆吉兆🥰来杯好茶摇一摇😎摇一摇😙摇一摇😙寰宇好友邀一邀😏邀一邀😄邀一邀😄团雀闹🤪好事近🥳上眉梢😌吃好😋睡好😋好😋心海无垠😆与君乐饮☺️易逍遥🥳
+[/page]
+
+[page=auto]
+
+[/page]
+`;
+
+    const LINES_PER_PAGE = 18;
+    const paperGrid = document.getElementById('paperGrid');
+    const paperWrapper = document.getElementById('paperWrapper');
+    const currentPageDisplay = document.getElementById('currentPageDisplay');
+    const totalPagesDisplay = document.getElementById('totalPagesDisplay');
+    const btnFirst = document.getElementById('btnFirst');
+    const btnPrev = document.getElementById('btnPrev');
+    const btnNext = document.getElementById('btnNext');
+    const btnLast = document.getElementById('btnLast');
+
+    let pageMap = {};
+    let totalPages = 1;
+    let currentPage = 1;
+    let transitionTimeout = null;
+
+    // 动态获取文本区域可用宽度（自适应核心）
+    function getAvailableTextWidth() {
+      const gridWidth = paperGrid.clientWidth;
+      if (!gridWidth || gridWidth <= 0) {
+        return window.innerWidth <= 420 ? 280 : (window.innerWidth <= 750 ? 400 : 600);
+      }
+      const style = getComputedStyle(document.documentElement);
+      const leftPad = parseInt(style.getPropertyValue('--left-padding').trim()) || 8;
+      let rightPad = 6;
+      if (window.innerWidth <= 420) rightPad = 2;
+      else if (window.innerWidth <= 750) rightPad = 4;
+      return Math.max(gridWidth - (leftPad + rightPad), 100);
+    }
+
+    function createTextMeasurer() {
+      const c = document.createElement('canvas');
+      const ctx = c.getContext('2d');
+      const ff = getComputedStyle(document.documentElement).fontFamily || "'SimSun','宋体',monospace";
+      const fs = getComputedStyle(document.documentElement).getPropertyValue('--font-size').trim() || '17px';
+      return {
+        measureCharWidth(ch) { ctx.font = `${fs} ${ff}`; return ctx.measureText(ch).width; },
+        measureTextWidth(t) { ctx.font = `${fs} ${ff}`; return ctx.measureText(t).width; }
+      };
+    }
+
+    function parseContentToLines(text, contentWidth) {
+      const meas = createTextMeasurer();
+      const lines = [];
+      const imgRe = /\[img:(.*?)\s+height=(\d+)\]/g;
+      const processed = text.replace(imgRe, (m, url, h) => `\n[IMG::${url}::${h}]\n`);
+      const paras = processed.split('\n');
+
+      for (let i = 0; i < paras.length; i++) {
+        const para = paras[i].trim();
+        if (para === '') {
+          const prev = i > 0 && paras[i-1].trim() !== '';
+          const next = i < paras.length-1 && paras[i+1].trim() !== '';
+          if (prev || next) lines.push({ type:'text', text:'', isEmptyLine:true });
+          continue;
+        }
+        if (para.startsWith('[IMG::') && para.endsWith(']')) {
+          const inner = para.slice(6,-1).split('::');
+          if (inner.length===2) lines.push({ type:'image', url:inner[0], heightLines:Math.max(1,Math.min(parseInt(inner[1])||3,10)) });
+          continue;
+        }
+        let rem = para, cur='', curW=0;
+        for (let j=0; j<rem.length; j++) {
+          const ch = rem[j];
+          const w = meas.measureCharWidth(ch);
+          if (curW + w > contentWidth && cur.length>0) {
+            if (/[，。、；：！？》」』）]/.test(ch) && cur.length>=2) {
+              let back = 1;
+              if (/[《「『（]/.test(cur[cur.length-1])) back=2;
+              const moved = cur.slice(-back);
+              cur = cur.slice(0,-back);
+              lines.push({ type:'text', text:cur, isEmptyLine:false });
+              cur = moved + ch;
+              curW = meas.measureTextWidth(cur);
+            } else {
+              lines.push({ type:'text', text:cur, isEmptyLine:false });
+              cur = ch;
+              curW = w;
+            }
+          } else { cur += ch; curW += w; }
+        }
+        if (cur.trim().length>0 || cur.length>0) lines.push({ type:'text', text:cur, isEmptyLine: cur.trim().length===0 });
+      }
+      return lines;
+    }
+
+    // 从内容中提取 [pos] 块，返回 { cleanText, posBlocks }
+    function extractPosFromContent(content, defaultPage) {
+      const posRegex = /\[pos=(\d+)\s*,\s*(mid|\d+)\]([\s\S]*?)\[\/pos\]/g;
+      const posBlocks = [];
+      let cleanContent = content;
+      let match;
+      while ((match = posRegex.exec(content)) !== null) {
+        const page = defaultPage !== undefined ? defaultPage : parseInt(match[1]);
+        const rowParam = match[2];
+        const innerContent = match[3].trim();
+        let row;
+        if (rowParam === 'mid') row = 'mid';
+        else row = parseInt(rowParam) - 1;
+        posBlocks.push({ page, row, content: innerContent });
+        // 移除匹配到的整个 [pos] 块，保留其他文本
+        cleanContent = cleanContent.replace(match[0], '');
+      }
+      return { cleanText: cleanContent.trim(), posBlocks };
+    }
+
+    function extractFragments(text) {
+      const specificMap = {};        // 每页的普通文本（不含 [pos]）
+      const pageSpecificPos = {};    // 每页内部的 [pos] 定义
+      const fragments = [];
+      const globalPosBlocks = [];    // 全局 [pos]（不在 [page] 内）
+      let remaining = text;
+
+      // 1. 处理 [page=N] 块，识别内部的 [pos]
+      const pageRegex = /\[page=([0-9,\s]+)\]([\s\S]*?)\[\/page\]/g;
+      remaining = remaining.replace(pageRegex, (m, pageList, content) => {
+        const pages = pageList.split(',').map(p => p.trim()).filter(Boolean);
+        // 解析该块内部的 [pos]，将 pos 的 page 强制设为该页序号
+        const { cleanText, posBlocks } = extractPosFromContent(content, parseInt(pages[0]));
+        pages.forEach(p => {
+          if (!specificMap[p]) specificMap[p] = [];
+          if (cleanText) specificMap[p].push(cleanText);
+          // 收集该页特有的 posBlocks
+          if (posBlocks.length) {
+            if (!pageSpecificPos[p]) pageSpecificPos[p] = [];
+            pageSpecificPos[p].push(...posBlocks);
+          }
+        });
+        return ''; // 移除这部分
+      });
+
+      // 2. 全局 [pos]（不在任何 [page] 内）
+      const posRegex = /\[pos=(\d+)\s*,\s*(mid|\d+)\]([\s\S]*?)\[\/pos\]/g;
+      remaining = remaining.replace(posRegex, (m, page, rowParam, content) => {
+        let row;
+        if (rowParam === 'mid') row = 'mid';
+        else row = parseInt(rowParam) - 1;
+        globalPosBlocks.push({ page: parseInt(page), row, content: content.trim() });
+        return '';
+      });
+
+      // 3. 处理 [page=auto] 及普通片段
+      const autoRegex = /\[page=auto\]([\s\S]*?)\[\/page\]/g;
+      let lastIndex = 0;
+      let match;
+      while ((match = autoRegex.exec(remaining)) !== null) {
+        const before = remaining.slice(lastIndex, match.index).trim();
+        if (before) fragments.push({ type: 'text', content: before });
+        fragments.push({ type: 'auto', content: match[1].trim() });
+        lastIndex = autoRegex.lastIndex;
+      }
+      const after = remaining.slice(lastIndex).trim();
+      if (after) fragments.push({ type: 'text', content: after });
+
+      return { fragments, specificMap, globalPosBlocks, pageSpecificPos };
+    }
+
+    function lineHeightOf(line) { return line.type==='image' ? line.heightLines : 1; }
+
+    function buildPageMap(fragments, specificMap, globalPosBlocks, pageSpecificPos, maxLines, contentWidth) {
+      const pageMap = {};
+      let currentPg = 1;
+
+      function isPageReserved(pg) { return specificMap[pg] && specificMap[pg].length > 0; }
+      function addToPage(pg, line) {
+        if (!pageMap[pg]) pageMap[pg] = [];
+        pageMap[pg].push(line);
+      }
+
+      function fillTextFragment(lines) {
+        let lineIdx = 0;
+        while (lineIdx < lines.length) {
+          while (isPageReserved(currentPg)) currentPg++;
+          let used = (pageMap[currentPg] || []).reduce((sum, l) => sum + lineHeightOf(l), 0);
+          while (lineIdx < lines.length && used + lineHeightOf(lines[lineIdx]) <= maxLines) {
+            addToPage(currentPg, lines[lineIdx]);
+            used += lineHeightOf(lines[lineIdx]);
+            lineIdx++;
+          }
+          if (lineIdx < lines.length) currentPg++;
+        }
+      }
+
+      function fillAutoBlock(lines) {
+        let lineIdx = 0;
+        while (lineIdx < lines.length) {
+          while (isPageReserved(currentPg)) currentPg++;
+          let used = (pageMap[currentPg] || []).length === 0 ? 0 : maxLines;
+          if (used > 0) { currentPg++; continue; }
+          while (lineIdx < lines.length && used + lineHeightOf(lines[lineIdx]) <= maxLines) {
+            addToPage(currentPg, lines[lineIdx]);
+            used += lineHeightOf(lines[lineIdx]);
+            lineIdx++;
+          }
+          if (lineIdx < lines.length) currentPg++;
+        }
+      }
+
+      // 1. 处理普通片段和 auto 块
+      for (const frag of fragments) {
+        const fragLines = parseContentToLines(frag.content, contentWidth);
+        if (frag.type === 'text') fillTextFragment(fragLines);
+        else if (frag.type === 'auto') fillAutoBlock(fragLines);
+      }
+
+      // 2. 处理指定页的普通文本（已剔除 [pos]）
+      for (const [pg, contents] of Object.entries(specificMap)) {
+        const pgNum = parseInt(pg);
+        if (!pageMap[pgNum]) pageMap[pgNum] = [];
+        for (const block of contents) {
+          const blockLines = parseContentToLines(block, contentWidth);
+          pageMap[pgNum].push(...blockLines);
+        }
+      }
+
+      // 3. 应用全局 [pos] 块
+      for (const pos of globalPosBlocks) {
+        applyPosBlock(pos, pageMap, maxLines, contentWidth);
+      }
+
+      // 4. 应用页面专属 [pos] 块（来自 [page=N] 内部）
+      for (const [pg, posList] of Object.entries(pageSpecificPos || {})) {
+        const pgNum = parseInt(pg);
+        for (const pos of posList) {
+          applyPosBlock(pos, pageMap, maxLines, contentWidth);
+        }
+      }
+
+      const total = Math.max(1, ...Object.keys(pageMap).map(Number), currentPg);
+      return { pageMap, totalPages: total };
+    }
+
+    function applyPosBlock(pos, pageMap, maxLines, contentWidth) {
+      const { page, row, content } = pos;
+      const posLines = parseContentToLines(content, contentWidth);
+      const lineCount = posLines.length;
+      let startRow;
+      if (row === 'mid') {
+        startRow = Math.max(0, Math.floor((maxLines - lineCount) / 2));
+      } else {
+        startRow = row;
+      }
+
+      if (!pageMap[page]) pageMap[page] = [];
+      // 补全空行到 startRow
+      while (pageMap[page].length < startRow) {
+        pageMap[page].push({ type:'text', text:'', isEmptyLine:true });
+      }
+      for (let i = 0; i < lineCount; i++) {
+        const targetIdx = startRow + i;
+        if (targetIdx >= maxLines) break;
+        if (targetIdx < pageMap[page].length) pageMap[page][targetIdx] = posLines[i];
+        else {
+          while (pageMap[page].length < targetIdx) pageMap[page].push({ type:'text', text:'', isEmptyLine:true });
+          pageMap[page].push(posLines[i]);
+        }
+      }
+    }
+
+    function renderPage(pageNum) {
+      if (!pageMap[pageNum]) pageMap[pageNum] = [];
+      const lines = pageMap[pageNum] || [];
+      paperGrid.innerHTML = '';
+      let used = 0;
+      for (const line of lines) {
+        if (used + lineHeightOf(line) > LINES_PER_PAGE) break;
+        if (line.type === 'text') {
+          const cell = document.createElement('div');
+          cell.className = 'line-cell';
+          cell.textContent = line.text;
+          cell.setAttribute('role', 'listitem');
+          paperGrid.appendChild(cell);
+        } else if (line.type === 'image') {
+          const cell = document.createElement('div');
+          cell.className = 'image-cell';
+          cell.style.gridRow = `span ${line.heightLines}`;
+          const img = document.createElement('img');
+          img.src = line.url;
+          img.alt = '插图';
+          img.loading = 'lazy';
+          img.onerror = () => { cell.innerHTML = '<span style="color:#999;font-size:14px;">[图片加载失败]</span>'; };
+          cell.appendChild(img);
+          cell.setAttribute('role', 'listitem');
+          paperGrid.appendChild(cell);
+        }
+        used += lineHeightOf(line);
+      }
+      for (let i = used; i < LINES_PER_PAGE; i++) {
+        const cell = document.createElement('div');
+        cell.className = 'line-cell';
+        cell.setAttribute('role', 'listitem');
+        paperGrid.appendChild(cell);
+      }
+      currentPageDisplay.textContent = pageNum;
+      totalPagesDisplay.textContent = totalPages;
+      updateButtonStates();
+    }
+
+    function updateButtonStates() {
+      btnFirst.disabled = currentPage <= 1;
+      btnPrev.disabled = currentPage <= 1;
+      btnNext.disabled = currentPage >= totalPages;
+      btnLast.disabled = currentPage >= totalPages;
+    }
+
+    function goToPage(num, transition = true) {
+      if (num < 1 || num > totalPages || num === currentPage) return;
+      currentPage = num;
+      updateButtonStates();
+      currentPageDisplay.textContent = num;
+      if (transition) {
+        paperWrapper.classList.add('page-transitioning');
+        clearTimeout(transitionTimeout);
+        transitionTimeout = setTimeout(() => {
+          renderPage(num);
+          paperWrapper.classList.remove('page-transitioning');
+        }, 150);
+      } else renderPage(num);
+    }
+
+    function recalculateAndRender() {
+      const contentWidthValue = getAvailableTextWidth();
+      const { fragments, specificMap, globalPosBlocks, pageSpecificPos } = extractFragments(letterContent);
+      const result = buildPageMap(fragments, specificMap, globalPosBlocks, pageSpecificPos, LINES_PER_PAGE, contentWidthValue);
+      pageMap = result.pageMap;
+      totalPages = result.totalPages;
+      if (currentPage > totalPages) currentPage = totalPages;
+      if (currentPage < 1) currentPage = 1;
+      renderPage(currentPage);
+      updateButtonStates();
+      currentPageDisplay.textContent = currentPage;
+      totalPagesDisplay.textContent = totalPages;
+    }
+
+    btnFirst.addEventListener('click', () => goToPage(1));
+    btnPrev.addEventListener('click', () => goToPage(currentPage - 1));
+    btnNext.addEventListener('click', () => goToPage(currentPage + 1));
+    btnLast.addEventListener('click', () => goToPage(totalPages));
+
+    document.addEventListener('keydown', (e) => {
+      if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.isContentEditable) return;
+      if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') { e.preventDefault(); goToPage(currentPage - 1); }
+      else if (e.key === 'ArrowRight' || e.key === 'ArrowDown') { e.preventDefault(); goToPage(currentPage + 1); }
+      else if (e.key === 'Home') { e.preventDefault(); goToPage(1); }
+      else if (e.key === 'End') { e.preventDefault(); goToPage(totalPages); }
+    });
+
+    let touchStartX = 0, touchStartY = 0;
+    paperWrapper.addEventListener('touchstart', (e) => {
+      if (e.touches.length === 1) { touchStartX = e.touches[0].clientX; touchStartY = e.touches[0].clientY; }
+    }, { passive: true });
+    paperWrapper.addEventListener('touchend', (e) => {
+      if (e.changedTouches.length === 1) {
+        const dx = e.changedTouches[0].clientX - touchStartX;
+        const dy = e.changedTouches[0].clientY - touchStartY;
+        if (Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > 50) goToPage(currentPage + (dx > 0 ? -1 : 1));
+      }
+    });
+
+    let resizeDebounce;
+    window.addEventListener('resize', () => {
+      clearTimeout(resizeDebounce);
+      resizeDebounce = setTimeout(() => {
+        recalculateAndRender();
+        if (currentPage > totalPages) goToPage(totalPages, false);
+      }, 350);
+    });
+
+    function init() {
+      recalculateAndRender();
+      paperWrapper.classList.remove('page-transitioning');
+    }
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
+    else init();
+
+    window.LetterViewer = {
+      goToPage: (n) => goToPage(n, true),
+      getCurrentPage: () => currentPage,
+      getTotalPages: () => totalPages,
+      refresh: recalculateAndRender,
+      setLeftPadding: (px) => document.documentElement.style.setProperty('--left-padding', px + 'px')
+    };
+  })();
+</script>
+</body>
+</html>
