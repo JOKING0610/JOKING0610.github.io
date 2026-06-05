@@ -55,6 +55,10 @@
             line-height: 1.6;
             -webkit-font-smoothing: antialiased;
             -moz-osx-font-smoothing: grayscale;
+            user-select: none;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
         }
 
         .container {
@@ -121,11 +125,13 @@
         }
 
         .card {
-            background: var(--card-bg);
+            background: rgba(255, 255, 255, 0.65);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
             border-radius: var(--radius);
             padding: 22px 24px;
             box-shadow: var(--shadow);
-            border: 1px solid var(--border);
+            border: 1px solid rgba(255, 255, 255, 0.5);
             transition: var(--transition);
             position: relative;
         }
@@ -609,11 +615,12 @@
             left: 0;
             right: 0;
             bottom: 0;
-            background: rgba(100, 150, 180, 0.3);
+            background: rgba(255, 255, 255, 0.2);
             z-index: 1000;
             align-items: center;
             justify-content: center;
-            backdrop-filter: blur(8px);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
             padding: 10px;
             box-sizing: border-box;
         }
@@ -1153,6 +1160,12 @@
         }
         .btn-confirm:active {
             transform: scale(0.98);
+        }
+        img, [draggable="true"] {
+            -webkit-user-drag: none;
+            -moz-user-drag: none;
+            user-drag: none;
+            pointer-events: none;
         }
     </style>
 </head>
@@ -1699,15 +1712,17 @@ function applySettings(){
 }
 
 function resetSettings(){
-    startDateInput.value=DEFAULT_START_DATE.toISOString().split("T")[0];
-    NUM_GROUPS=3;
-    GROUP_NAMES=["第一组","第二组","第三组"];
-    NUM_SUBGROUPS_PER_GROUP=[4,4,4];
-    SUBGROUP_NAMES={};
-    SUBGROUP_MEMBERS=[[[],[],[],[]],[[],[],[],[]],[[],[],[],[]]];
-    CUSTOM_TASKS=[[null,null,null,null],[null,null,null,null],[null,null,null,null]];
-    activeMemberGroupTab=0;activeTaskGroupTab=0;
-    updatePreview();buildSettingsUI();
+    showConfirm("确认恢复默认","确定要恢复所有设置为默认值吗？所有自定义的组、任务和成员数据都将被清除。",function(){
+        startDateInput.value=DEFAULT_START_DATE.toISOString().split("T")[0];
+        NUM_GROUPS=3;
+        GROUP_NAMES=["第一组","第二组","第三组"];
+        NUM_SUBGROUPS_PER_GROUP=[4,4,4];
+        SUBGROUP_NAMES={};
+        SUBGROUP_MEMBERS=[[[],[],[],[]],[[],[],[],[]],[[],[],[],[]]];
+        CUSTOM_TASKS=[[null,null,null,null],[null,null,null,null],[null,null,null,null]];
+        activeMemberGroupTab=0;activeTaskGroupTab=0;
+        updatePreview();buildSettingsUI();
+    });
 }
 
 btnSettings.addEventListener("click",openSettingsModal);
