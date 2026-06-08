@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>课程表编辑器</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<style>
+:root {
+  --bg: #f0f2f5;
+  --card: #fff;
+  --primary: #6366f1;
+  --primary-h: #4f46e5;
+  --success: #10b981;
+  --success-h: #059669;
+  --warn: #f59e0b;
+  --warn-h: #d97706;
+  --danger: #ef4444;
+  --danger-h: #dc2626;
+  --text: #1e293b;
+  --sub: #64748b;
+  --muted: #94a3b8;
+  --border: #e2e8f0;
+  --radius: 14px;
+  --shadow: 0 1px 2px rgba(0,0,0,.04), 0 4px 16px rgba(0,0,0,.04);
+}
+
+* { margin:0; padding:0; box-sizing:border-box; }
+body { font-family:'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif; background:var(--bg); min-height:100vh; padding:32px 16px; color:var(--text); }
+
+.wrap { max-width:860px; margin:0 auto; }
+
+/* ── 顶部 ── */
+.topbar {
+  display:flex; align-items:center; justify-content:space-between;
+  margin-bottom:20px; flex-wrap:wrap; gap:12px;
+}
+.topbar .brand { display:flex; align-items:center; gap:10px; }
+.topbar .brand i { font-size:26px; color:var(--primary); }
+.topbar .brand h1 { font-size:22px; font-weight:800; color:var(--text); }
+.topbar .brand span { font-size:12px; color:var(--muted); margin-left:2px; }
+
+.actions { display:flex; gap:8px; flex-wrap:wrap; }
+.btn {
+  display:inline-flex; align-items:center; gap:6px;
+  padding:10px 18px; border:none; border-radius:10px;
+  font-size:13px; font-weight:600; cursor:pointer;
+  transition:all .18s; white-space:nowrap;
+}
+.btn i { font-size:14px; }
+.btn-up   { background:var(--primary); color:#fff; }
+.btn-up:hover   { background:var(--primary-h); transform:translateY(-1px); }
+.btn-down { background:var(--success); color:#fff; }
+.btn-down:hover { background:var(--success-h); transform:translateY(-1px); }
+.btn-add  { background:var(--warn); color:#fff; }
+.btn-add:hover  { background:var(--warn-h); transform:translateY(-1px); }
+.btn-del  { background:var(--danger); color:#fff; }
+.btn-del:hover  { background:var(--danger-h); transform:translateY(-1px); }
+.btn-ghost { background:var(--card); color:var(--sub); border:1px solid var(--border); }
+.btn-ghost:hover { background:#f8fafc; color:var(--text); }
+
+.status-badge {
+  font-size:12px; color:var(--sub); background:var(--card);
+  padding:8px 14px; border-radius:8px; border:1px solid var(--border);
+  min-width:120px; text-align:center; transition:all .3s;
+}
+.status-badge.ok { color:var(--success); border-color:var(--success); background:#ecfdf5; }
+.status-badge.err { color:var(--danger); border-color:var(--danger); background:#fef2f2; }
+
+/* ── 标签栏 ── */
+.tabs {
+  display:flex; gap:4px; background:var(--card); border-radius:var(--radius);
+  padding:5px; box-shadow:var(--shadow); margin-bottom:16px;
+}
+.tab {
+  flex:1; padding:10px; text-align:center; border:none; border-radius:10px;
+  font-size:13px; font-weight:600; cursor:pointer; background:transparent;
+  color:var(--sub); transition:all .2s; position:relative;
+}
+.tab i { margin-right:4px; font-size:11px; opacity:.5; }
+.tab.active { background:var(--primary); color:#fff; box-shadow:0 2px 8px rgba(99,102,241,.35); }
+.tab.active i { opacity:1; }
+.tab:hover:not(.active) { background:#f1f5f9; color:var(--text); }
+
+/* ── 内容区 ── */
+.card { background:var(--card); border-radius:var(--radius); padding:24px; box-shadow:var(--shadow); }
+
+.card-head {
+  display:flex; align-items:center; justify-content:space-between;
+  margin-bottom:20px; padding-bottom:14px; border-bottom:1px solid var(--border);
+}
+.card-head h3 { font-size:17px; font-weight:700; color:var(--text); }
+.card-head .day-meta { font-size:13px; color:var(--primary); font-weight:600; }
+.card-head .day-meta i { margin-right:4px; }
+
+/* ── 课时列表 ── */
+.periods { display:flex; flex-direction:column; gap:6px; }
+.period-row {
+  display:flex; align-items:center; gap:10px; padding:10px 14px;
+  background:#f8fafc; border-radius:10px; border:1px solid transparent;
+  transition:all .15s;
+}
+.period-row:hover { border-color:var(--border); background:#fff; }
+.period-row .idx {
+  width:28px; height:28px; display:flex; align-items:center; justify-content:center;
+  background:var(--primary); color:#fff; border-radius:8px;
+  font-size:12px; font-weight:700; flex-shrink:0;
+}
+.period-row input {
+  padding:8px 10px; border:1px solid var(--border); border-radius:8px;
+  font-size:13px; outline:none; background:#fff; transition:border-color .15s;
+  color:var(--text);
+}
+.period-row input:focus { border-color:var(--primary); box-shadow:0 0 0 3px rgba(99,102,241,.12); }
+.period-row .time-s { width:72px; }
+.period-row .time-e { width:72px; }
+.period-row .time-dash { color:var(--muted); font-weight:600; flex-shrink:0; }
+.period-row .subj { flex:1; }
+.period-row .btn-rm {
+  width:30px; height:30px; border:none; border-radius:8px;
+  background:transparent; color:var(--muted); cursor:pointer;
+  font-size:14px; transition:all .15s; flex-shrink:0;
+}
+.period-row .btn-rm:hover { background:#fef2f2; color:var(--danger); }
+
+/* ── 确认模态框 ── */
+.modal-overlay {
+  position:fixed; inset:0; background:rgba(0,0,0,.35);
+  display:flex; align-items:center; justify-content:center;
+  z-index:999; opacity:0; pointer-events:none; transition:opacity .2s;
+}
+.modal-overlay.show { opacity:1; pointer-events:auto; }
+.modal-box {
+  background:var(--card); border-radius:16px; padding:28px 32px;
+  max-width:380px; width:90%; text-align:center; box-shadow:0 20px 60px rgba(0,0,0,.2);
+  transform:scale(.9); transition:transform .2s;
+}
+.modal-overlay.show .modal-box { transform:scale(1); }
+.modal-box i { font-size:42px; color:var(--danger); margin-bottom:12px; }
+.modal-box h3 { font-size:17px; color:var(--text); margin-bottom:6px; }
+.modal-box p { font-size:13px; color:var(--sub); margin-bottom:20px; }
+.modal-box .modal-btns { display:flex; gap:10px; justify-content:center; }
+.modal-box .modal-btns button {
+  padding:10px 28px; border:none; border-radius:10px;
+  font-size:14px; font-weight:600; cursor:pointer; transition:all .15s;
+}
+.modal-box .btn-cancel { background:#f1f5f9; color:var(--sub); }
+.modal-box .btn-cancel:hover { background:#e2e8f0; }
+.modal-box .btn-confirm { background:var(--danger); color:#fff; }
+.modal-box .btn-confirm:hover { background:var(--danger-h); }
+
+.empty-state {
+  text-align:center; padding:48px 20px; color:var(--muted);
+}
+.empty-state i { font-size:40px; margin-bottom:12px; display:block; opacity:.4; }
+.empty-state p { font-size:14px; }
+
+/* ── 响应式 ── */
+@media (max-width:600px) {
+  .topbar { flex-direction:column; align-items:flex-start; }
+  .period-row { flex-wrap:wrap; gap:6px; }
+  .period-row .time-s,.period-row .time-e { width:64px; }
+  .period-row .subj { min-width:100px; }
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="topbar">
+    <div class="brand">
+      <i class="fas fa-calendar-alt"></i>
+      <div>
+        <h1>课程表编辑器</h1>
+        <span>编辑完成后上传同步到云端</span>
+      </div>
+    </div>
+    <div class="actions">
+      <button class="btn btn-up" onclick="uploadSchedule()"><i class="fas fa-cloud-upload-alt"></i> 上传</button>
+      <button class="btn btn-down" onclick="downloadSchedule()"><i class="fas fa-cloud-download-alt"></i> 下载</button>
+      <button class="btn btn-add" onclick="addPeriod()"><i class="fas fa-plus"></i> 添加</button>
+      <button class="btn btn-ghost" onclick="resetAll()"><i class="fas fa-undo-alt"></i> 重置</button>
+    </div>
+  </div>
+
+  <div class="status-badge" id="status"><i class="fas fa-circle-check"></i> 就绪</div>
+
+  <div class="tabs" id="tabs"></div>
+  <div class="card" id="editor"></div>
+
+  <!-- 删除确认模态框 -->
+  <div class="modal-overlay" id="delModal">
+    <div class="modal-box">
+      <i class="fas fa-trash-alt"></i>
+      <h3>确认删除</h3>
+      <p id="delText">确定要删除这节课吗？</p>
+      <div class="modal-btns">
+        <button class="btn-cancel" onclick="closeModal()">取消</button>
+        <button class="btn-confirm" id="delConfirm">确认删除</button>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+const SUPABASE_URL = "https://yeogthpysbqgehjkayaf.supabase.co";
+const SUPABASE_KEY = "sb_publishable_WoO50Mbz0Rhfy0nPugE3vA_5UP__SYX";
+const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+const DAYS = ["周一","周二","周三","周四","周五","周六","周日"];
+const DAY_ICONS = ["fa-moon","fa-fire","fa-water","fa-tree","fa-star","fa-smile","fa-sun"];
+let currentDay = 0;
+let schedule = {};
+
+function init() {
+  DAYS.forEach(d => { schedule[d] = []; });
+  buildTabs();
+  loadLocal();
+}
+
+function buildTabs() {
+  document.getElementById("tabs").innerHTML = DAYS.map((d,i) =>
+    `<button class="tab${i===currentDay?' active':''}" onclick="selectDay(${i})">
+      <i class="fas ${DAY_ICONS[i]}"></i>${d}
+    </button>`
+  ).join('');
+}
+
+function selectDay(i) {
+  currentDay = i;
+  const day = DAYS[i];
+  if (!schedule[day]) schedule[day] = [];
+  buildTabs();
+  renderEditor();
+}
+
+function loadLocal() {
+  const local = localStorage.getItem("class_schedule");
+  if (local) { try { schedule = JSON.parse(local); } catch(e) {} }
+  if (!schedule[DAYS[0]] || schedule[DAYS[0]].length === 0) resetAll();
+  renderEditor();
+}
+
+function saveLocal() {
+  // 按时间排序后再保存（转换为分钟数比较）
+  DAYS.forEach(d => {
+    if (schedule[d]) schedule[d].sort((a,b) => {
+      const ta = a.time.split('-')[0] || '00:00';
+      const tb = b.time.split('-')[0] || '00:00';
+      const [ha, ma] = ta.split(':').map(Number);
+      const [hb, mb] = tb.split(':').map(Number);
+      return (ha * 60 + ma) - (hb * 60 + mb);
+    });
+  });
+  localStorage.setItem("class_schedule", JSON.stringify(schedule));
+}
+
+function resetAll() {
+  schedule = {
+    周一: [
+      {time:"7:10-7:35",subject:"语文"},{time:"8:00-8:40",subject:"物理"},
+      {time:"8:50-9:30",subject:"英语"},{time:"9:30-10:20",subject:"地理"},
+      {time:"10:30-11:10",subject:"语文"},{time:"11:20-12:00",subject:"心理"},
+      {time:"14:15-14:25",subject:"午练"},{time:"14:25-15:05",subject:"体育"},
+      {time:"15:15-15:55",subject:"数学"},{time:"16:05-16:45",subject:"生物"},
+      {time:"16:55-17:30",subject:"数学"},{time:"19:00-19:30",subject:"英语"},
+      {time:"19:40-20:20",subject:"自修一"},{time:"20:30-21:10",subject:"自修二"},
+      {time:"21:20-22:00",subject:"自修三"},
+    ],
+    周二: [
+      {time:"7:10-7:35",subject:"英语"},{time:"8:00-8:40",subject:"英语"},
+      {time:"8:50-9:30",subject:"英语"},{time:"9:30-10:20",subject:"化学"},
+      {time:"10:30-11:10",subject:"物理"},{time:"11:20-12:00",subject:"历史"},
+      {time:"14:15-14:25",subject:"午练"},{time:"14:25-15:05",subject:"数学"},
+      {time:"15:15-15:55",subject:"语文"},{time:"16:05-16:45",subject:"阅读"},
+      {time:"16:55-17:30",subject:"阅读"},{time:"19:00-19:30",subject:"语文"},
+      {time:"19:40-20:20",subject:"自修一"},{time:"20:30-21:10",subject:"自修二"},
+      {time:"21:20-22:00",subject:"自修三"},
+    ],
+    周三: [
+      {time:"7:10-7:35",subject:"语文"},{time:"8:00-8:40",subject:"数学"},
+      {time:"8:50-9:30",subject:"数学"},{time:"9:30-10:20",subject:"英语"},
+      {time:"10:30-11:10",subject:"化学"},{time:"11:20-12:00",subject:"生物"},
+      {time:"14:15-14:25",subject:"数学"},{time:"14:25-15:05",subject:"体育"},
+      {time:"15:15-15:55",subject:"物理"},{time:"16:05-16:45",subject:"研究性学习"},
+      {time:"16:55-17:30",subject:"学习"},{time:"19:00-19:30",subject:"英语"},
+      {time:"19:40-20:20",subject:"自修一"},{time:"20:30-21:10",subject:"自修二"},
+      {time:"21:20-22:00",subject:"自修三"},
+    ],
+    周四: [
+      {time:"7:10-7:35",subject:"英语"},{time:"8:00-8:40",subject:"生物"},
+      {time:"8:50-9:30",subject:"数学"},{time:"9:30-10:20",subject:"语文"},
+      {time:"10:30-11:10",subject:"语文"},{time:"11:20-12:00",subject:"英语"},
+      {time:"14:15-14:25",subject:"午练"},{time:"14:25-15:05",subject:"物理"},
+      {time:"15:15-15:55",subject:"音美"},{time:"16:05-16:45",subject:"化学"},
+      {time:"16:55-17:30",subject:"跑操/自习"},{time:"19:00-19:30",subject:"语文"},
+      {time:"19:40-20:20",subject:"自修一"},{time:"20:30-21:10",subject:"自修二"},
+      {time:"21:20-22:00",subject:"自修三"},
+    ],
+    周五: [
+      {time:"7:10-7:35",subject:"语文"},{time:"8:00-8:40",subject:"计算机"},
+      {time:"8:50-9:30",subject:"数学"},{time:"9:30-10:20",subject:"语文"},
+      {time:"10:30-11:10",subject:"化学"},{time:"11:20-12:00",subject:"物理"},
+      {time:"14:15-14:25",subject:"午练"},{time:"14:25-15:05",subject:"政治"},
+      {time:"15:15-15:55",subject:"生物"},{time:"16:05-16:45",subject:"英语"},
+      {time:"16:55-17:30",subject:"大扫除"},{time:"19:00-19:30",subject:"英语"},
+      {time:"19:40-20:20",subject:"自修一"},{time:"20:30-21:10",subject:"自修二"},
+      {time:"21:20-22:00",subject:"自修三"},
+    ],
+    周六: [
+      {time:"6:50-7:10",subject:"语文"},{time:"7:20-8:00",subject:"考试"},
+      {time:"8:10-8:50",subject:"考试"},{time:"9:20-10:00",subject:"考试"},
+      {time:"10:10-10:50",subject:"自习"},{time:"11:00-11:40",subject:"自习"},
+      {time:"14:15-14:25",subject:""},{time:"14:25-15:05",subject:""},
+      {time:"15:15-15:55",subject:""},{time:"16:05-16:45",subject:""},
+      {time:"16:55-17:30",subject:""},{time:"19:00-19:30",subject:"新闻周刊"},
+      {time:"19:40-20:20",subject:"自修一"},{time:"20:30-21:10",subject:"自修二"},
+      {time:"21:20-22:00",subject:"自修三"},
+    ],
+    周日: [
+      {time:"6:50-7:10",subject:"英语"},{time:"7:20-8:00",subject:"考试"},
+      {time:"8:10-8:50",subject:"考试"},{time:"9:20-10:00",subject:"考试"},
+      {time:"10:10-10:50",subject:"自习"},{time:"11:00-11:40",subject:"自习"},
+      {time:"14:15-14:25",subject:"午练"},{time:"14:25-15:05",subject:"考试"},
+      {time:"15:15-15:55",subject:"考试"},{time:"16:05-16:45",subject:"自习"},
+      {time:"16:55-17:30",subject:""},{time:"19:00-19:30",subject:"语文"},
+      {time:"19:40-20:20",subject:"自修一"},{time:"20:30-21:10",subject:"自修二"},
+      {time:"21:20-22:00",subject:"自修三"},
+    ],
+  };
+  saveLocal(); renderEditor();
+}
+
+function renderEditor() {
+  const day = DAYS[currentDay];
+  const periods = schedule[day] || [];
+  if (periods.length === 0) {
+    document.getElementById("editor").innerHTML = `
+      <div class="empty-state">
+        <i class="fas fa-calendar-plus"></i>
+        <p>暂无课时 — 点击「<i class="fas fa-plus"></i> 添加」开始编辑</p>
+      </div>`;
+    return;
+  }
+  document.getElementById("editor").innerHTML = `
+    <div class="card-head">
+      <h3>${day}</h3>
+      <span class="day-meta"><i class="fas fa-list-ol"></i> ${periods.length} 节课</span>
+    </div>
+    <div class="periods">` +
+    periods.map((p,i) => `
+      <div class="period-row">
+        <span class="idx">${i+1}</span>
+        <input class="time-s" value="${p.time.split('-')[0]||''}" onchange="updateTime(${i},'start',this.value)" placeholder="07:10">
+        <span class="time-dash">—</span>
+        <input class="time-e" value="${p.time.split('-')[1]||''}" onchange="updateTime(${i},'end',this.value)" placeholder="07:35">
+        <input class="subj" value="${p.subject||''}" onchange="updateSubject(${i},this.value)" placeholder="科目">
+        <button class="btn-rm" onclick="confirmDelete(${i})" title="删除"><i class="fas fa-times"></i></button>
+      </div>
+    `).join('') + '</div>';
+}
+
+function updateTime(i,part,val) {
+  const day = DAYS[currentDay];
+  const t = schedule[day][i].time.split("-");
+  schedule[day][i].time = part==="start" ? val+"-"+(t[1]||"") : (t[0]||"")+"-"+val;
+  saveLocal(); renderEditor();
+}
+function updateSubject(i,val) { schedule[DAYS[currentDay]][i].subject = val; saveLocal(); }
+function addPeriod() { const d=DAYS[currentDay]; if(!schedule[d])schedule[d]=[]; schedule[d].push({time:"",subject:""}); saveLocal(); renderEditor(); }
+
+/* ── 删除确认 ── */
+let pendingDelete = null;
+function confirmDelete(i) {
+  const day = DAYS[currentDay];
+  const p = schedule[day]?.[i];
+  document.getElementById("delText").textContent =
+    `确定要删除「${p?.subject||'未命名'}」(${p?.time||'--:--'}) 吗？`;
+  document.getElementById("delModal").classList.add("show");
+  pendingDelete = i;
+}
+function closeModal() {
+  document.getElementById("delModal").classList.remove("show");
+  pendingDelete = null;
+}
+function doDelete() {
+  if (pendingDelete !== null) {
+    schedule[DAYS[currentDay]].splice(pendingDelete, 1);
+    saveLocal(); renderEditor();
+  }
+  closeModal();
+}
+document.getElementById("delConfirm").onclick = doDelete;
+document.getElementById("delModal").onclick = function(e) {
+  if (e.target === this) closeModal();
+};
+
+function setStatus(msg, cls) {
+  const el = document.getElementById("status");
+  el.className = "status-badge" + (cls ? " " + cls : "");
+  el.innerHTML = msg;
+  if (cls) setTimeout(() => { el.className="status-badge"; el.innerHTML='<i class="fas fa-circle-check"></i> 就绪'; }, 3000);
+}
+
+async function uploadSchedule() {
+  // 上传前按时间排序（转换为分钟数比较）
+  DAYS.forEach(d => {
+    if (schedule[d]) schedule[d].sort((a,b) => {
+      const ta = a.time.split('-')[0] || '00:00';
+      const tb = b.time.split('-')[0] || '00:00';
+      const [ha, ma] = ta.split(':').map(Number);
+      const [hb, mb] = tb.split(':').map(Number);
+      return (ha * 60 + ma) - (hb * 60 + mb);
+    });
+  });
+  setStatus('<i class="fas fa-spinner fa-spin"></i> 上传中...');
+  try {
+    const { error } = await sb.from("class_schedule").upsert({id:1,data:schedule});
+    if (error) throw error;
+    setStatus('<i class="fas fa-check-circle"></i> 上传成功', 'ok');
+  } catch(e) {
+    setStatus('<i class="fas fa-exclamation-triangle"></i> ' + e.message, 'err');
+  }
+}
+
+async function downloadSchedule() {
+  setStatus('<i class="fas fa-spinner fa-spin"></i> 下载中...');
+  try {
+    const { data, error } = await sb.from("class_schedule").select("data").eq("id",1).single();
+    if (error) throw error;
+    if (data?.data) {
+      schedule = data.data; saveLocal(); renderEditor(); buildTabs();
+      setStatus('<i class="fas fa-check-circle"></i> 下载成功', 'ok');
+    } else {
+      setStatus('<i class="fas fa-cloud"></i> 云端暂无数据');
+    }
+  } catch(e) {
+    setStatus('<i class="fas fa-exclamation-triangle"></i> ' + e.message, 'err');
+  }
+}
+
+init();
+</script>
+</body>
+</html>
