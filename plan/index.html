@@ -1533,6 +1533,11 @@
                         <label for="startDateInput">起始日期：</label>
                         <input type="date" id="startDateInput" />
                     </div>
+                    <div class="settings-field">
+                        <label for="tomorrowTimeInput">明日任务显示时间：</label>
+                        <input type="time" id="tomorrowTimeInput" value="12:00" style="width:100%;padding:10px 14px;border:2px solid var(--border);border-radius:10px;font-size:1rem;color:var(--text);background:var(--bg);transition:all 0.2s ease;" />
+                        <span style="font-size:0.78rem;color:var(--text-secondary);margin-top:4px;display:block;">到达该时间后，界面将自动显示明日任务安排</span>
+                    </div>
                     <div class="settings-preview">
                         <span class="preview-label">当前设置：</span>
                         <span class="preview-value" id="previewValue">2026年6月4日（第一组 · 第0轮）</span>
@@ -1723,6 +1728,7 @@ const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 const DEFAULT_START_DATE=new Date(2026,5,4);
 const STORAGE_KEY='hygiene_scheduler_settings_v4';
+const TOMORROW_SHOW_TIME_KEY='tomorrowShowTime';
 
 function getGroupColor(i){return GCP[i%GCP.length];}
 function getSubgroupColor(i){return SCP[i%SCP.length];}
@@ -1756,17 +1762,16 @@ function loadSettings(){
         const sn=p.subgroupNames?p.subgroupNames:{};
         const mb=p.members&&p.members.length===ng?p.members:Array.from({length:ng},(v,g)=>Array.from({length:ns[g]},()=>[]));
         const ct=p.customTasks&&p.customTasks.length===ng?p.customTasks:Array.from({length:ng},(v,g)=>Array.from({length:ns[g]},()=>null));
-        return{startDate:new Date(p.startDate||DEFAULT_START_DATE),numGroups:ng,groupNames:gn,numSubgroupsPerGroup:ns,subgroupNames:sn,members:mb,customTasks:ct,taskRotation:p.taskRotation||Array.from({length:ng},()=>true),groupColors:p.groupColors||[...DEFAULT_GROUP_COLORS]};
+        return{startDate:new Date(p.startDate||DEFAULT_START_DATE),numGroups:ng,groupNames:gn,numSubgroupsPerGroup:ns,subgroupNames:sn,members:mb,customTasks:ct,taskRotation:p.taskRotation||Array.from({length:ng},()=>true),groupColors:p.groupColors||[...DEFAULT_GROUP_COLORS],tomorrowShowTime:p.tomorrowShowTime||'12:00'};
     }}catch(e){}
-    const defaults={startDate:new Date(DEFAULT_START_DATE),numGroups:3,groupNames:["第一组","第二组","第三组"],numSubgroupsPerGroup:[4,4,4],subgroupNames:{},members:[[["张三","李四","王五"],["赵六","钱七","孙八"],["周九","吴十","郑一"],["冯二","陈三","褚四"]],[["甲","乙","丙"],["丁","戊","己"],["庚","辛","壬"],["癸","子","丑"]],[["A","B","C"],["D","E","F"],["G","H","I"],["J","K","L"]]],customTasks:[["教室","厕所和空地","公区","公区"],["教室","厕所和空地","公区","公区"],["教室","厕所和空地","公区","公区"]],taskRotation:[true,true,true],groupColors:[...DEFAULT_GROUP_COLORS]};
+    const defaults={startDate:new Date(DEFAULT_START_DATE),numGroups:3,groupNames:["第一组","第二组","第三组"],numSubgroupsPerGroup:[4,4,4],subgroupNames:{},members:[[["张三","李四","王五"],["赵六","钱七","孙八"],["周九","吴十","郑一"],["冯二","陈三","褚四"]],[["甲","乙","丙"],["丁","戊","己"],["庚","辛","壬"],["癸","子","丑"]],[["A","B","C"],["D","E","F"],["G","H","I"],["J","K","L"]]],customTasks:[["教室","厕所和空地","公区","公区"],["教室","厕所和空地","公区","公区"],["教室","厕所和空地","公区","公区"]],taskRotation:[true,true,true],groupColors:[...DEFAULT_GROUP_COLORS],tomorrowShowTime:'12:00'};
     // 写入 localStorage，确保首次加载时输入框有值
     try{localStorage.setItem(STORAGE_KEY,JSON.stringify({
         startDate:DEFAULT_START_DATE.toISOString(),numGroups:3,groupNames:["第一组","第二组","第三组"],
         numSubgroupsPerGroup:[4,4,4],subgroupNames:{},
         members:[[["张三","李四","王五"],["赵六","钱七","孙八"],["周九","吴十","郑一"],["冯二","陈三","褚四"]],[["甲","乙","丙"],["丁","戊","己"],["庚","辛","壬"],["癸","子","丑"]],[["A","B","C"],["D","E","F"],["G","H","I"],["J","K","L"]]],
-        customTasks:[["教室","厕所和空地","公区","公区"],["教室","厕所和空地","公区","公区"],["教室","厕所和空地","公区","公区"]],taskRotation:[true,true,true],groupColors:[...DEFAULT_GROUP_COLORS]
+        customTasks:[["教室","厕所和空地","公区","公区"],["教室","厕所和空地","公区","公区"],["教室","厕所和空地","公区","公区"]],taskRotation:[true,true,true],groupColors:[...DEFAULT_GROUP_COLORS],tomorrowShowTime:'12:00'
     }));}catch(e){}
-    return defaults;
 
 }
 
@@ -1774,7 +1779,8 @@ function saveSettings(s){
     try{localStorage.setItem(STORAGE_KEY,JSON.stringify({
         startDate:s.startDate.toISOString(),numGroups:s.numGroups,groupNames:s.groupNames,
         numSubgroupsPerGroup:s.numSubgroupsPerGroup,subgroupNames:s.subgroupNames,
-        members:s.members,customTasks:s.customTasks,taskRotation:s.taskRotation,groupColors:s.groupColors
+        members:s.members,customTasks:s.customTasks,taskRotation:s.taskRotation,groupColors:s.groupColors,
+        tomorrowShowTime:s.tomorrowShowTime||'12:00'
     }));}catch(e){}
 }
 
@@ -1805,6 +1811,7 @@ const btnCloseSettings=document.getElementById("btnCloseSettings");
 const btnResetSettings=document.getElementById("btnResetSettings");
 const btnSaveSettings=document.getElementById("btnSaveSettings");
 const startDateInput=document.getElementById("startDateInput");
+const tomorrowTimeInput=document.getElementById("tomorrowTimeInput");
 const previewValue=document.getElementById("previewValue");
 
 const confirmModal=document.getElementById("confirmModal");
@@ -2314,7 +2321,8 @@ function applySettings(){
     if(isNaN(nd.getTime())){showConfirm("提示","请选择有效的日期",()=>{});return;}
     START_DATE=nd;
     // 直接从内存变量取值（flushFormData 已确保 DOM → 内存同步），不再依赖 DOM
-    settings={startDate:START_DATE,numGroups:NUM_GROUPS,groupNames:GROUP_NAMES,numSubgroupsPerGroup:NUM_SUBGROUPS_PER_GROUP,subgroupNames:SUBGROUP_NAMES,members:SUBGROUP_MEMBERS,customTasks:CUSTOM_TASKS,taskRotation:TASK_ROTATION,groupColors:settings.groupColors||[...DEFAULT_GROUP_COLORS]};
+    TOMORROW_SHOW_TIME=tomorrowTimeInput?tomorrowTimeInput.value:"12:00";
+    settings={startDate:START_DATE,numGroups:NUM_GROUPS,groupNames:GROUP_NAMES,numSubgroupsPerGroup:NUM_SUBGROUPS_PER_GROUP,subgroupNames:SUBGROUP_NAMES,members:SUBGROUP_MEMBERS,customTasks:CUSTOM_TASKS,taskRotation:TASK_ROTATION,groupColors:settings.groupColors||[...DEFAULT_GROUP_COLORS],tomorrowShowTime:TOMORROW_SHOW_TIME};
     saveSettings(settings);
     currentViewYear=START_DATE.getFullYear();
     currentViewMonth=START_DATE.getMonth();
@@ -2396,7 +2404,8 @@ document.getElementById("btnUploadSettings").addEventListener("click",async func
             tasks:CUSTOM_TASKS||[],
             members:SUBGROUP_MEMBERS||[],
             task_rotation:TASK_ROTATION,
-            group_colors:settings.groupColors||DEFAULT_GROUP_COLORS
+            group_colors:settings.groupColors||DEFAULT_GROUP_COLORS,
+            tomorrow_show_time:TOMORROW_SHOW_TIME||'12:00'
         }});
         showToast('上传成功', true);
     }catch(e){showToast('上传失败: '+e.message, false);}
@@ -2424,11 +2433,12 @@ document.getElementById("btnDownloadSettings").addEventListener("click",async fu
         TASK_ROTATION=p.task_rotation||Array.from({length:ng},function(){return true;});
         settings.groupColors=p.group_colors||[...DEFAULT_GROUP_COLORS];
         START_DATE=p.start_date ? new Date(p.start_date) : DEFAULT_START_DATE;
+        TOMORROW_SHOW_TIME=p.tomorrow_show_time || '12:00';
         // 自动保存（无需用户再点"保存设置"）
         settings={startDate:START_DATE,numGroups:NUM_GROUPS,groupNames:GROUP_NAMES,
             numSubgroupsPerGroup:NUM_SUBGROUPS_PER_GROUP,subgroupNames:SUBGROUP_NAMES,
             members:SUBGROUP_MEMBERS,customTasks:CUSTOM_TASKS,taskRotation:TASK_ROTATION,
-            groupColors:settings.groupColors};
+            groupColors:settings.groupColors,tomorrowShowTime:TOMORROW_SHOW_TIME};
         saveSettings(settings);
         activeMemberGroupTab=0;activeTaskGroupTab=0;
         currentViewYear=START_DATE.getFullYear();currentViewMonth=START_DATE.getMonth();
@@ -2533,10 +2543,13 @@ function init(){
     SUBGROUP_MEMBERS=settings.members;
     CUSTOM_TASKS=settings.customTasks;
     TASK_ROTATION=settings.taskRotation||Array.from({length:settings.numGroups},()=>true);
+    TOMORROW_SHOW_TIME=settings.tomorrowShowTime||'12:00';
     currentViewYear=START_DATE.getFullYear();currentViewMonth=START_DATE.getMonth();
     selectedDate=new Date(START_DATE.getFullYear(),START_DATE.getMonth(),START_DATE.getDate());
     const rt=new Date();
     if(rt>=START_DATE){selectedDate=new Date(rt.getFullYear(),rt.getMonth(),rt.getDate());currentViewYear=rt.getFullYear();currentViewMonth=rt.getMonth();}
+    // 初始化明日任务显示时间输入框
+    if(tomorrowTimeInput){tomorrowTimeInput.value=settings.tomorrowShowTime||'12:00';}
     updateDynamicStyles();renderLegend();
     renderCalendar();renderDetail();
 }
