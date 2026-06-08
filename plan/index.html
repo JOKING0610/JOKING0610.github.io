@@ -714,8 +714,10 @@
             color: #000000;
         }
         .btn-close {
-            width: 32px;
-            height: 32px;
+            width: 44px;
+            height: 44px;
+            min-width: 44px;
+            min-height: 44px;
             border: none;
             background: rgba(24, 144, 255, 0.1);
             color: #1e88e5;
@@ -1259,6 +1261,183 @@
             color: #1e293b;
             font-weight: 500;
             line-height: 1.5;
+        }
+
+        .color-swatch:hover {
+            transform: scale(1.12);
+            border-color: #6366f1 !important;
+            box-shadow: 0 2px 8px rgba(99,102,241,0.3) !important;
+        }
+        .color-hex-input:focus {
+            outline: none;
+            border-color: #6366f1 !important;
+            box-shadow: 0 0 0 2px rgba(99,102,241,0.15);
+        }
+
+        /* 自定义颜色选择器模态框 */
+        .cp-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.35);
+            z-index: 3000;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(3px);
+        }
+        .cp-overlay.active { display: flex; }
+        .cp-panel {
+            background: #fff;
+            border-radius: 18px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+            padding: 20px;
+            width: 290px;
+            animation: panelFadeIn 0.22s ease;
+        }
+        .cp-sv-area {
+            position: relative;
+            width: 100%;
+            height: 180px;
+            border-radius: 10px;
+            cursor: crosshair;
+            margin-bottom: 12px;
+            overflow: hidden;
+        }
+        .cp-sv-area .cp-sv-bg {
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            border-radius: 10px;
+        }
+        .cp-sv-area .cp-sv-cursor {
+            position: absolute;
+            width: 16px; height: 16px;
+            border: 3px solid #fff;
+            border-radius: 50%;
+            box-shadow: 0 0 0 1.5px rgba(0,0,0,0.2), 0 1px 3px rgba(0,0,0,0.3);
+            pointer-events: none;
+            transform: translate(-50%,-50%);
+        }
+        .cp-hue-bar {
+            position: relative;
+            width: 100%;
+            height: 14px;
+            border-radius: 7px;
+            margin-bottom: 14px;
+            cursor: pointer;
+            background: linear-gradient(to right, #f00, #ff0, #0f0, #0ff, #00f, #f0f, #f00);
+        }
+        .cp-hue-bar .cp-hue-thumb {
+            position: absolute;
+            top: -3px;
+            width: 20px; height: 20px;
+            border: 3px solid #fff;
+            border-radius: 50%;
+            box-shadow: 0 0 0 1.5px rgba(0,0,0,0.15), 0 1px 3px rgba(0,0,0,0.2);
+            pointer-events: none;
+            transform: translateX(-50%);
+        }
+        .cp-preview-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 14px;
+        }
+        .cp-preview-color {
+            width: 42px; height: 42px;
+            border-radius: 10px;
+            border: 2px solid #e2e8f0;
+            flex-shrink: 0;
+        }
+        .cp-hex-input {
+            flex: 1;
+            padding: 7px 10px;
+            border: 1px solid #cbd5e1;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            font-family: 'SF Mono','Consolas',monospace;
+            color: #1e293b;
+        }
+        .cp-hex-input:focus {
+            outline: none;
+            border-color: #6366f1;
+        }
+        .cp-presets {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-bottom: 14px;
+        }
+        .cp-preset {
+            width: 26px; height: 26px;
+            border-radius: 6px;
+            cursor: pointer;
+            border: 2px solid transparent;
+            transition: all 0.15s ease;
+        }
+        .cp-preset:hover {
+            transform: scale(1.15);
+            border-color: #94a3b8;
+        }
+        .cp-buttons {
+            display: flex;
+            gap: 8px;
+        }
+        .cp-buttons button {
+            flex: 1;
+            padding: 9px 0;
+            border: none;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.15s ease;
+        }
+        .cp-btn-cancel {
+            background: #f1f5f9;
+            color: #64748b;
+        }
+        .cp-btn-cancel:hover { background: #e2e8f0; }
+        .cp-btn-ok {
+            background: #6366f1;
+            color: #fff;
+        }
+        .cp-btn-ok:hover { background: #4f46e5; }
+
+        /* ═══ 移动端/平板适配 ═══ */
+        @media (max-width: 600px) {
+            body { padding: 10px; }
+            .card { padding: 16px 14px; }
+            .card-header h3 { font-size: 0.95rem; }
+            .calendar-nav button { padding: 8px 12px; font-size: 0.85rem; min-height: 40px; }
+            .btn-today { padding: 8px 10px; }
+            .calendar-grid .day-cell { font-size: 0.8rem; min-height: 44px; }
+            .legend-item { font-size: 0.7rem; }
+            .detail-date { font-size: 1.2rem; }
+            .detail-group-badge { padding: 8px 14px; font-size: 0.9rem; }
+            .detail-content { overflow-x: auto; }
+            .task-table { min-width: 500px; font-size: 0.8rem; }
+            .task-table th, .task-table td { padding: 8px 10px; }
+            .task-badge { padding: 4px 8px; font-size: 0.7rem; white-space: nowrap; }
+            .settings-content { width: 95%; max-height: 85vh; }
+            .settings-body { padding: 12px; }
+            .member-group textarea, .task-input-group input[type="text"] { font-size: 16px; }
+            .settings-tab { padding: 8px 4px; font-size: 0.8rem; }
+            .group-tab { padding: 8px 6px; font-size: 0.8rem; }
+            .btn-manage { padding: 8px 12px; font-size: 0.8rem; }
+            .btn-download-desktop { padding: 8px 16px; font-size: 0.8rem; }
+            .cp-panel { width: 90%; max-width: 280px; padding: 16px; }
+            .cp-sv-area { height: 150px; }
+        }
+        @media (min-width: 601px) and (max-width: 900px) {
+            .main-grid { gap: 16px; }
+            .calendar-grid .day-cell { font-size: 0.85rem; }
+            .task-table th, .task-table td { padding: 10px 12px; }
+        }
+        button, .day-cell, .btn-manage, .settings-tab, .group-tab, .cp-preset, .color-swatch {
+            touch-action: manipulation;
+        }
+        .day-cell:active, .calendar-nav button:active, .btn-manage:active, .settings-tab:active {
+            opacity: 0.7; transform: scale(0.96); transition: transform 0.05s;
         }
     </style>
 </head>
@@ -1865,20 +2044,193 @@ function buildColorPickers(){
     var html='';
     for(var i=0;i<groups.length;i++){
         var hex=colors[i]||DEFAULT_GROUP_COLORS[i%DEFAULT_GROUP_COLORS.length];
-        html+='<div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">';
+        html+='<div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">';
         html+='<span style="font-size:0.85rem;min-width:70px;color:#475569;">'+groups[i]+'</span>';
-        html+='<input type="color" value="'+hex+'" data-gi="'+i+'" style="width:40px;height:30px;border:1px solid #cbd5e1;border-radius:5px;cursor:pointer;padding:2px;" onchange="onGroupColorChange(this)">';
-        html+='<span style="font-size:0.75rem;color:#94a3b8;">'+hex+'</span>';
+        // 自定义颜色选择器：圆形色块 + 原生取色器
+        html+='<div class="color-swatch" data-gi="'+i+'" style="width:34px;height:34px;background:'+hex+';border-radius:50%;border:2px solid #cbd5e1;cursor:pointer;flex-shrink:0;transition:all 0.2s ease;box-shadow:0 1px 3px rgba(0,0,0,0.12);" onclick="openColorPicker(this)" title="点击选择颜色"></div>';
+        // 颜色代码文本输入
+        html+='<input type="text" class="color-hex-input" data-gi="'+i+'" value="'+hex+'" maxlength="7" style="width:78px;padding:5px 8px;border:1px solid #cbd5e1;border-radius:6px;font-size:0.8rem;font-family:var(--font-mono);color:#475569;background:#fff;" oninput="onHexInputChange(this)" onblur="onHexInputBlur(this)" placeholder="#6366f1">';
         html+='</div>';
     }
     el.innerHTML=html;
 }
-function onGroupColorChange(input){
-    var gi=parseInt(input.dataset.gi);
+function openColorPicker(swatch){
+    var gi=parseInt(swatch.dataset.gi);
+    cpOpen(gi);
+}
+function onHexInputChange(input){
+    // 实时预览色块颜色
+    var val=input.value.trim();
+    if(/^#[0-9a-fA-F]{6}$/.test(val)){
+        var swatch=input.parentElement.querySelector('.color-swatch');
+        var nativeInput=input.parentElement.querySelector('input[type="color"]');
+        if(swatch)swatch.style.background=val;
+        if(nativeInput)nativeInput.value=val;
+        var gi=parseInt(input.dataset.gi);
+        if(!settings.groupColors)settings.groupColors=[...DEFAULT_GROUP_COLORS];
+        while(settings.groupColors.length<=gi)settings.groupColors.push(DEFAULT_GROUP_COLORS[settings.groupColors.length%DEFAULT_GROUP_COLORS.length]);
+        settings.groupColors[gi]=val;
+    }
+}
+function onHexInputBlur(input){
+    var val=input.value.trim();
+    if(!/^#[0-9a-fA-F]{6}$/.test(val)){
+        var gi=parseInt(input.dataset.gi);
+        var colors=settings.groupColors||DEFAULT_GROUP_COLORS;
+        var hex=colors[gi]||DEFAULT_GROUP_COLORS[gi%DEFAULT_GROUP_COLORS.length];
+        input.value=hex;
+        var swatch=input.parentElement.querySelector('.color-swatch');
+        if(swatch)swatch.style.background=hex;
+    }
+}
+
+// ═══ 自定义颜色选择器模态框 ═══
+var cpTargetGi=-1;
+var cpH=0,cpS=1,cpV=1;
+var cpDragging=false,cpHueDragging=false;
+
+function cpOpen(gi){
+    cpInitPresets();
+    cpTargetGi=gi;
+    var colors=settings.groupColors||DEFAULT_GROUP_COLORS;
+    var hex=colors[gi]||DEFAULT_GROUP_COLORS[gi%DEFAULT_GROUP_COLORS.length];
+    // 从 hex 解析 HSV
+    var rgb=hexToRgb(hex);
+    var hsv=rgbToHsv(rgb.r,rgb.g,rgb.b);
+    cpH=hsv.h;cpS=hsv.s;cpV=hsv.v;
+    cpUpdateUI();
+    cpUpdateSvBg();
+    document.getElementById('cpOverlay').classList.add('active');
+}
+function cpClose(){
+    document.getElementById('cpOverlay').classList.remove('active');
+}
+function cpConfirm(){
+    var hex=document.getElementById('cpHexInput').value;
     if(!settings.groupColors)settings.groupColors=[...DEFAULT_GROUP_COLORS];
-    while(settings.groupColors.length<=gi)settings.groupColors.push(DEFAULT_GROUP_COLORS[settings.groupColors.length%DEFAULT_GROUP_COLORS.length]);
-    settings.groupColors[gi]=input.value;
-    input.nextElementSibling.textContent=input.value;
+    while(settings.groupColors.length<=cpTargetGi)settings.groupColors.push(DEFAULT_GROUP_COLORS[settings.groupColors.length%DEFAULT_GROUP_COLORS.length]);
+    settings.groupColors[cpTargetGi]=hex;
+    // 刷新设置面板中的颜色选择器
+    buildColorPickers();
+    cpClose();
+}
+
+// HSV → RGB → Hex
+function hsvToRgb(h,s,v){
+    var i=Math.floor(h*6),f=h*6-i,p=v*(1-s),q=v*(1-f*s),t=v*(1-(1-f)*s);
+    var r,g,b;
+    switch(i%6){
+        case 0:r=v;g=t;b=p;break;case 1:r=q;g=v;b=p;break;
+        case 2:r=p;g=v;b=t;break;case 3:r=p;g=q;b=v;break;
+        case 4:r=t;g=p;b=v;break;case 5:r=v;g=p;b=q;break;
+    }
+    return{r:Math.round(r*255),g:Math.round(g*255),b:Math.round(b*255)};
+}
+function rgbToHex(r,g,b){
+    return '#'+[r,g,b].map(function(c){return Math.min(255,Math.max(0,c)).toString(16).padStart(2,'0');}).join('');
+}
+function hexToRgb(hex){
+    hex=hex.replace('#','');
+    return{r:parseInt(hex.slice(0,2),16),g:parseInt(hex.slice(2,4),16),b:parseInt(hex.slice(4,6),16)};
+}
+function rgbToHsv(r,g,b){
+    r/=255;g/=255;b/=255;
+    var max=Math.max(r,g,b),min=Math.min(r,g,b),d=max-min;
+    var h=0,s=max===0?0:d/max,v=max;
+    if(d!==0){
+        if(max===r)h=((g-b)/d+(g<b?6:0))/6;
+        else if(max===g)h=((b-r)/d+2)/6;
+        else h=((r-g)/d+4)/6;
+    }
+    return{h:h,s:s,v:v};
+}
+
+function cpUpdateSvBg(){
+    var rgb=hsvToRgb(cpH,1,1);
+    var hex=rgbToHex(rgb.r,rgb.g,rgb.b);
+    document.getElementById('cpSvBg').style.background='linear-gradient(to top,#000,transparent),linear-gradient(to right,#fff,'+hex+')';
+}
+function cpUpdateUI(){
+    var rgb=hsvToRgb(cpH,cpS,cpV);
+    var hex=rgbToHex(rgb.r,rgb.g,rgb.b);
+    document.getElementById('cpHexInput').value=hex;
+    document.getElementById('cpPreview').style.background=hex;
+    // 光标位置
+    var sv=document.getElementById('cpSvArea');
+    var cursor=document.getElementById('cpSvCursor');
+    var w=sv.offsetWidth,h=sv.offsetHeight;
+    cursor.style.left=(cpS*w)+'px';
+    cursor.style.top=((1-cpV)*h)+'px';
+    // 色相滑块
+    var hueBar=document.getElementById('cpHueBar');
+    var thumb=document.getElementById('cpHueThumb');
+    thumb.style.left=(cpH*hueBar.offsetWidth)+'px';
+}
+
+function cpFromSvPos(x,y){
+    var sv=document.getElementById('cpSvArea');
+    var w=sv.offsetWidth,h=sv.offsetHeight;
+    cpS=Math.max(0,Math.min(1,x/w));
+    cpV=1-Math.max(0,Math.min(1,y/h));
+}
+function cpFromHuePos(x){
+    var bar=document.getElementById('cpHueBar');
+    cpH=Math.max(0,Math.min(1,x/bar.offsetWidth));
+    cpUpdateSvBg();
+}
+
+// SV 区域事件
+function cpSvDown(e){cpDragging=true;cpSvAt(e);}
+function cpSvMove(e){if(cpDragging)cpSvAt(e);}
+function cpSvUp(){cpDragging=false;}
+function cpSvAt(e){
+    var sv=document.getElementById('cpSvArea');
+    var rect=sv.getBoundingClientRect();
+    cpFromSvPos(e.clientX-rect.left,e.clientY-rect.top);
+    cpUpdateUI();
+}
+// Hue 滑块事件
+function cpHueDown(e){cpHueDragging=true;cpHueAt(e);}
+function cpHueMove(e){if(cpHueDragging)cpHueAt(e);}
+function cpHueUp(){cpHueDragging=false;}
+function cpHueAt(e){
+    var bar=document.getElementById('cpHueBar');
+    var rect=bar.getBoundingClientRect();
+    cpFromHuePos(e.clientX-rect.left);
+    cpUpdateUI();
+}
+// Hex 输入
+function cpHexChanged(){
+    var hex=document.getElementById('cpHexInput').value.trim();
+    if(/^#[0-9a-fA-F]{6}$/.test(hex)){
+        var rgb=hexToRgb(hex);
+        var hsv=rgbToHsv(rgb.r,rgb.g,rgb.b);
+        cpH=hsv.h;cpS=hsv.s;cpV=hsv.v;
+        cpUpdateSvBg();
+        cpUpdateUI();
+    }
+}
+
+// 预设颜色（延迟初始化）
+var cpPresetsInited=false;
+function cpInitPresets(){
+    if(cpPresetsInited)return;
+    cpPresetsInited=true;
+    var presets=['#ef4444','#f97316','#f59e0b','#eab308','#84cc16','#22c55e','#10b981','#14b8a6','#06b6d4','#0ea5e9','#3b82f6','#6366f1','#8b5cf6','#a855f7','#d946ef','#ec4899','#f43f5e','#78716c','#94a3b8','#1e293b'];
+    var el=document.getElementById('cpPresets');
+    if(!el)return;
+    var html='';
+    for(var i=0;i<presets.length;i++){
+        html+='<div class="cp-preset" style="background:'+presets[i]+';" onclick="cpSetPreset(\''+presets[i]+'\')" title="'+presets[i]+'"></div>';
+    }
+    el.innerHTML=html;
+}
+function cpSetPreset(hex){
+    var rgb=hexToRgb(hex);
+    var hsv=rgbToHsv(rgb.r,rgb.g,rgb.b);
+    cpH=hsv.h;cpS=hsv.s;cpV=hsv.v;
+    cpUpdateSvBg();
+    cpUpdateUI();
 }
 function buildSettingsUI(){buildTaskPanel();buildMemberPanel();buildColorPickers();}
 
@@ -2153,6 +2505,24 @@ document.addEventListener("keydown",function(e){
     }
 });
 
+// ═══ 颜色选择器触摸事件（移动端）═══
+function bindColorPickerTouchEvents() {
+    var svArea = document.getElementById('cpSvArea');
+    var hueBar = document.getElementById('cpHueBar');
+    if (!svArea || !hueBar) return;
+    svArea.addEventListener('touchstart', function(e) { e.preventDefault(); cpDragging = true; cpSvAt(e.touches[0]); });
+    svArea.addEventListener('touchmove', function(e) { e.preventDefault(); if (cpDragging) cpSvAt(e.touches[0]); });
+    svArea.addEventListener('touchend', function() { cpDragging = false; });
+    hueBar.addEventListener('touchstart', function(e) { e.preventDefault(); cpHueDragging = true; cpHueAt(e.touches[0]); });
+    hueBar.addEventListener('touchmove', function(e) { e.preventDefault(); if (cpHueDragging) cpHueAt(e.touches[0]); });
+    hueBar.addEventListener('touchend', function() { cpHueDragging = false; });
+}
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', bindColorPickerTouchEvents);
+} else {
+    bindColorPickerTouchEvents();
+}
+
 function init(){
     settings=loadSettings();
     START_DATE=settings.startDate;
@@ -2172,9 +2542,39 @@ function init(){
 }
 
 init();
+// 导出 inline onclick 需要的函数到全局
+window.openColorPicker=openColorPicker;
+window.onHexInputChange=onHexInputChange;
+window.onHexInputBlur=onHexInputBlur;
+window.cpOpen=cpOpen;window.cpClose=cpClose;window.cpConfirm=cpConfirm;
+window.cpSvDown=cpSvDown;window.cpSvMove=cpSvMove;window.cpSvUp=cpSvUp;
+window.cpHueDown=cpHueDown;window.cpHueMove=cpHueMove;window.cpHueUp=cpHueUp;
+window.cpHexChanged=cpHexChanged;window.cpSetPreset=cpSetPreset;
         })();
     </script>
 
+
+    <!-- 自定义颜色选择器 -->
+    <div class="cp-overlay" id="cpOverlay">
+        <div class="cp-panel">
+            <div class="cp-sv-area" id="cpSvArea" onmousedown="cpSvDown(event)" onmousemove="cpSvMove(event)" onmouseup="cpSvUp()" onmouseleave="cpSvUp()">
+                <div class="cp-sv-bg" id="cpSvBg"></div>
+                <div class="cp-sv-cursor" id="cpSvCursor"></div>
+            </div>
+            <div class="cp-hue-bar" id="cpHueBar" onmousedown="cpHueDown(event)" onmousemove="cpHueMove(event)" onmouseup="cpHueUp()" onmouseleave="cpHueUp()">
+                <div class="cp-hue-thumb" id="cpHueThumb"></div>
+            </div>
+            <div class="cp-preview-row">
+                <div class="cp-preview-color" id="cpPreview"></div>
+                <input type="text" class="cp-hex-input" id="cpHexInput" maxlength="7" placeholder="#6366f1" oninput="cpHexChanged()">
+            </div>
+            <div class="cp-presets" id="cpPresets"></div>
+            <div class="cp-buttons">
+                <button class="cp-btn-cancel" onclick="cpClose()">取消</button>
+                <button class="cp-btn-ok" onclick="cpConfirm()">确定</button>
+            </div>
+        </div>
+    </div>
 
 </body>
 </html>
