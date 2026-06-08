@@ -1700,12 +1700,28 @@ function updateDynamicStyles(){
     var css='';
     for(var i=0;i<colors.length;i++){
         var p=derivePalette(colors[i]);
-        css+='.day-cell.gc-'+i+'{background:'+p.bg+';color:'+p.text+';border-color:transparent;font-weight:600;}\n';
+        // 日历方块背景：用更饱和的色调（混 40% 白，更鲜艳）
+        var calBg=mixColor(colors[i],0.40);
+        css+='.day-cell.gc-'+i+'{background:'+calBg+';color:'+p.text+';border-color:transparent;font-weight:600;}\n';
         css+='.day-cell.gc-'+i+':hover{background:'+p.bg+';border-color:'+p.accent+';}\n';
         css+='.badge-gc-'+i+'{background:'+p.bg+'!important;color:'+p.text+'!important;border:2px solid '+p.accent+'!important;}\n';
         css+='.detail-group-badge.badge-gc-'+i+' i{color:'+p.accent+';}\n';
     }
     style.textContent=css;
+}
+function mixColor(hex,whitePct){
+    // 将 hex 颜色与白色混合，whitePct=0 纯色，whitePct=1 纯白
+    var h=hex.replace('#','');
+    var r=parseInt(h.slice(0,2),16),g=parseInt(h.slice(2,4),16),b=parseInt(h.slice(4,6),16);
+    var mix=function(c){return Math.min(255,Math.floor(c+(255-c)*whitePct));};
+    return '#'+[r,g,b].map(function(c){return mix(c).toString(16).padStart(2,'0');}).join('');
+}
+function liveApplyColors(){
+    // 颜色更改时实时刷新日历 + 右侧详情 + 图例
+    updateDynamicStyles();
+    renderLegend();
+    renderCalendar();
+    renderDetail();
 }
 function renderLegend(){
     var el=document.getElementById("legendContainer");
@@ -1730,7 +1746,6 @@ const DEFAULT_START_DATE=new Date(2026,5,4);
 const STORAGE_KEY='hygiene_scheduler_settings_v4';
 const TOMORROW_SHOW_TIME_KEY='tomorrowShowTime';
 
-function getGroupColor(i){return GCP[i%GCP.length];}
 function getSubgroupColor(i){return SCP[i%SCP.length];}
 function getIcon(n){return "<i class='fa-solid "+n+"'></i>";}
 function chineseNumber(n){const c=["一","二","三","四","五","六","七","八","九","十"];return n<=10?c[n-1]:String(n);}
@@ -2077,6 +2092,8 @@ function onHexInputChange(input){
         if(!settings.groupColors)settings.groupColors=[...DEFAULT_GROUP_COLORS];
         while(settings.groupColors.length<=gi)settings.groupColors.push(DEFAULT_GROUP_COLORS[settings.groupColors.length%DEFAULT_GROUP_COLORS.length]);
         settings.groupColors[gi]=val;
+        // 实时刷新显示
+        liveApplyColors();
     }
 }
 function onHexInputBlur(input){
@@ -2119,6 +2136,8 @@ function cpConfirm(){
     settings.groupColors[cpTargetGi]=hex;
     // 刷新设置面板中的颜色选择器
     buildColorPickers();
+    // 实时刷新日历和右侧任务显示
+    liveApplyColors();
     cpClose();
 }
 
