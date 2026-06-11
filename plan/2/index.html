@@ -177,11 +177,29 @@ body { font-family:'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif; backgr
       </div>
     </div>
     <div class="actions">
-      <button class="btn btn-up" onclick="uploadSchedule()"><i class="fas fa-cloud-upload-alt"></i> 上传</button>
-      <button class="btn btn-down" onclick="downloadSchedule()"><i class="fas fa-cloud-download-alt"></i> 下载</button>
+      <button class="btn btn-up" id="btnUpload"><i class="fas fa-cloud-upload-alt"></i> 上传</button>
       <button class="btn btn-add" onclick="addPeriod()"><i class="fas fa-plus"></i> 添加</button>
       <button class="btn btn-ghost" onclick="resetAll()"><i class="fas fa-undo-alt"></i> 重置</button>
     </div>
+  </div>
+
+  <!-- ═══ 版本管理 ═══ -->
+  <div class="card" style="padding:16px 20px;margin-bottom:16px;">
+    <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+      <span style="font-size:0.85rem;font-weight:600;color:#475569;flex-shrink:0;">
+        <i class="fas fa-history"></i> 历史版本
+      </span>
+      <select id="versionSelect" style="flex:1;min-width:180px;padding:7px 10px;border:1px solid var(--border);border-radius:8px;font-size:0.83rem;color:#475569;background:#fff;" disabled>
+        <option>（请先刷新版本列表）</option>
+      </select>
+      <button id="btnRefreshVersions" style="padding:7px 14px;border:1px solid #94a3b8;border-radius:8px;font-size:0.8rem;cursor:pointer;background:white;color:#475569;flex-shrink:0;">
+        <i class="fas fa-arrows-rotate"></i> 刷新
+      </button>
+      <button id="btnDownloadVersion" style="padding:7px 16px;border:1px solid var(--success);border-radius:8px;font-size:0.8rem;cursor:pointer;background:white;color:var(--success);font-weight:500;flex-shrink:0;" disabled>
+        <i class="fas fa-download"></i> 下载
+      </button>
+    </div>
+    <span id="versionStatus" style="display:block;font-size:0.75rem;color:#94a3b8;margin-top:6px;"></span>
   </div>
 
   <div class="status-badge" id="status"><i class="fas fa-circle-check"></i> 就绪</div>
@@ -202,6 +220,23 @@ body { font-family:'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif; backgr
     </div>
   </div>
 
+  <!-- 版本名称输入模态框 -->
+  <div class="modal-overlay" id="versionNameModal">
+    <div class="modal-box" style="max-width:400px;">
+      <i class="fas fa-tag" style="color:var(--primary);"></i>
+      <h3 style="color:var(--primary-h);">上传版本命名</h3>
+      <p style="margin-bottom:12px;font-size:13px;color:var(--sub);">请为本次上传填写版本名称：</p>
+      <div style="margin-bottom:6px;">
+        <input type="text" id="versionNameInput" placeholder="" maxlength="30" style="width:100%;padding:10px 14px;border:2px solid var(--border);border-radius:10px;font-size:0.95rem;color:var(--text);background:#f8fafc;box-sizing:border-box;">
+      </div>
+      <p id="versionNameError" style="color:var(--danger);font-size:0.8rem;margin-top:4px;display:none;">请输入版本名称</p>
+      <div class="modal-btns" style="margin-top:16px;">
+        <button class="btn-cancel" onclick="hideVersionNameModal()">取消</button>
+        <button class="btn-confirm" id="btnVersionNameOk" style="background:var(--primary);">确认上传</button>
+      </div>
+    </div>
+  </div>
+
 </div>
 
 <script>
@@ -218,6 +253,8 @@ function init() {
   DAYS.forEach(d => { schedule[d] = []; });
   buildTabs();
   loadLocal();
+  // 启动后自动刷新版本列表
+  refreshVersionList();
 }
 
 function buildTabs() {
@@ -404,8 +441,59 @@ function setStatus(msg, cls) {
   if (cls) setTimeout(() => { el.className="status-badge"; el.innerHTML='<i class="fas fa-circle-check"></i> 就绪'; }, 3000);
 }
 
-async function uploadSchedule() {
-  // 上传前按时间排序（转换为分钟数比较）
+// ═══ 版本名称模态框 ═══
+var _pendingUploadCallback = null;
+
+function showVersionNameModal(callback) {
+  _pendingUploadCallback = callback;
+  var input = document.getElementById('versionNameInput');
+  var error = document.getElementById('versionNameError');
+  input.value = '';
+  error.style.display = 'none';
+  input.style.borderColor = 'var(--border)';
+  document.getElementById('versionNameModal').classList.add('show');
+  input.focus();
+}
+
+function hideVersionNameModal() {
+  document.getElementById('versionNameModal').classList.remove('show');
+  _pendingUploadCallback = null;
+}
+
+document.getElementById('btnVersionNameOk').addEventListener('click', function() {
+  var input = document.getElementById('versionNameInput');
+  var error = document.getElementById('versionNameError');
+  var name = input.value.trim();
+  if (!name) {
+    error.style.display = 'block';
+    input.style.borderColor = 'var(--danger)';
+    input.focus();
+    return;
+  }
+  var cb = _pendingUploadCallback;
+  hideVersionNameModal();
+  if (cb) cb(name);
+});
+
+document.getElementById('versionNameModal').addEventListener('click', function(e) {
+  if (e.target === this) hideVersionNameModal();
+});
+document.getElementById('versionNameInput').addEventListener('keydown', function(e) {
+  if (e.key === 'Enter') document.getElementById('btnVersionNameOk').click();
+});
+
+// ═══ 上传按钮 → 弹出命名模态框 ═══
+document.getElementById('btnUpload').addEventListener('click', function() {
+  showVersionNameModal(function(verName) { _doUploadWithName(verName); });
+});
+
+async function _doUploadWithName(verName) {
+  var btn = document.getElementById('btnUpload');
+  var origHTML = btn.innerHTML;
+  btn.disabled = true;
+  btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 上传中';
+  btn.style.opacity = '0.6';
+  // 上传前按时间排序
   DAYS.forEach(d => {
     if (schedule[d]) schedule[d].sort((a,b) => {
       const ta = a.time.split('-')[0] || '00:00';
@@ -417,29 +505,95 @@ async function uploadSchedule() {
   });
   setStatus('<i class="fas fa-spinner fa-spin"></i> 上传中...');
   try {
-    const { error } = await sb.from("class_schedule").upsert({id:1,data:schedule});
-    if (error) throw error;
-    setStatus('<i class="fas fa-check-circle"></i> 上传成功', 'ok');
+    const resp = await sb.from("class_schedule").insert({
+      data: { schedule: schedule, version_name: verName }
+    });
+    if (resp.error) throw new Error(resp.error.message);
+    var verId = resp.data && resp.data[0] ? resp.data[0].id : '?';
+    setStatus('<i class="fas fa-check-circle"></i> 上传成功 — #' + verId + '\u300C' + verName + '\u300D', 'ok');
+    refreshVersionList();
   } catch(e) {
     setStatus('<i class="fas fa-exclamation-triangle"></i> ' + e.message, 'err');
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = origHTML;
+    btn.style.opacity = '';
   }
 }
 
-async function downloadSchedule() {
-  setStatus('<i class="fas fa-spinner fa-spin"></i> 下载中...');
+// ═══ 版本列表刷新 ═══
+async function refreshVersionList() {
+  var sel = document.getElementById('versionSelect');
+  var statusEl = document.getElementById('versionStatus');
+  var refreshBtn = document.getElementById('btnRefreshVersions');
+  if (!sel) return;
+  sel.disabled = true;
+  if (refreshBtn) { refreshBtn.disabled = true; refreshBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 加载中'; }
+  if (statusEl) statusEl.textContent = '正在加载版本列表...';
   try {
-    const { data, error } = await sb.from("class_schedule").select("data").eq("id",1).single();
-    if (error) throw error;
-    if (data?.data) {
-      schedule = data.data; saveLocal(); renderEditor(); buildTabs();
-      setStatus('<i class="fas fa-check-circle"></i> 下载成功', 'ok');
+    const { data, error } = await sb.from('class_schedule')
+      .select('id,created_at,data')
+      .order('created_at', { ascending: false })
+      .limit(50);
+    if (error) throw new Error(error.message);
+    sel.innerHTML = '';
+    if (!data || data.length === 0) {
+      sel.innerHTML = '<option value="">（云端暂无版本）</option>';
+      document.getElementById('btnDownloadVersion').disabled = true;
+      if (statusEl) statusEl.textContent = '云端暂无版本记录';
     } else {
-      setStatus('<i class="fas fa-cloud"></i> 云端暂无数据');
+      data.forEach(function(v) {
+        var localTime = v.created_at ? new Date(v.created_at).toLocaleString('zh-CN') : '未知时间';
+        var vname = (v.data && v.data.version_name) ? '\u300C' + v.data.version_name + '\u300D' : '';
+        var display = '#' + v.id + (vname ? ' ' + vname : '') + ' \u2014 ' + localTime;
+        sel.innerHTML += '<option value="' + v.id + '">' + display + '</option>';
+      });
+      document.getElementById('btnDownloadVersion').disabled = false;
+      if (statusEl) statusEl.textContent = '\u5171 ' + data.length + ' \u4E2A\u7248\u672C';
+    }
+    sel.disabled = false;
+  } catch(e) {
+    if (statusEl) statusEl.textContent = '\u52A0\u8F7D\u5931\u8D25: ' + e.message;
+  } finally {
+    if (refreshBtn) { refreshBtn.disabled = false; refreshBtn.innerHTML = '<i class="fas fa-arrows-rotate"></i> \u5237\u65B0'; }
+  }
+}
+
+// 版本选择变化 → 启用/禁用下载按钮
+document.getElementById('versionSelect').addEventListener('change', function() {
+  document.getElementById('btnDownloadVersion').disabled = !this.value;
+});
+
+// 刷新按钮
+document.getElementById('btnRefreshVersions').addEventListener('click', refreshVersionList);
+
+// ═══ 下载选中版本 ═══
+document.getElementById('btnDownloadVersion').addEventListener('click', async function() {
+  var verId = document.getElementById('versionSelect').value;
+  if (!verId) { setStatus('<i class="fas fa-exclamation-triangle"></i> \u8BF7\u5148\u9009\u62E9\u7248\u672C', 'err'); return; }
+  var btn = this;
+  var origHTML = btn.innerHTML;
+  btn.disabled = true;
+  btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> \u4E0B\u8F7D\u4E2D';
+  btn.style.opacity = '0.6';
+  setStatus('<i class="fas fa-spinner fa-spin"></i> \u4E0B\u8F7D\u4E2D...');
+  try {
+    const { data, error } = await sb.from("class_schedule").select("data").eq("id", parseInt(verId)).single();
+    if (error) throw error;
+    if (data?.data && data.data.schedule) {
+      schedule = data.data.schedule; saveLocal(); renderEditor(); buildTabs();
+      setStatus('<i class="fas fa-check-circle"></i> \u4E0B\u8F7D\u6210\u529F \u2014 #' + verId, 'ok');
+    } else {
+      setStatus('<i class="fas fa-cloud"></i> \u8BE5\u7248\u672C\u6CA1\u6709\u6570\u636E');
     }
   } catch(e) {
     setStatus('<i class="fas fa-exclamation-triangle"></i> ' + e.message, 'err');
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = origHTML;
+    btn.style.opacity = '';
   }
-}
+});
 
 init();
 </script>
