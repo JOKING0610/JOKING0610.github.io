@@ -32,7 +32,7 @@
             --shadow-lg: 0 10px 25px rgba(0, 0, 0, 0.1), 0 4px 10px rgba(0, 0, 0, 0.08);
             --radius: 16px;
             --radius-sm: 10px;
-            --transition: 0.25 cubic-bezier(0.4, 0, 0.2, 1);
+            --transition: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
             --font-mono: 'SF Mono', 'Cascadia Code', 'Consolas', 'Monaco', monospace;
         }
         * {
@@ -362,7 +362,7 @@
             color: var(--text-secondary);
             margin-bottom: 4px;
         }
-        .detail-round pan {
+        .detail-round span {
             font-weight: 700;
             color: #1e293b;
         }
@@ -835,7 +835,7 @@
             align-items: center;
             justify-content: center;
             gap: 6px;
-            transition: all 0.2 ease;
+            transition: all 0.2s ease;
         }
         .btn-reset {
             background: rgba(239, 68, 68, 0.1);
@@ -877,7 +877,7 @@
             align-items: center;
             justify-content: center;
             gap: 6px;
-            transition: all 0.2 ease;
+            transition: all 0.2s ease;
         }
         .settings-tab i {
             font-size: 0.95rem;
@@ -895,7 +895,7 @@
 
         .settings-panel {
             display: none;
-            animation: panelFadeIn 0.2 ease;
+            animation: panelFadeIn 0.2s ease;
         }
         .settings-panel.active {
             display: block;
@@ -923,7 +923,7 @@
             align-items: center;
             justify-content: center;
             gap: 6px;
-            transition: all 0.2 ease;
+            transition: all 0.2s ease;
             font-family: inherit;
         }
         .group-tab:hover {
@@ -1445,7 +1445,7 @@
     <div class="container">
 
         <div class="toolbar">
-            <a class="btn-download-desktop" id="btnDownloadDesktop" href="https://pan.vma.cc/pan/s/237a6cd7c5/download/b9e2278c5fd2ea23acce609c1673606d" target="_blank">
+            <a class="btn-download-desktop" id="btnDownloadDesktop" href="https://pan.vma.cc/pan/s/55169cbcbb/download/be1babe0af8c862d33f370560c52f309" target="_blank">
                 <i class="fa-solid fa-download"></i> 下载桌面端
             </a>
         </div>
@@ -1582,26 +1582,36 @@
                 <div class="settings-panel" data-panel="sync">
                     <div class="settings-info">
                         <i class="fa-solid fa-cloud"></i>
-                        <p>将配置上传到云端备份，或从云端下载配置覆盖本地数据。</p>
+                        <p>将配置上传到云端备份（每次上传创建新版本），或选择历史版本下载恢复。</p>
                     </div>
                     <div style="display:flex;flex-direction:column;gap:14px;padding:12px 0;">
                         <div style="background:#f8fafc;border-radius:10px;padding:16px;">
                             <label style="font-size:0.9rem;font-weight:600;color:#1e293b;display:block;margin-bottom:8px;">
-                                <i class="fa-solid fa-cloud-arrow-up" style="color:#6366f1;"></i> 上传到云端
+                                <i class="fa-solid fa-cloud-arrow-up" style="color:#6366f1;"></i> 上传到云端（创建新版本）
                             </label>
-                            <p style="font-size:0.8rem;color:#64748b;margin-bottom:12px;">将当前设置保存到云端，另一台设备可从云端下载。</p>
+                            <p style="font-size:0.8rem;color:#64748b;margin-bottom:12px;">每次上传都需要填写版本名称，方便识别和回溯。</p>
                             <button class="btn-sync-upload" id="btnUploadSettings" style="padding:10px 24px;border:1px solid #6366f1;border-radius:8px;font-size:0.9rem;cursor:pointer;background:white;color:#6366f1;font-weight:500;">
                                 <i class="fa-solid fa-upload"></i> 上传配置
                             </button>
+                            <span id="uploadStatus" style="display:block;font-size:0.75rem;color:#94a3b8;margin-top:8px;"></span>
                         </div>
                         <div style="background:#f8fafc;border-radius:10px;padding:16px;">
                             <label style="font-size:0.9rem;font-weight:600;color:#1e293b;display:block;margin-bottom:8px;">
-                                <i class="fa-solid fa-cloud-arrow-down" style="color:#6366f1;"></i> 从云端下载
+                                <i class="fa-solid fa-cloud-arrow-down" style="color:#6366f1;"></i> 从云端下载（选择历史版本）
                             </label>
-                            <p style="font-size:0.8rem;color:#64748b;margin-bottom:12px;">从云端获取最新配置并应用到当前设置（需点「保存设置」持久化）。</p>
-                            <button class="btn-sync-download" id="btnDownloadSettings" style="padding:10px 24px;border:1px solid #6366f1;border-radius:8px;font-size:0.9rem;cursor:pointer;background:white;color:#6366f1;font-weight:500;">
-                                <i class="fa-solid fa-download"></i> 下载配置
+                            <p style="font-size:0.8rem;color:#64748b;margin-bottom:12px;">选择云端历史版本下载并应用到当前设置。</p>
+                            <div style="display:flex;gap:8px;margin-bottom:10px;align-items:center;">
+                                <select id="versionSelect" style="flex:1;padding:8px 10px;border:1px solid #e2e8f0;border-radius:6px;font-size:0.85rem;color:#475569;background:#fff;" disabled>
+                                    <option>（请先刷新版本列表）</option>
+                                </select>
+                                <button id="btnRefreshVersions" style="padding:8px 14px;border:1px solid #94a3b8;border-radius:6px;font-size:0.8rem;cursor:pointer;background:white;color:#475569;flex-shrink:0;">
+                                    <i class="fa-solid fa-arrows-rotate"></i> 刷新
+                                </button>
+                            </div>
+                            <button class="btn-sync-download" id="btnDownloadSettings" style="padding:10px 24px;border:1px solid #6366f1;border-radius:8px;font-size:0.9rem;cursor:pointer;background:white;color:#6366f1;font-weight:500;" disabled>
+                                <i class="fa-solid fa-download"></i> 下载选中版本
                             </button>
+                            <span id="versionStatus" style="display:block;font-size:0.75rem;color:#94a3b8;margin-top:8px;"></span>
                         </div>
                     </div>
                 </div>
@@ -1611,7 +1621,7 @@
                     <i class="fa-solid fa-rotate-left"></i> 恢复默认
                 </button>
                 <button class="btn-save" id="btnSaveSettings">
-                    <i class="fa-solid fa-check"></i> 保存设置
+                    <i class="fa-solid fa-check"></i> 完成
                 </button>
             </div>
         </div>
@@ -1634,6 +1644,31 @@
                 </button>
                 <button class="btn-confirm" id="btnConfirmOk">
                     <i class="fa-solid fa-check"></i> 确认
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 版本名称输入模态框 -->
+    <div class="confirm-modal" id="versionNameModal">
+        <div class="confirm-content">
+            <div class="confirm-header" style="background:linear-gradient(135deg,#eef2ff 0%,#e0e7ff 100%);">
+                <div class="confirm-icon" style="background:#6366f1;">
+                    <i class="fa-solid fa-tag"></i>
+                </div>
+                <h3 style="color:#4f46e5;">上传版本命名</h3>
+            </div>
+            <div class="confirm-body">
+                <p style="margin-bottom:12px;font-size:0.9rem;color:#475569;">请为本次上传填写版本名称：</p>
+                <input type="text" id="versionNameModalInput" placeholder="" maxlength="30" style="width:100%;padding:10px 14px;border:2px solid #e2e8f0;border-radius:10px;font-size:0.95rem;color:#1e293b;background:#f8fafc;box-sizing:border-box;">
+                <p id="versionNameError" style="color:#ef4444;font-size:0.8rem;margin-top:8px;display:none;">请输入版本名称</p>
+            </div>
+            <div class="confirm-footer">
+                <button class="btn-cancel" id="btnVersionNameCancel">
+                    <i class="fa-solid fa-xmark"></i> 取消
+                </button>
+                <button class="btn-confirm" id="btnVersionNameOk" style="background:#6366f1;">
+                    <i class="fa-solid fa-cloud-arrow-up"></i> 确认上传
                 </button>
             </div>
         </div>
@@ -1956,9 +1991,42 @@ function renderDetail(){
     taskTableBody.innerHTML=th;
 }
 
+// ═══ 自动保存：无需点击保存按钮，修改即时写入本地 ═══
+var _autoSaveTimer = null;
+function autoSaveSettings() {
+    flushFormData();
+    var nd = new Date(startDateInput.value);
+    if (!isNaN(nd.getTime())) START_DATE = nd;
+    TOMORROW_SHOW_TIME = tomorrowTimeInput ? tomorrowTimeInput.value : '12:00';
+    settings = {
+        startDate: START_DATE,
+        numGroups: NUM_GROUPS,
+        groupNames: GROUP_NAMES,
+        numSubgroupsPerGroup: NUM_SUBGROUPS_PER_GROUP,
+        subgroupNames: SUBGROUP_NAMES,
+        members: SUBGROUP_MEMBERS,
+        customTasks: CUSTOM_TASKS,
+        taskRotation: TASK_ROTATION,
+        groupColors: settings.groupColors || [...DEFAULT_GROUP_COLORS],
+        tomorrowShowTime: TOMORROW_SHOW_TIME
+    };
+    saveSettings(settings);
+    // 即时刷新预览
+    updatePreview();
+}
+
+function scheduleAutoSave() {
+    clearTimeout(_autoSaveTimer);
+    _autoSaveTimer = setTimeout(autoSaveSettings, 400);
+}
+
 function switchTab(t){
+    // 切换前先自动保存
+    if (_autoSaveTimer) { clearTimeout(_autoSaveTimer); autoSaveSettings(); }
     document.querySelectorAll('.settings-tab').forEach(btn=>btn.classList.toggle("active",btn.dataset.tab===t));
     document.querySelectorAll('.settings-panel').forEach(panel=>panel.classList.toggle("active",panel.dataset.panel===t));
+    // 切换到数据同步标签页时自动刷新版本列表
+    if (t === 'sync') refreshVersionList();
 }
 
 // 把当前 DOM 表单数据同步到内存变量（标签页切换前调用，防止数据丢失）
@@ -2325,9 +2393,24 @@ function openSettingsModal(){
     buildSettingsUI();
     switchTab("date");
     settingsModal.classList.add("active");
+    // 设置面板内所有输入/文本区域变化时自动保存（事件委托 + 防抖）
+    var body = settingsModal.querySelector('.settings-body');
+    if (body && !body._autoSaveBound) {
+        body._autoSaveBound = true;
+        body.addEventListener('input', function(e) {
+            if (e.target.closest('input, textarea, select')) scheduleAutoSave();
+        });
+        body.addEventListener('change', function(e) {
+            if (e.target.closest('input, textarea, select')) scheduleAutoSave();
+        });
+    }
 }
 
-function closeSettingsModal(){settingsModal.classList.remove("active");}
+function closeSettingsModal(){
+    // 关闭前做最后一次保存
+    if (_autoSaveTimer) { clearTimeout(_autoSaveTimer); autoSaveSettings(); }
+    settingsModal.classList.remove("active");
+}
 
 function updatePreview(){
     const d=new Date(startDateInput.value);
@@ -2335,14 +2418,8 @@ function updatePreview(){
 }
 
 function applySettings(){
-    flushFormData();  // 最后确保当前标签页数据已同步到内存
-    const nd=new Date(startDateInput.value);
-    if(isNaN(nd.getTime())){showConfirm("提示","请选择有效的日期",()=>{});return;}
-    START_DATE=nd;
-    // 直接从内存变量取值（flushFormData 已确保 DOM → 内存同步），不再依赖 DOM
-    TOMORROW_SHOW_TIME=tomorrowTimeInput?tomorrowTimeInput.value:"12:00";
-    settings={startDate:START_DATE,numGroups:NUM_GROUPS,groupNames:GROUP_NAMES,numSubgroupsPerGroup:NUM_SUBGROUPS_PER_GROUP,subgroupNames:SUBGROUP_NAMES,members:SUBGROUP_MEMBERS,customTasks:CUSTOM_TASKS,taskRotation:TASK_ROTATION,groupColors:settings.groupColors||[...DEFAULT_GROUP_COLORS],tomorrowShowTime:TOMORROW_SHOW_TIME};
-    saveSettings(settings);
+    // 数据已自动保存，此处仅刷新显示并关闭面板
+    autoSaveSettings();
     currentViewYear=START_DATE.getFullYear();
     currentViewMonth=START_DATE.getMonth();
     selectedDate=new Date(START_DATE.getFullYear(),START_DATE.getMonth(),START_DATE.getDate());
@@ -2408,7 +2485,59 @@ document.getElementById("toastModal")?.addEventListener("click", function(e) {
 });
 document.getElementById("btnNotifyOk")?.addEventListener("click", hideToast);
 
-document.getElementById("btnUploadSettings").addEventListener("click",async function(){
+// ═══ 版本名称模态框逻辑 ═══
+var _pendingUploadCallback = null;
+
+function showVersionNameModal(callback) {
+    _pendingUploadCallback = callback;
+    var input = document.getElementById('versionNameModalInput');
+    var error = document.getElementById('versionNameError');
+    input.value = '';
+    error.style.display = 'none';
+    input.style.borderColor = '#e2e8f0';
+    document.getElementById('versionNameModal').classList.add('active');
+    input.focus();
+}
+
+function hideVersionNameModal() {
+    document.getElementById('versionNameModal').classList.remove('active');
+    _pendingUploadCallback = null;
+}
+
+document.getElementById('btnVersionNameOk').addEventListener('click', function() {
+    var input = document.getElementById('versionNameModalInput');
+    var error = document.getElementById('versionNameError');
+    var name = input.value.trim();
+    if (!name) {
+        error.style.display = 'block';
+        input.style.borderColor = '#ef4444';
+        input.focus();
+        return;
+    }
+    var cb = _pendingUploadCallback;  // 先捕获，再关闭模态框
+    hideVersionNameModal();
+    if (cb) cb(name);
+});
+
+document.getElementById('btnVersionNameCancel').addEventListener('click', hideVersionNameModal);
+document.getElementById('versionNameModal').addEventListener('click', function(e) {
+    if (e.target === this) hideVersionNameModal();
+});
+document.getElementById('versionNameModalInput').addEventListener('keydown', function(e) {
+    if (e.key === 'Enter') document.getElementById('btnVersionNameOk').click();
+});
+
+// ═══ 上传按钮 ═══
+document.getElementById("btnUploadSettings").addEventListener("click", function() {
+    showVersionNameModal(function(verName) { _doUploadWithName(verName); });
+});
+
+async function _doUploadWithName(verName) {
+    var btn = document.getElementById('btnUploadSettings');
+    var origHTML = btn.innerHTML;
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> 上传中...';
+    btn.style.opacity = '0.6';
     const subgroup_names=[];
     for(let g=0;g<NUM_GROUPS;g++){
         const sg=[];
@@ -2416,28 +2545,90 @@ document.getElementById("btnUploadSettings").addEventListener("click",async func
         subgroup_names.push(sg);
     }
     try{
-        await supabase.from('schedule_config').upsert({id:1,data:{
-            start_date:START_DATE.toISOString().split('T')[0],
-            groups:GROUP_NAMES,
-            subgroup_names:subgroup_names,
-            tasks:CUSTOM_TASKS||[],
-            members:SUBGROUP_MEMBERS||[],
-            task_rotation:TASK_ROTATION,
-            group_colors:settings.groupColors||DEFAULT_GROUP_COLORS,
-            tomorrow_show_time:TOMORROW_SHOW_TIME||'12:00'
-        }});
-        showToast('上传成功', true);
+        const resp = await supabase.from('schedule_config').insert({
+            data:{
+                start_date:START_DATE.toISOString().split('T')[0],
+                groups:GROUP_NAMES,
+                subgroup_names:subgroup_names,
+                tasks:CUSTOM_TASKS||[],
+                members:SUBGROUP_MEMBERS||[],
+                task_rotation:TASK_ROTATION,
+                group_colors:settings.groupColors||DEFAULT_GROUP_COLORS,
+                tomorrow_show_time:TOMORROW_SHOW_TIME||'12:00',
+                version_name: verName || ''
+            }
+        });
+        if(resp.error) throw new Error(resp.error.message);
+        var verId = resp.data && resp.data[0] ? resp.data[0].id : '?';
+        var statusEl = document.getElementById('uploadStatus');
+        if(statusEl) statusEl.textContent = '上传成功 — #' + verId + '「' + verName + '」（' + new Date().toLocaleString() + '）';
+        showToast('上传成功（#' + verId + '「' + verName + '」）', true);
+        // 自动刷新版本列表
+        refreshVersionList();
     }catch(e){showToast('上传失败: '+e.message, false);}
+    finally{
+        btn.disabled = false;
+        btn.innerHTML = origHTML;
+        btn.style.opacity = '';
+    }
+}
+
+// 版本列表刷新
+async function refreshVersionList(){
+    var sel = document.getElementById('versionSelect');
+    var statusEl = document.getElementById('versionStatus');
+    var refreshBtn = document.getElementById('btnRefreshVersions');
+    if(!sel) return;
+    sel.disabled = true;
+    if(refreshBtn){refreshBtn.disabled = true; refreshBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> 加载中';}
+    if(statusEl) statusEl.textContent = '正在加载版本列表...';
+    try{
+        const{data,error}=await supabase.from('schedule_config').select('id,created_at,data').order('created_at',{ascending:false}).limit(50);
+        if(error) throw new Error(error.message);
+        sel.innerHTML = '';
+        if(!data||data.length===0){
+            sel.innerHTML = '<option value="">（云端暂无版本）</option>';
+            document.getElementById('btnDownloadSettings').disabled = true;
+            if(statusEl) statusEl.textContent = '云端暂无版本记录';
+        }else{
+            data.forEach(function(v){
+                var localTime = v.created_at ? new Date(v.created_at).toLocaleString('zh-CN') : '未知时间';
+                var vname = (v.data && v.data.version_name) ? '「'+v.data.version_name+'」' : '';
+                var display = '#' + v.id + (vname ? ' ' + vname : '') + ' — ' + localTime;
+                sel.innerHTML += '<option value="'+v.id+'">'+display+'</option>';
+            });
+            document.getElementById('btnDownloadSettings').disabled = false;
+            if(statusEl) statusEl.textContent = '共 ' + data.length + ' 个版本';
+        }
+        sel.disabled = false;
+    }catch(e){
+        if(statusEl) statusEl.textContent = '加载失败: ' + e.message;
+    }finally{
+        if(refreshBtn){refreshBtn.disabled = false; refreshBtn.innerHTML = '<i class="fa-solid fa-arrows-rotate"></i> 刷新';}
+    }
+}
+
+// 版本选择变化时启用/禁用下载按钮
+document.getElementById('versionSelect').addEventListener('change',function(){
+    document.getElementById('btnDownloadSettings').disabled = !this.value;
 });
+
+// 刷新版本列表按钮
+document.getElementById('btnRefreshVersions').addEventListener('click',refreshVersionList);
+
 document.getElementById("btnDownloadSettings").addEventListener("click",async function(){
     var btn = this;
+    var verId = document.getElementById('versionSelect').value;
+    if(!verId){showToast('请先选择要下载的版本', false);return;}
     var origHTML = btn.innerHTML;
     btn.disabled = true;
     btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> 下载中...';
     btn.style.opacity = '0.6';
+    var statusEl = document.getElementById('versionStatus');
+    if(statusEl) statusEl.textContent = '正在下载 #' + verId + '...';
     try{
-        const{data}=await supabase.from('schedule_config').select('data').eq('id',1).single();
-        if(!data||!data.data){showToast('云端没有数据', false);return;}
+        const{data}=await supabase.from('schedule_config').select('data').eq('id',parseInt(verId)).single();
+        if(!data||!data.data){showToast('该版本没有数据', false);return;}
         const p=data.data;
         const ng=Math.max(1,Math.min(20,parseInt(p.groups?p.groups.length:3)||3));
         const gn=p.groups&&p.groups.length===ng?p.groups:Array.from({length:ng},(v,i)=>defaultGroupName(i));
@@ -2467,7 +2658,7 @@ document.getElementById("btnDownloadSettings").addEventListener("click",async fu
         updateDynamicStyles();renderLegend();
         renderCalendar();renderDetail();
         closeSettingsModal();
-        showToast('下载成功，已自动应用', true);
+        showToast('下载成功（#' + verId + '），已自动应用', true);
     }catch(e){showToast('下载失败: '+e.message, false);}
     finally{
         btn.disabled = false;
@@ -2578,7 +2769,7 @@ init();
 window.openColorPicker=openColorPicker;
 window.onHexInputChange=onHexInputChange;
 window.onHexInputBlur=onHexInputBlur;
-window.cpOpen=cpOpen;window.cpClose=cpClose;window.cpConfirm=cpConfirm;
+window.cpOpen=cpOpen;window.cp关闭=cp关闭;window.cp确认=cp确认;
 window.cpSvDown=cpSvDown;window.cpSvMove=cpSvMove;window.cpSvUp=cpSvUp;
 window.cpHueDown=cpHueDown;window.cpHueMove=cpHueMove;window.cpHueUp=cpHueUp;
 window.cpHexChanged=cpHexChanged;window.cpSetPreset=cpSetPreset;
@@ -2602,8 +2793,8 @@ window.cpHexChanged=cpHexChanged;window.cpSetPreset=cpSetPreset;
             </div>
             <div class="cp-presets" id="cpPresets"></div>
             <div class="cp-buttons">
-                <button class="cp-btn-cancel" onclick="cpClose()">取消</button>
-                <button class="cp-btn-ok" onclick="cpConfirm()">确定</button>
+                <button class="cp-btn-cancel" onclick="cp关闭()">取消</button>
+                <button class="cp-btn-ok" onclick="cp确认()">确定</button>
             </div>
         </div>
     </div>
