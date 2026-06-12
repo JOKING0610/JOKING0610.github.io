@@ -1437,7 +1437,7 @@
             touch-action: manipulation;
         }
         .day-cell:active, .calendar-nav button:active, .btn-manage:active, .settings-tab:active {
-            opacity: 0.7; transform: scale(0.96); transition: transform 0.05;
+            opacity: 0.7; transform: scale(0.96); transition: transform 0.05s;
         }
     </style>
 </head>
@@ -1445,7 +1445,7 @@
     <div class="container">
 
         <div class="toolbar">
-            <a class="btn-download-desktop" id="btnDownloadDesktop" href="https://pan.vma.cc/pan/s/55169cbcbb/download/be1babe0af8c862d33f370560c52f309" target="_blank">
+            <a class="btn-download-desktop" id="btnDownloadDesktop" href="https://pan.vma.cc/pan/user/download/459c501ce04b82f3ba8c0b5104647c18" target="_blank">
                 <i class="fa-solid fa-download"></i> 下载桌面端
             </a>
         </div>
@@ -1835,7 +1835,7 @@ function saveSettings(s){
 }
 
 let settings=loadSettings();
-let START_DATE=settings.startDate,NUM_GROUPS=settings.numGroups,GROUP_NAMES=settings.groupNames,NUM_SUBGROUPS_PER_GROUP=settings.numSubgroupsPerGroup,SUBGROUP_NAMES=settings.subgroupNames,SUBGROUP_MEMBERS=settings.members,CUSTOM_TASKS=settings.customTasks,TASK_ROTATION=settings.taskRotation||Array.from({length:settings.numGroups},()=>true);
+let START_DATE=settings.startDate,NUM_GROUPS=settings.numGroups,GROUP_NAMES=settings.groupNames,NUM_SUBGROUPS_PER_GROUP=settings.numSubgroupsPerGroup,SUBGROUP_NAMES=settings.subgroupNames,SUBGROUP_MEMBERS=settings.members,CUSTOM_TASKS=settings.customTasks,TASK_ROTATION=settings.taskRotation||Array.from({length:settings.numGroups},()=>true),TOMORROW_SHOW_TIME=settings.tomorrowShowTime||'12:00';
 let activeMemberGroupTab=0;
 let activeTaskGroupTab=0;
 
@@ -2554,7 +2554,7 @@ async function _doUploadWithName(verName) {
                 members:SUBGROUP_MEMBERS||[],
                 task_rotation:TASK_ROTATION,
                 group_colors:settings.groupColors||DEFAULT_GROUP_COLORS,
-                tomorrow_show_time:TOMORROW_SHOW_TIME||'12:00',
+                tomorrow_show_time:settings.tomorrowShowTime||'12:00',
                 version_name: verName || ''
             }
         });
@@ -2657,7 +2657,9 @@ document.getElementById("btnDownloadSettings").addEventListener("click",async fu
         if(rt>=START_DATE){selectedDate=new Date(rt.getFullYear(),rt.getMonth(),rt.getDate());currentViewYear=rt.getFullYear();currentViewMonth=rt.getMonth();}
         updateDynamicStyles();renderLegend();
         renderCalendar();renderDetail();
-        closeSettingsModal();
+        // 直接关闭模态框，避免 closeSettingsModal() 触发 autoSaveSettings()
+        // 后者会从 DOM 读取旧值覆盖刚下载的新数据（全局变量已更新但 DOM 未重建）
+        settingsModal.classList.remove("active");
         showToast('下载成功（#' + verId + '），已自动应用', true);
     }catch(e){showToast('下载失败: '+e.message, false);}
     finally{
@@ -2769,7 +2771,7 @@ init();
 window.openColorPicker=openColorPicker;
 window.onHexInputChange=onHexInputChange;
 window.onHexInputBlur=onHexInputBlur;
-window.cpOpen=cpOpen;window.cp关闭=cp关闭;window.cp确认=cp确认;
+window.cpOpen=cpOpen;window.cpClose=cpClose;window.cpConfirm=cpConfirm;
 window.cpSvDown=cpSvDown;window.cpSvMove=cpSvMove;window.cpSvUp=cpSvUp;
 window.cpHueDown=cpHueDown;window.cpHueMove=cpHueMove;window.cpHueUp=cpHueUp;
 window.cpHexChanged=cpHexChanged;window.cpSetPreset=cpSetPreset;
@@ -2793,8 +2795,8 @@ window.cpHexChanged=cpHexChanged;window.cpSetPreset=cpSetPreset;
             </div>
             <div class="cp-presets" id="cpPresets"></div>
             <div class="cp-buttons">
-                <button class="cp-btn-cancel" onclick="cp关闭()">取消</button>
-                <button class="cp-btn-ok" onclick="cp确认()">确定</button>
+                <button class="cp-btn-cancel" onclick="cpClose()">取消</button>
+                <button class="cp-btn-ok" onclick="cpConfirm()">确定</button>
             </div>
         </div>
     </div>
