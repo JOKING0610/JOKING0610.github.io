@@ -1550,7 +1550,7 @@
                     const writable = await handle.createWritable();
                     await writable.write(blob);
                     await writable.close();
-                    showToast('保存成功');
+                    showToast('下载成功');
                 } catch (e) {
                     if (e.name === 'AbortError') return;
                     const url = URL.createObjectURL(blob);
@@ -1561,7 +1561,7 @@
                     a.click();
                     document.body.removeChild(a);
                     URL.revokeObjectURL(url);
-                    showToast('纯净版已下载');
+                    showToast('离线版已下载');
                 }
             }
 
