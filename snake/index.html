@@ -106,6 +106,7 @@
     background:linear-gradient(120deg,var(--accent),var(--accent2));
     box-shadow:0 10px 30px rgba(94,234,212,.35);
     transition:transform .2s cubic-bezier(.16,1,.3,1),box-shadow .2s;}
+  .overlay.hidden .btn{pointer-events:none !important;}  /* hidden overlay → button stays inert */
   .btn:hover{transform:translateY(-2px) scale(1.03);box-shadow:0 14px 40px rgba(129,140,248,.45);}
   .btn:active{transform:scale(.98);}
   /* pause panel buttons share a width for a tidy, centred stack */
@@ -628,6 +629,8 @@
     viewZoom = currentZoom();      // start each run at the standard view (no leftover zoom from last game)
     centerCamera();
     updateHUD();
+    // 预生成所有已加载的食物精灵缓存，避免第一帧大量创建 canvas 导致卡顿
+    if (foods) foods.forEach(f => getFoodSprite(f.iconSrc, f.hue));
   }
 
   // Base view height in world units. Fixing it (instead of using W/camZoom) keeps the visible
@@ -673,9 +676,9 @@
   });
   window.addEventListener('keyup', e => { keys[e.key] = false; });
 
-  // (Canvas touch steering removed: on mobile the snake is driven ONLY by the on-screen
-  // joystick + boost button below. The canvas keeps `touch-action: none` so taps there do
-  // nothing and never scroll/zoom the page.)
+  // Canvas touches also drive steering when they land outside the on-screen controls:
+  // the swipe gesture below reads from the canvas element directly. The canvas keeps
+  // `touch-action: none` so taps never scroll/zoom the page.
 
   // ---- On-screen mobile controls: left joystick (direction) + right boost button ----
   // Shown via CSS `@media (pointer: coarse)`; they are DOM overlays above the canvas,
@@ -737,6 +740,46 @@
   if (finePointer) {
     boostBtn.addEventListener('mousedown', boostOn);
     window.addEventListener('mouseup', boostOff);
+  }
+
+  // ---- Mobile swipe steering: touch blank area → 转盘跟随手指方向实时转动 ----
+  // 不设阈值限制，手指从起始点向任一方向滑动，转盘同步跟随；抬手后复位。
+  // Only on touch devices (non-finePointer).
+  if (!finePointer) {
+    const swiper = { active: false, sx: 0, sy: 0 };
+    const gameCanvas = document.getElementById('game');
+    gameCanvas.addEventListener('touchstart', (e) => {
+      if (state !== STATE.PLAY) return;
+      const t = e.changedTouches[0];
+      swiper.active = true;
+      swiper.sx = t.clientX;
+      swiper.sy = t.clientY;
+    }, { passive: true });
+    gameCanvas.addEventListener('touchmove', (e) => {
+      if (!swiper.active || state !== STATE.PLAY) return;
+      if (e.cancelable) e.preventDefault();
+      const t = e.changedTouches[0];
+      const dx = t.clientX - swiper.sx;
+      const dy = t.clientY - swiper.sy;
+      const dist = Math.hypot(dx, dy);
+      if (dist > 0) {
+        targetAngle = Math.atan2(dy, dx);
+        joy.angle = targetAngle;
+        // 摇杆 knob 跟随手指方向，位置按比例映射到摇杆半径内
+        const rect = joyEl.getBoundingClientRect();
+        const maxR = rect.width / 2 * 0.7;
+        const knobR = Math.min(dist * 0.35, maxR);   // 用 0.35 系数让手指滑动约 2.8× 摇杆半径时到达边缘
+        joyKnob.style.transform = `translate(${Math.cos(targetAngle) * knobR}px, ${Math.sin(targetAngle) * knobR}px)`;
+      }
+    }, { passive: false });
+    gameCanvas.addEventListener('touchend', () => {
+      swiper.active = false;
+      joyKnob.style.transform = 'translate(0px, 0px)';
+    }, { passive: true });
+    gameCanvas.addEventListener('touchcancel', () => {
+      swiper.active = false;
+      joyKnob.style.transform = 'translate(0px, 0px)';
+    }, { passive: true });
   }
 
   function lerpAngle(a, b, t) {
@@ -1158,11 +1201,11 @@
     // the visible window outline
     ctx.strokeStyle = 'rgba(255,255,255,0.75)';
     ctx.lineWidth = 1;
-    ctx.strokeRect(mx + cam.x * , my + cam.y * , camW * , camH * );
+    ctx.strokeRect(mx + cam.x * s, my + cam.y * s, camW * s, camH * s);
     // your head
     if (head) {
       ctx.fillStyle = '#5eead4';
-      ctx.beginPath(); ctx.arc(mx + head.x * , my + head.y * , 3, 0, Math.PI * 2); ctx.fill();
+      ctx.beginPath(); ctx.arc(mx + head.x * s, my + head.y * s, 3, 0, Math.PI * 2); ctx.fill();
     }
     ctx.restore();
   }
@@ -1244,14 +1287,14 @@
   const skinListEl = document.getElementById('skinList');
   function buildSkinList() {
     skinListEl.innerHTML = '';
-    SKINS.forEach( => {
+    SKINS.forEach(s => {
       const item = document.createElement('div');
-      item.className = 'skin-item' + (.id === currentSkin.id ? ' selected' : '');
-      const sw = `linear-gradient(135deg,hsl(${.baseHue},${.sat}%,${.light}%),hsl(${(.baseHue + .span) % 360},${Math.max(20, .sat - 5)}%,${Math.max(20, .light - 7)}%))`;
-      item.innerHTML = `<div class="skin-swatch" style="background:${sw}"></div><div class="skin-name">${.name}</div>`;
+      item.className = 'skin-item' + (s.id === currentSkin.id ? ' selected' : '');
+      const sw = `linear-gradient(135deg,hsl(${s.baseHue},${s.sat}%,${s.light}%),hsl(${(s.baseHue + s.span) % 360},${Math.max(20, s.sat - 5)}%,${Math.max(20, s.light - 7)}%))`;
+      item.innerHTML = `<div class="skin-swatch" style="background:${sw}"></div><div class="skin-name">${s.name}</div>`;
       item.addEventListener('click', () => {
-        currentSkin = ;
-        try { localStorage.setItem('snake360_skin', .id); } catch (e) {}
+        currentSkin = s;
+        try { localStorage.setItem('snake360_skin', s.id); } catch (e) {}
         buildSkinList();
       });
       skinListEl.appendChild(item);
