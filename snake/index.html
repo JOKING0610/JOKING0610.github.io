@@ -536,18 +536,18 @@
 
   const rand = (a, b) => a + Math.random() * (b - a);
 
-  // --- Local icon library ("570+图标-v1.0.3") as inline SVG --------------------------------------
+  // --- Local icon library (icons/) as inline SVG -------------------------------------------------
   // Real, recognisable food art. Each icon's white fill is recoloured to the food's hue at draw
   // time (see getIconImg), so the field reads as colour-coded food. Fully offline, no CDN.
   const NORMAL_ICONS = [
-    '7.自然与饮食/苹果', '7.自然与饮食/梨', '7.自然与饮食/桃子', '7.自然与饮食/胡萝卜',
-    '7.自然与饮食/土豆', '7.自然与饮食/面包', '7.自然与饮食/火腿', '7.自然与饮食/肉',
-    '7.自然与饮食/虾', '7.自然与饮食/鱼', '7.自然与饮食/鱼2',
+    'icons/苹果', 'icons/梨', 'icons/桃子', 'icons/胡萝卜',
+    'icons/土豆', 'icons/面包', 'icons/火腿', 'icons/肉',
+    'icons/虾', 'icons/鱼', 'icons/鱼2',
   ];
   const SPECIAL_DEFS = [
-    { hue: 45,  key: '6.物品/钻石' }, // gold    · diamond
-    { hue: 320, key: '6.物品/王冠' }, // magenta · crown
-    { hue: 175, key: '6.物品/星币' }, // teal    · star coin
+    { hue: 45,  key: 'icons/钻石' }, // gold    · diamond
+    { hue: 320, key: 'icons/王冠' }, // magenta · crown
+    { hue: 175, key: 'icons/星币' }, // teal    · star coin
   ];
 
   // recoloured SVG <img> elements, keyed by `${key}|${hueBucket}` (created lazily).
