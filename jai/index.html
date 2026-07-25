@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>JAI-Stars-Image 管理后台</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,'Segoe UI',sans-serif;background:#f0f2f5;color:#1a1a2e;padding:20px}
+.container{max-width:960px;margin:0 auto}
+h1{font-size:22px;margin-bottom:20px;display:flex;align-items:center;gap:8px}
+.card{background:#fff;border-radius:12px;padding:20px;margin-bottom:16px;box-shadow:0 2px 8px rgba(0,0,0,.06)}
+.card h2{font-size:16px;margin-bottom:12px}
+.row{display:flex;gap:8px;margin-bottom:8px;flex-wrap:wrap}
+.row input,.row select{flex:1;padding:8px 12px;border:1px solid #d0d5dd;border-radius:8px;font-size:13px;min-width:120px}
+.btn{padding:8px 16px;border:none;border-radius:8px;font-size:13px;cursor:pointer;font-weight:600}
+.btn-primary{background:#4f46e5;color:#fff}
+.btn-success{background:#16a34a;color:#fff}
+.btn-warning{background:#d97706;color:#fff}
+.btn-danger{background:#ef4444;color:#fff}
+.btn-sm{padding:4px 8px;font-size:11px}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th,td{text-align:left;padding:10px 6px;border-bottom:1px solid #e5e7eb}
+th{color:#6b7280;font-weight:600;font-size:11px;text-transform:uppercase}
+.badge{display:inline-block;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:600}
+.badge-ok{background:#dcfce7;color:#16a34a}
+.badge-warn{background:#fef3c7;color:#d97706}
+.badge-off{background:#fee2e2;color:#dc2626}
+.usage-bar{height:6px;background:#e5e7eb;border-radius:3px;margin-top:4px;overflow:hidden}
+.usage-fill{height:100%;border-radius:3px;transition:width .3s}
+.footer{margin-top:24px;text-align:center;font-size:12px;color:#9ca3af}
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#1a1a2e;color:#fff;padding:10px 20px;border-radius:10px;font-size:13px;opacity:0;transition:opacity .3s;z-index:999}
+.toast.show{opacity:1}
+.remaining{font-size:18px;font-weight:700}
+.remaining-ok{color:#16a34a}
+.remaining-warn{color:#d97706}
+.remaining-out{color:#dc2626}
+.cell-actions{display:flex;gap:4px;flex-wrap:wrap}
+.inline-edit{display:flex;align-items:center;gap:3px}
+.mini-input{width:56px;padding:3px 5px;border:1px solid #d0d5dd;border-radius:6px;font-size:12px;text-align:center}
+.mini-input:focus{outline:none;border-color:#4f46e5}
+</style>
+</head>
+<body>
+<div class="container">
+  <h1>🛠 JAI-Stars-Image 管理后台</h1>
+
+  <div class="card">
+    <h2>+ 新增密钥</h2>
+    <div class="row">
+      <input id="newName" placeholder="名称（如：张三/项目A）">
+      <input id="newLimit" type="number" placeholder="次数上限（0=无限）" value="100">
+      <button class="btn btn-primary" onclick="createKey()">添加</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="row" style="justify-content:space-between;margin-bottom:0">
+      <h2>密钥列表</h2>
+      <span id="totalCount" style="font-size:13px;color:#6b7280"></span>
+    </div>
+    <table>
+      <thead>      <tr>
+        <th>名称</th>
+        <th>密钥</th>
+        <th>次数设置（已用 / 上限）</th>
+        <th>剩余</th>
+        <th>进度</th>
+        <th>状态</th>
+        <th>操作</th>
+      </tr></thead>
+      <tbody id="keyList"></tbody>
+    </table>
+  </div>
+
+  <div class="card">
+    <h2>实时用量概览</h2>
+    <div id="usageChart"></div>
+  </div>
+
+  <div class="footer">数据每 5 秒自动刷新 · JAI-Stars-Image Dashboard</div>
+</div>
+
+<div id="toast" class="toast"></div>
+
+<script>
+// ===== 配置（已替换为合法 anon JWT） =====
+const SUPABASE_URL = 'https://yeogthpysbqgehjkayaf.supabase.co'
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inllb2d0aHB5c2JxZ2VoamtheWFmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA0NTkxMDgsImV4cCI6MjA4NjAzNTEwOH0.fx3GIFo5iCp-OuUp_EJz3y9KqVwqLGCGh4L3BuUHjyY'
+
+// ===== 纯 fetch 封装：不依赖 SDK / 不碰 localStorage（规避 Tracking Prevention） =====
+let KEY_CACHE = {}  // id -> row，供复制/保存时取原始值
+async function supa(method, path, body) {
+  const headers = {
+    'apikey': SUPABASE_KEY,
+    'Authorization': 'Bearer ' + SUPABASE_KEY,
+    'Content-Type': 'application/json'
+  }
+  const opt = { method, headers }
+  if (body) {
+    headers['Prefer'] = 'return=representation'
+    opt.body = JSON.stringify(body)
+  }
+  const res = await fetch(SUPABASE_URL + '/rest/v1/' + path, opt)
+  if (!res.ok) {
+    let msg = res.status + ' ' + res.statusText
+    try { const e = await res.json(); if (e && e.message) msg = e.message } catch (_) {}
+    throw new Error(msg)
+  }
+  if (res.status === 204) return []
+  const txt = await res.text()
+  return txt ? JSON.parse(txt) : []
+}
+
+async function loadKeys() {
+  // 用户正在编辑「次数设置」输入框时，跳过本次自动刷新，避免覆盖刚填的值
+  const ae = document.activeElement
+  if (ae && ae.classList && ae.classList.contains('mini-input')) return
+  try {
+    const rows = await supa('GET', 'api_keys?select=*&order=created_at.desc')
+    renderKeys(rows || [])
+  } catch (e) {
+    document.getElementById('keyList').innerHTML =
+      '<tr><td colspan="7" style="color:#dc2626;text-align:center;padding:20px">⚠️ ' + esc(e.message) +
+      '<br><small style="color:#6b7280">请确认：<br>1. 已在 Supabase SQL Editor 执行含 GRANT 的建表脚本<br>2. 表名 api_keys 存在且 anon 已授权</small></td></tr>'
+    toast('加载失败: ' + e.message)
+  }
+}
+
+function renderKeys(rows) {
+  document.getElementById('totalCount').textContent = '共 ' + rows.length + ' 个密钥'
+  document.getElementById('keyList').innerHTML = rows.map(r => {
+    KEY_CACHE[r.id] = r
+    const rem = r.usage_limit > 0 ? Math.max(0, r.usage_limit - r.usage_count) : Infinity
+    const pct = r.usage_limit > 0 ? Math.min(100, Math.round(r.usage_count / r.usage_limit * 100)) : 0
+    const bc = pct >= 90 ? '#ef4444' : pct >= 60 ? '#d97706' : '#16a34a'
+    const rc = rem === 0 ? 'remaining-out' : (r.usage_limit > 0 && rem <= 10 ? 'remaining-warn' : 'remaining-ok')
+    const rt = rem === Infinity ? '∞' : rem
+    const sb = r.is_active ? '<span class="badge badge-ok">启用</span>' : '<span class="badge badge-off">停用</span>'
+    const limVal = r.usage_limit > 0 ? r.usage_limit : ''
+    return '<tr><td><strong>' + esc(r.name) + '</strong></td><td style="font-family:monospace;font-size:11px;max-width:140px;overflow:hidden;text-overflow:ellipsis" title="' + esc(r.key) + '">' + esc(r.key) + '</td><td><div class="inline-edit"><input class="mini-input" id="cnt_' + r.id + '" type="number" min="0" value="' + r.usage_count + '" title="已用次数"><span>/</span><input class="mini-input" id="lim_' + r.id + '" type="number" min="0" placeholder="∞" value="' + limVal + '" title="上限（留空=无限）"><button class="btn btn-sm btn-success" onclick="saveUsage(\'' + r.id + '\')">保存</button></div></td><td><span class="remaining ' + rc + '">' + rt + '</span></td><td style="min-width:100px">' + (r.usage_limit > 0 ? '<div class="usage-bar"><div class="usage-fill" style="width:' + pct + '%;background:' + bc + '"></div></div>' : '—') + '</td><td>' + sb + '</td><td><div class="cell-actions"><button class="btn btn-sm btn-primary" onclick="copyKey(\'' + r.id + '\')">复制</button><button class="btn btn-sm ' + (r.is_active ? 'btn-danger' : 'btn-primary') + '" onclick="toggleKey(\'' + r.id + '\',' + (!r.is_active) + ')">' + (r.is_active ? '停用' : '启用') + '</button><button class="btn btn-sm btn-danger" onclick="deleteKey(\'' + r.id + '\')">删除</button></div></td></tr>'
+  }).join('')
+  renderChart(rows)
+}
+
+function renderChart(rows) {
+  document.getElementById('usageChart').innerHTML = rows.length ? rows.map(r => {
+    const rem = r.usage_limit > 0 ? Math.max(0, r.usage_limit - r.usage_count) : Infinity
+    const pct = r.usage_limit > 0 ? Math.min(100, Math.round(r.usage_count / r.usage_limit * 100)) : 0
+    const c = pct >= 90 ? '#ef4444' : pct >= 60 ? '#d97706' : '#4f46e5'
+    return '<div style="margin-bottom:10px"><div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:2px"><span><strong>' + esc(r.name) + '</strong></span><span>已用 ' + r.usage_count + ' / 剩余 <strong style="color:' + (pct >= 90 ? '#ef4444' : '#16a34a') + '">' + (rem === Infinity ? '∞' : rem) + '</strong></span></div>' + (r.usage_limit > 0 ? '<div class="usage-bar"><div class="usage-fill" style="width:' + pct + '%;background:' + c + '"></div></div>' : '<div style="font-size:11px;color:#9ca3af">无限次数</div>') + '</div>'
+  }).join('') : '<p style="color:#9ca3af;font-size:13px">暂无数据</p>'
+}
+
+function esc(s) { return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;') }
+
+async function createKey() {
+  const name = document.getElementById('newName').value.trim()
+  const limit = parseInt(document.getElementById('newLimit').value) || 0
+  if (!name) return toast('请输入名称')
+  const key = Array.from({ length: 16 }, () => 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'[Math.floor(Math.random() * 62)]).join('')
+  try {
+    await supa('POST', 'api_keys', { key, name, usage_limit: limit })
+    toast('密钥创建成功')
+    document.getElementById('newName').value = ''
+    loadKeys()
+  } catch (e) { toast('创建失败: ' + e.message) }
+}
+
+// 任意编辑「已用次数」与「次数上限」（留空上限=无限），保存即用
+async function saveUsage(id) {
+  const cntEl = document.getElementById('cnt_' + id)
+  const limEl = document.getElementById('lim_' + id)
+  if (!cntEl || !limEl) return
+  let cnt = parseInt(cntEl.value)
+  if (isNaN(cnt) || cnt < 0) cnt = 0
+  const limRaw = limEl.value.trim()
+  let lim = limRaw === '' ? 0 : parseInt(limRaw)   // 0 = 无限
+  if (isNaN(lim) || lim < 0) lim = 0
+  if (lim > 0 && cnt > lim) cnt = lim               // 已用不超过上限
+  try {
+    const res = await supa('PATCH', 'api_keys?id=eq.' + id, { usage_count: cnt, usage_limit: lim })
+    if (!res || !Array.isArray(res) || res.length === 0) {
+      toast('⚠️ 保存未生效（可能被权限拦截或无匹配行），请检查 Supabase anon 的 UPDATE 授权')
+      return
+    }
+    toast('已保存：已用 ' + cnt + ' / 上限 ' + (lim > 0 ? lim : '∞'))
+    loadKeys()
+  } catch (e) { toast('保存失败: ' + e.message) }
+}
+
+// 复制密钥到剪贴板（带 execCommand 降级方案）
+async function copyKey(id) {
+  const row = KEY_CACHE[id]
+  if (!row || !row.key) return toast('未找到密钥')
+  const key = row.key
+  try {
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      await navigator.clipboard.writeText(key)
+    } else {
+      const ta = document.createElement('textarea')
+      ta.value = key
+      ta.style.position = 'fixed'
+      ta.style.opacity = '0'
+      document.body.appendChild(ta)
+      ta.focus(); ta.select()
+      document.execCommand('copy')
+      ta.remove()
+    }
+    toast('密钥已复制')
+  } catch (e) {
+    toast('复制失败，请手动选择：' + key.slice(0, 8) + '…')
+  }
+}
+
+async function toggleKey(id, active) {
+  try {
+    await supa('PATCH', 'api_keys?id=eq.' + id, { is_active: active })
+    toast(active ? '已启用' : '已停用')
+    loadKeys()
+  } catch (e) { toast('操作失败: ' + e.message) }
+}
+
+async function deleteKey(id) {
+  if (!confirm('确定删除？')) return
+  try {
+    await supa('DELETE', 'api_keys?id=eq.' + id)
+    toast('已删除')
+    loadKeys()
+  } catch (e) { toast('删除失败: ' + e.message) }
+}
+
+function toast(msg) {
+  const el = document.getElementById('toast')
+  el.textContent = msg
+  el.classList.add('show')
+  setTimeout(() => el.classList.remove('show'), 2500)
+}
+
+// 初始加载 + 每 5 秒轮询
+loadKeys()
+setInterval(loadKeys, 5000)
+</script>
+</body>
+</html>
