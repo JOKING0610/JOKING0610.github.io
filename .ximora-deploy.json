@@ -1,0 +1,17 @@
+{
+  "managed": [
+    "assets/index-B2Fbb9fk.css",
+    "assets/index-CguHtqRQ.js",
+    "favicon.svg",
+    "index.html",
+    ".ximora-deploy.json",
+    "README.md"
+  ],
+  "movedOldSite": [
+    "1.html",
+    "about.html",
+    "constellation.html",
+    "会员福利.html"
+  ],
+  "updatedAt": "2026-10-30T18:17:48.713Z"
+}
