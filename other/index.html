@@ -1,0 +1,982 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
+    <title>JOKING的个人导航</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', sans-serif;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+        }
+        
+        :root {
+            --primary-color: #2d3436;
+            --secondary-color: #636e72;
+            --accent-color: #0984e3;
+            --accent-color-2: #e84393;
+            --accent-color-3: #00b894;
+            --light-bg: #f9f9f9;
+            --card-bg: #ffffff;
+            --border-color: #dfe6e9;
+            --text-color: #2d3436;
+            --text-light: #636e72;
+            --shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+            --cloud-gaming-color: #5e17eb;
+            --constellation-color: #667eea;
+        }
+        
+        body {
+            background-color: #f8f9fa;
+            background-image: url('https://t.alcy.cc/fj');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            background-repeat: no-repeat;
+            color: var(--text-color);
+            line-height: 1.6;
+            scroll-behavior: smooth;
+            position: relative;
+        }
+        
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(255, 255, 255, 0.35);
+            z-index: -1;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+        
+        /* 导航栏样式 */
+        .navbar {
+            background-color: rgba(255, 255, 255, 0.7);
+            box-shadow: var(--shadow);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            backdrop-filter: blur(20px) saturate(180%);
+            -webkit-backdrop-filter: blur(20px) saturate(180%);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .nav-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 0;
+        }
+        
+        .logo {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--accent-color);
+            text-decoration: none;
+        }
+        
+        .logo span {
+            color: var(--primary-color);
+        }
+        
+        .nav-links {
+            display: flex;
+            list-style: none;
+            gap: 30px;
+        }
+        
+        .nav-links a {
+            text-decoration: none;
+            color: var(--text-color);
+            font-weight: 500;
+            transition: color 0.3s;
+            position: relative;
+            cursor: pointer;
+        }
+        
+        .nav-links a:hover {
+            color: var(--accent-color);
+        }
+        
+        .nav-links a.active {
+            color: var(--accent-color);
+        }
+        
+        .nav-links a.active::after {
+            content: '';
+            position: absolute;
+            width: 100%;
+            height: 2px;
+            background-color: var(--accent-color);
+            bottom: -5px;
+            left: 0;
+        }
+        
+        .mobile-menu-btn {
+            display: none;
+            background: none;
+            border: none;
+            font-size: 24px;
+            color: var(--text-color);
+            cursor: pointer;
+        }
+        
+        /* 头部横幅样式 */
+        .header {
+            padding: 60px 0 40px;
+            text-align: center;
+        }
+        
+        .title {
+            font-size: 48px;
+            font-weight: 800;
+            color: var(--primary-color);
+            margin-bottom: 15px;
+        }
+        
+        .subtitle {
+            font-size: 20px;
+            color: var(--text-light);
+            max-width: 700px;
+            margin: 0 auto 30px;
+        }
+        
+        /* 主要内容区域 */
+        .main-content {
+            margin-bottom: 60px;
+            padding-bottom: 120px;
+        }
+        
+        /* 网址分类样式 */
+        .websites-section {
+            margin-bottom: 40px;
+            scroll-margin-top: 100px;
+        }
+        
+        .section-title {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 25px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid var(--accent-color);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .section-title i {
+            color: var(--accent-color);
+        }
+        
+        /* 网址网格样式 */
+        .websites-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 20px;
+        }
+        
+        .website-card {
+            background-color: var(--card-bg);
+            border-radius: 12px;
+            padding: 25px;
+            box-shadow: var(--shadow);
+            transition: all 0.3s;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
+        
+        .website-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
+        }
+        
+        .website-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            color: white;
+            margin-bottom: 20px;
+        }
+        
+        .website-icon.music {
+            background: linear-gradient(135deg, #0984e3, #74b9ff);
+        }
+
+        .website-icon.constellation {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            animation: starPulse 2s ease-in-out infinite;
+        }
+
+        @keyframes starPulse {
+            0%, 100% {
+                transform: scale(1);
+                box-shadow: 0 0 20px rgba(102, 126, 234, 0.5);
+            }
+            50% {
+                transform: scale(1.05);
+                box-shadow: 0 0 30px rgba(102, 126, 234, 0.8);
+            }
+        }
+
+        .website-name {
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+        
+        .website-desc {
+            color: var(--text-light);
+            margin-bottom: 20px;
+            flex-grow: 1;
+        }
+        
+        .website-link {
+            display: inline-block;
+            background-color: rgba(9, 132, 227, 0.1);
+            color: var(--accent-color);
+            padding: 10px 20px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.3s;
+            text-align: center;
+        }
+        
+        .website-link:hover {
+            background-color: var(--accent-color);
+            color: white;
+        }
+        
+        /* 响应式设计 - 超小屏幕 (手机竖屏) */
+        @media (max-width: 480px) {
+            .container {
+                padding: 0 12px;
+            }
+            
+            .title {
+                font-size: 26px;
+                margin-bottom: 8px;
+                line-height: 1.2;
+            }
+            
+            .subtitle {
+                font-size: 14px;
+                margin-bottom: 15px;
+                line-height: 1.4;
+            }
+            
+            .header {
+                padding: 30px 0 25px;
+            }
+            
+            .website-card {
+                padding: 16px;
+                border-radius: 10px;
+            }
+            
+            .website-icon {
+                width: 45px;
+                height: 45px;
+                font-size: 22px;
+                border-radius: 10px;
+                margin-bottom: 15px;
+            }
+            
+            .website-name {
+                font-size: 16px;
+                margin-bottom: 8px;
+                display: flex;
+                flex-wrap: wrap;
+                align-items: center;
+                gap: 6px;
+            }
+            
+            .website-desc {
+                font-size: 13px;
+                margin-bottom: 15px;
+            }
+            
+            .website-link {
+                padding: 8px 16px;
+                font-size: 14px;
+            }
+            
+            .nav-container {
+                padding: 12px 0;
+            }
+            
+            .logo {
+                font-size: 18px;
+            }
+            
+            .section-title {
+                font-size: 20px;
+                margin-bottom: 20px;
+            }
+        }
+        
+        /* 响应式设计 - 小屏幕 (手机横屏/小平板) */
+        @media (max-width: 768px) {
+            .nav-links {
+                display: none;
+            }
+            
+            .mobile-menu-btn {
+                display: block;
+            }
+            
+            .title {
+                font-size: 30px;
+                line-height: 1.2;
+            }
+            
+            .subtitle {
+                font-size: 16px;
+                line-height: 1.4;
+            }
+            
+            .websites-grid {
+                grid-template-columns: 1fr;
+                gap: 16px;
+            }
+            
+            .website-card {
+                padding: 20px;
+                border-radius: 12px;
+            }
+            
+            .website-icon {
+                width: 55px;
+                height: 55px;
+                font-size: 26px;
+                margin-bottom: 18px;
+            }
+            
+            .website-name {
+            font-size: 18px;
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 8px;
+            line-height: 1.4;
+            word-break: break-word;
+        }
+            
+            .website-desc {
+                font-size: 14px;
+            }
+            
+            .section-title {
+                font-size: 22px;
+            }
+            
+            .mobile-nav {
+                width: 100%;
+                max-width: 320px;
+            }
+            
+            .header {
+                padding: 50px 0 35px;
+            }
+            
+            .container {
+                padding: 0 16px;
+            }
+            
+            /* 徽章在平板设备上的优化 */
+            .website-name {
+                font-size: 17px;
+                gap: 7px;
+            }
+            
+            .beta-badge,
+            .music-featured-badge {
+                font-size: 11px;
+                padding: 2px 7px;
+                margin-left: 7px;
+            }
+        }
+        
+        /* 响应式设计 - 中等屏幕 (平板) */
+        @media (min-width: 769px) and (max-width: 1024px) {
+            .websites-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 20px;
+            }
+            
+            .container {
+                max-width: 900px;
+            }
+            
+            .title {
+                font-size: 40px;
+            }
+            
+            .mobile-menu-btn {
+                display: none;
+            }
+        }
+        
+        /* 响应式设计 - 大屏幕 (桌面) */
+        @media (min-width: 1025px) and (max-width: 1440px) {
+            .websites-grid {
+                grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            }
+            
+            .container {
+                max-width: 1200px;
+            }
+        }
+        
+        /* 响应式设计 - 超小屏幕 (320px以下) */
+        @media (max-width: 320px) {
+            .mobile-nav {
+                width: 100vw;
+                max-width: 100vw;
+                padding: 20px 15px;
+            }
+            
+            .mobile-nav-links a {
+                font-size: 15px;
+                padding: 10px 12px;
+            }
+            
+            .mobile-nav-header {
+                margin-bottom: 20px;
+                padding-bottom: 12px;
+            }
+            
+            .mobile-nav-close {
+                font-size: 20px;
+            }
+            
+            /* 徽章在小屏幕上的优化 */
+            .website-name {
+                font-size: 16px;
+                gap: 6px;
+            }
+            
+            .beta-badge,
+            .music-featured-badge {
+                font-size: 10px;
+                padding: 1px 6px;
+                margin-left: 6px;
+            }
+        }
+        
+        /* 响应式设计 - 超大屏幕 (4K+) */
+        @media (min-width: 1441px) {
+            .container {
+                max-width: 1400px;
+            }
+            
+            .title {
+                font-size: 56px;
+            }
+            
+            .subtitle {
+                font-size: 22px;
+            }
+            
+            .websites-grid {
+                grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+                gap: 25px;
+            }
+            
+            .website-card {
+                padding: 30px;
+            }
+        }
+        
+        /* 触摸设备优化 */
+        @media (hover: none) and (pointer: coarse) {
+            .website-card:hover {
+                transform: none;
+            }
+            
+            .website-link:hover {
+                background-color: rgba(9, 132, 227, 0.1);
+                color: var(--accent-color);
+            }
+            
+            .website-link:active {
+                background-color: var(--accent-color);
+                color: white;
+                transform: scale(0.98);
+            }
+            
+            .nav-links a:active {
+                color: var(--accent-color);
+            }
+            
+            .website-card:active {
+                transform: scale(0.98);
+                box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            }
+            
+            .mobile-menu-btn:active {
+                transform: scale(0.95);
+            }
+        }
+        
+        /* 折叠屏设备支持 */
+        @media (min-width: 600px) and (max-width: 900px) and (orientation: landscape) {
+            .websites-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 18px;
+            }
+            
+            .title {
+                font-size: 36px;
+            }
+            
+            .subtitle {
+                font-size: 18px;
+            }
+            
+            .header {
+                padding: 40px 0 30px;
+            }
+        }
+        
+        /* 超宽屏设备支持 */
+        @media (min-width: 2000px) {
+            .container {
+                max-width: 1600px;
+            }
+            
+            .websites-grid {
+                grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+                gap: 30px;
+            }
+            
+            .title {
+                font-size: 64px;
+            }
+            
+            .subtitle {
+                font-size: 24px;
+                max-width: 900px;
+            }
+        }
+        
+        /* 高对比度模式支持 */
+        @media (prefers-contrast: high) {
+            :root {
+                --primary-color: #000000;
+                --secondary-color: #333333;
+                --accent-color: #0066cc;
+                --border-color: #000000;
+            }
+            
+            .website-card {
+                border: 2px solid var(--border-color);
+            }
+        }
+        
+        /* 减少动画模式支持 */
+        @media (prefers-reduced-motion: reduce) {
+            * {
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
+            }
+            
+            .website-card:hover {
+                transform: none;
+            }
+        }
+        
+        /* 高DPI屏幕优化 */
+        @media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+            .avatar-image {
+                border-width: 3px;
+            }
+            
+            .website-icon {
+                border-radius: 14px;
+            }
+        }
+        
+        /* 打印样式 */
+        @media print {
+            .navbar, .mobile-menu-btn {
+                display: none !important;
+            }
+            
+            body {
+                background: white !important;
+                color: black !important;
+            }
+            
+            .website-card {
+                break-inside: avoid;
+                box-shadow: none !important;
+                border: 1px solid #ddd;
+            }
+        }
+        
+        /* 移动菜单 */
+        .mobile-nav {
+            position: fixed;
+            top: 0;
+            right: -100%;
+            width: 280px;
+            max-width: 85vw;
+            height: 100vh;
+            background-color: var(--card-bg);
+            box-shadow: -5px 0 15px rgba(0, 0, 0, 0.1);
+            z-index: 1001;
+            transition: right 0.3s;
+            padding: 25px 20px;
+            display: none;
+            overflow-y: auto;
+        }
+        
+        .mobile-nav.active {
+            right: 0;
+            display: block;
+        }
+        
+        .mobile-nav-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+        }
+        
+        .mobile-nav-close {
+            background: none;
+            border: none;
+            font-size: 22px;
+            color: var(--text-color);
+            cursor: pointer;
+            padding: 5px;
+            border-radius: 4px;
+        }
+        
+        .mobile-nav-close:active {
+            background-color: rgba(0, 0, 0, 0.1);
+        }
+        
+        .mobile-nav-links {
+            list-style: none;
+            margin: 0;
+            padding: 0;
+        }
+        
+        .mobile-nav-links li {
+            margin-bottom: 15px;
+        }
+        
+        .mobile-nav-links a {
+            text-decoration: none;
+            color: var(--text-color);
+            font-size: 16px;
+            font-weight: 500;
+            display: block;
+            padding: 12px 15px;
+            border-radius: 8px;
+            transition: all 0.2s;
+        }
+        
+        .mobile-nav-links a:hover,
+        .mobile-nav-links a:active {
+            background-color: rgba(9, 132, 227, 0.1);
+            color: var(--accent-color);
+        }
+        
+        .mobile-nav-links a.active {
+            background-color: var(--accent-color);
+            color: white;
+        }
+        
+        .mobile-nav-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            display: none;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        
+        .mobile-nav-overlay.active {
+            display: block;
+            opacity: 1;
+        }
+        
+        /* 锚点跳转样式 */
+        .section-anchor {
+            display: block;
+            position: relative;
+            top: -100px;
+            visibility: hidden;
+        }
+        
+        /* 音乐特色样式 */
+        .music-featured-badge {
+            background: linear-gradient(135deg, #0984e3, #74b9ff);
+            color: white;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: bold;
+            margin-left: 8px;
+            vertical-align: middle;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            box-shadow: 0 4px 12px rgba(9, 132, 227, 0.4);
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+            white-space: nowrap;
+            display: inline-flex;
+            align-items: center;
+        }
+        
+        /* Beta图标样式 */
+        .beta-badge {
+            background-image: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            font-size: 12px;
+            font-weight: 600;
+            padding: 2px 8px;
+            border-radius: 12px;
+            margin-left: 10px;
+            vertical-align: middle;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+            animation: pulse 2s infinite;
+            white-space: nowrap;
+            display: inline-flex;
+            align-items: center;
+        }
+        
+        @keyframes pulse {
+            0% {
+                box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+            }
+            50% {
+                box-shadow: 0 2px 12px rgba(102, 126, 234, 0.6);
+            }
+            100% {
+                box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 导航栏 -->
+    <nav class="navbar">
+        <div class="container nav-container">
+            <a href="#" class="logo">JOKING<span>导航</span></a>
+            
+            <ul class="nav-links">
+                <li><a href="#" class="active">首页</a></li>
+                <li><a href="#music-app">音乐应用</a></li>
+                <li><a href="#other-tools">其他工具</a></li>
+                <li><a href="about.html">关于</a></li>
+            </ul>
+            
+            <button class="mobile-menu-btn" id="mobileMenuBtn">
+                <i class="fas fa-bars"></i>
+            </button>
+        </div>
+    </nav>
+    
+    <!-- 移动菜单 -->
+    <div class="mobile-nav-overlay" id="mobileNavOverlay"></div>
+    <div class="mobile-nav" id="mobileNav">
+        <div class="mobile-nav-header">
+            <h3>JOKING的导航</h3>
+            <button class="mobile-nav-close" id="mobileNavClose">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <ul class="mobile-nav-links">
+            <li><a href="#" class="active">首页</a></li>
+            <li><a href="#music-app">音乐应用</a></li>
+            <li><a href="#other-tools">其他工具</a></li>
+            <li><a href="about.html">关于</a></li>
+        </ul>
+    </div>
+    
+    <!-- 头部 -->
+    <header class="header">
+        <div class="container">
+            <h1 class="title">JOKING的个人导航</h1>
+            <p class="subtitle">专注于我的Web应用</p>
+        </div>
+    </header>
+    
+    <!-- 主要内容区域 -->
+    <main class="container main-content">
+        <!-- 音乐应用区域 -->
+        <div class="websites-section" id="music-app">
+            <span class="section-anchor" id="music-app-anchor"></span>
+            <h2 class="section-title"><i class="fas fa-music"></i> 音乐应用</h2>
+            <div class="websites-grid">
+                <!-- JOKING音乐 -->
+                <div class="website-card">
+                    <div class="website-icon music">
+                        <i class="fas fa-music"></i>
+                    </div>
+                    <h3 class="website-name">零柒零音乐 0.2.2 <span class="beta-badge">beta</span><span class="music-featured-badge">推荐</span></h3>
+                    <p class="website-desc">个人音乐网站，支持在线播放和下载功能。</p>
+                    <a href="music.html" class="website-link">立即访问</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- 其他工具区域 -->
+        <div class="websites-section" id="other-tools">
+            <span class="section-anchor" id="other-tools-anchor"></span>
+            <h2 class="section-title"><i class="fas fa-wrench"></i> 其他工具</h2>
+            <div class="websites-grid">
+                <!-- 星座运势卡片 -->
+                <div class="website-card">
+                    <div class="website-icon constellation">
+                        <i class="fas fa-star"></i>
+                    </div>
+                    <h3 class="website-name">星座运势配对</h3>
+                    <p class="website-desc">获取今日星座运势，查看星座配对指数。</p>
+                    <a href="constellation.html" class="website-link">立即访问</a>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        // 移动菜单功能
+        const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+        const mobileNavClose = document.getElementById('mobileNavClose');
+        const mobileNav = document.getElementById('mobileNav');
+        const mobileNavOverlay = document.getElementById('mobileNavOverlay');
+        
+        mobileMenuBtn.addEventListener('click', () => {
+            mobileNav.classList.add('active');
+            mobileNavOverlay.classList.add('active');
+        });
+        
+        mobileNavClose.addEventListener('click', () => {
+            mobileNav.classList.remove('active');
+            mobileNavOverlay.classList.remove('active');
+        });
+        
+        mobileNavOverlay.addEventListener('click', () => {
+            mobileNav.classList.remove('active');
+            mobileNavOverlay.classList.remove('active');
+        });
+        
+        // 网站卡片悬停效果
+        const websiteCards = document.querySelectorAll('.website-card');
+        websiteCards.forEach(card => {
+            card.addEventListener('mouseenter', function() {
+                this.style.transform = 'translateY(-10px)';
+            });
+            
+            card.addEventListener('mouseleave', function() {
+                this.style.transform = 'translateY(0)';
+            });
+        });
+        
+        // 导航栏滚动效果
+        window.addEventListener('scroll', function() {
+            const navbar = document.querySelector('.navbar');
+            if (window.scrollY > 50) {
+                navbar.style.boxShadow = '0 5px 15px rgba(0, 0, 0, 0.1)';
+            } else {
+                navbar.style.boxShadow = '0 5px 15px rgba(0, 0, 0, 0.05)';
+            }
+        });
+        
+        // 网站访问统计
+        const websiteLinks = document.querySelectorAll('.website-link');
+        websiteLinks.forEach(link => {
+            link.addEventListener('click', function() {
+                const websiteName = this.parentElement.querySelector('.website-name').textContent;
+                console.log(`访问了: ${websiteName}`);
+            });
+        });
+        
+        // 导航链接激活状态和跳转功能
+        const navLinks = document.querySelectorAll('.nav-links a, .mobile-nav-links a');
+        navLinks.forEach(link => {
+            link.addEventListener('click', function(e) {
+                // 如果是锚点链接，阻止默认行为并平滑滚动
+                if (this.getAttribute('href').startsWith('#')) {
+                    e.preventDefault();
+                    
+                    const targetId = this.getAttribute('href').substring(1);
+                    const targetElement = document.getElementById(targetId);
+                    
+                    if (targetElement) {
+                        // 更新导航激活状态
+                        navLinks.forEach(item => item.classList.remove('active'));
+                        this.classList.add('active');
+                        
+                        // 平滑滚动到目标位置
+                        window.scrollTo({
+                            top: targetElement.offsetTop - 80, // 减去导航栏高度
+                            behavior: 'smooth'
+                        });
+                        
+                        // 如果是移动端，点击后关闭菜单
+                        if (window.innerWidth <= 768) {
+                            mobileNav.classList.remove('active');
+                            mobileNavOverlay.classList.remove('active');
+                        }
+                    }
+                }
+            });
+        });
+        
+        // 页面加载时检查URL中的锚点
+        window.addEventListener('load', function() {
+            const hash = window.location.hash;
+            if (hash) {
+                const targetElement = document.getElementById(hash.substring(1));
+                if (targetElement) {
+                    setTimeout(() => {
+                        window.scrollTo({
+                            top: targetElement.offsetTop - 80,
+                            behavior: 'smooth'
+                        });
+                    }, 100);
+                }
+            }
+        });
+        
+        // 窗口大小变化时关闭移动菜单
+        window.addEventListener('resize', function() {
+            if (window.innerWidth > 768) {
+                mobileNav.classList.remove('active');
+                mobileNavOverlay.classList.remove('active');
+            }
+        });
+    </script>
+</body>
+</html>
